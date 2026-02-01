@@ -1,0 +1,71 @@
+div.access-bar {
+    width: 40%;
+    background-color: maroon;
+    box-shadow: 0rem 0rem 0.5rem lightsalmon, 0rem 2rem 8rem magenta;
+    margin-top: 1rem;
+    margin-bottom: 5rem;
+    border-radius: 0.25rem;
+}
+
+div.access-bar-inner {
+    display: flex;
+    padding: 1rem;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    color: white;
+}
+
+div.access-bar div.button {
+    margin: 0.7rem;
+    padding: 0.2rem;
+    border: 1px solid violet;
+    box-shadow: 0 0 1rem violet;
+}
+div.access-bar div.button:hover {
+    box-shadow: 0 0 2rem white;
+}
+
+div.access-sub-bar {
+    margin-bottom: 4rem;
+    padding: 1rem;
+    border-radius: 0.25rem;
+}
+
+div.access-sub-bar.friends {
+    width: 60%;
+    background-color: green;
+    border: solid 1px greenyellow;
+    box-shadow: 0rem 0rem 0.5rem teal, 0rem 2rem 8rem magenta;
+}
+
+div.access-sub-bar.groups {
+    width: 60%;
+    background-color: steelblue;
+    border: solid 1px darkslategray;
+    box-shadow: 0rem 0rem 0.5rem teal, 0rem 2rem 8rem magenta;
+}
+
+div.access-sub-bar.user-settings {
+    width: 40%;
+    background-color: darkorange;
+    border: solid 1px orange;
+    box-shadow: 0rem 0rem 0.5rem teal, 0rem 2rem 8rem magenta;
+}
+
+div.access-sub-bar.favourites {
+    width: 60%;
+    background-color: palevioletred;
+    border: solid 1px red;
+    box-shadow: 0rem 0rem 0.5rem teal, 0rem 2rem 8rem magenta;
+}
+
+div.access-sub-bar div.access-sub-bar-inner {
+    display: flex;
+    flex-direction: column;
+}
+
+div.access-sub-bars div.access-sub-bar-inner div.section {
+    display: flex;
+    flex-direction: row;
+}

@@ -1,0 +1,54 @@
+div.post {
+    width: 80%;
+    margin: 1rem;
+    border: solid 1px darkblue;
+    box-shadow: 0 0 1rem rgba(0,0,0,0.5);
+}
+
+div.post-inner {
+    display: flex;
+    flex-direction: column;
+}
+
+div.post-inner>div {
+    width: 100%;
+    border-bottom: solid 1px darkblue;
+}
+
+div.post div.header {
+    display: flex;
+    flex-direction: row;
+}
+
+div.post div.header div {
+    flex-grow: 1;
+    padding: 0.5rem;
+    border-right: solid 1px darkblue;
+}
+
+div.post div.content-inner {
+    margin: 0.8rem;
+}
+
+div.post div.replies {
+    height: 2rem;
+}
+
+div.post div.controls {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+div.post div.controls div.button {
+    text-align: center;
+    flex-grow: 1;
+    margin: 0.7rem;
+    padding: 0.2rem;
+    border: 1px solid darkblue;
+    box-shadow: 0 0 1rem darkblue;
+}
+
+div.post div.controls div.button:hover {
+    box-shadow: 0 0 1rem blue;
+}

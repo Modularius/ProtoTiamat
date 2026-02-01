@@ -1,0 +1,20 @@
+div.bottom-bar {
+    margin-top: auto;
+    width: 100%;
+    background-color: darkmagenta;
+    box-shadow: 0rem 0.5rem 0.5rem darkmagenta, 0rem 2rem 8rem magenta;
+}
+
+div.bottom-bar-inner {
+    display: flex;
+    height: 6rem;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+div.bottom-bar-inner>div {
+    flex-basis: 33.33%;
+    text-align: center;
+}

@@ -1,0 +1,54 @@
+@use "foot-bar.scss";
+@use "post.scss";
+@use "top-bar.scss";
+@use "access-bar.scss";
+@use "home-page.scss";
+
+body {
+    margin: 0;
+    background-color: beige;
+    font-family:sans-serif;
+    font-size:20px;
+}
+
+div.middle-column {
+    margin-top: 2rem;
+    margin-left: 6rem;
+    margin-right: 6rem;
+    margin-bottom: auto;
+    background-color: darkslateblue;
+    box-shadow: 0rem 0rem 4rem darkslateblue;
+}
+
+div.middle-column-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+}
+
+div.columns {
+    display: flex;
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    flex-direction: row;
+    justify-content: center;
+}
+
+div.columns>div.ads {
+    width: 20%;
+    background-color: rgba(0, 0, 0, 0.5);
+    box-shadow: 0rem 0rem 2rem rgba(0, 0, 0, 0.5);
+}
+
+div.columns>div.content {
+    width: 55%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+div.button {
+    cursor: pointer;
+}

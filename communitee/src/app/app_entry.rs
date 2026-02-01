@@ -1,0 +1,70 @@
+use crate::{
+    app::{
+        components::{error_box, FootBar, TopBar},
+        pages::{FriendlistPage, GroupsPage, HomePage, LoginPage, RegisterPage}
+    },
+    server::require_login,
+    structs::{ClientSideData, Session}
+};
+use leptos::prelude::*;
+use leptos_meta::provide_meta_context;
+use leptos_router::{components::{Route, Router, Routes}, path};
+use cfg_if::cfg_if;
+
+/// This struct enable a degree of type-checking for the [use_context]/[use_context] functions.
+/// Any component making use of the following fields should call `use_context::<TopLevelContext>()`
+/// and select the desired field.
+#[derive(Clone)]
+pub struct TopLevelContext {
+    pub client_side_data: ClientSideData,
+    pub session: Resource<Result<Option<Session>, ServerFnError>>,
+}
+
+
+/// An app router which renders the homepage and handles 404's
+#[component]
+pub fn App() -> impl IntoView {
+    // Provides context that manages stylesheets, titles, meta tags, etc.
+    provide_meta_context();
+
+    let client_side_data = SharedValue::new(|| {
+        use_context::<ClientSideData>()
+            .expect("TopLevelContext should be provided, this should never fail.")
+    })
+    .into_inner();
+
+    #[cfg(feature = "hydrate")]
+    let public_path = client_side_data.public_url.path().to_string();
+
+    let session = Resource::new_blocking(||(), move|_| require_login());
+
+    provide_context(TopLevelContext { client_side_data, session });
+
+    view!{
+        <Suspense fallback=move || view!{<TopBar user_data = None/>}>
+            {move ||session.get().map(|session| view!{
+                <ErrorBoundary fallback = error_box>
+                    {session.map(|session| view!{ <TopBar user_data = session.map(|s|s.user_data) /> })}
+                </ErrorBoundary>
+            })}
+        </Suspense>
+        <Router base=cfg_if! { if #[cfg(feature = "hydrate")] { public_path } else { "" } }>
+            <Routes fallback = NotFound>
+                <Route path = path!("/") view = HomePage />
+                <Route path = path!("/friends") view = FriendlistPage />
+                <Route path = path!("/register") view = RegisterPage />
+                <Route path = path!("/login") view = LoginPage />
+                <Route path = path!("/groups") view = GroupsPage />
+                <Route path = path!("/help") view = HomePage />
+            </Routes>
+        </Router>
+        <FootBar />
+    }
+}
+
+#[component]
+pub fn NotFound() -> impl IntoView {
+    view!{
+        <p> Communitee: URL not found </p>
+    }
+}

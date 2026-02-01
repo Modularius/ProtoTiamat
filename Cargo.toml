@@ -1,0 +1,73 @@
+[workspace]
+members = ["communitee"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+license = "GPL-3.0-only"
+edition = "2024"
+
+# need to be applied only to wasm build
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 'z'
+
+[workspace.dependencies]
+actix-files = "0.6"
+actix-web = { version = "4", features = ["macros"] }
+assert_approx_eq = "1.1.0"
+cfg-if = "1"
+chrono = { version = "0.4.41", features = ["serde"] }
+clap = { version = "4.5.47", features = ["derive", "env", "cargo", "string"] }
+console_error_panic_hook = "0.1"
+const_format = "0.2.34"
+git-version = "0.3.9"
+glob = "0.3.3"
+gloo-net = { version = "0.8", features = ["http"] }
+itertools = "0.14.0"
+lazy_static = "1.5.0"
+leptos = { version = "0.8.4", features = ["tracing"] }
+leptos_meta = "0.8.5"
+leptos_actix = "0.8.5"
+leptos_dom = { version = "0.8", default-features = false }
+leptos_reactive = "0.6.15"
+leptos_router = { version = "0.8.4", default-features = false }
+leptos-use = { version = "0.16.2", features = ["use_interval"] }
+miette = "7.6.0"
+ndarray = "0.16.1"
+num = "0.4.3"
+opentelemetry = "0.22.0"
+opentelemetry-otlp = { version = "0.15.0", features = ["trace", "tonic", "tls-roots"] }
+opentelemetry_sdk = { version = "0.22.1", default-features = false, features = ["trace", "rt-tokio"] }
+rand = "0.9.2"
+rand_distr = "0.5.1"
+reqwest = "0.12.24"
+rayon = "1.11.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1.0.143"
+strum = { version = "0.27.2", features = ["derive"] }
+tokio = { version = "1.47", features = ["macros", "rt", "sync"] }
+thiserror = "2.0.16"
+tracing = "0.1.41"
+tracing-opentelemetry = "0.23.0"
+tracing-subscriber = { version = "0.3.20", features = ["std", "fmt", "env-filter"] }
+url = { version = "2.5.7", features = ["serde"] }
+uuid = { version = "1.17", features = ["v4"] }
+wasm-bindgen = "=0.2.100"
+
+# See https://github.com/leptos-rs/cargo-leptos for documentation of all the parameters.
+
+# A leptos project defines which workspace members
+# that are used together frontend (lib) & server (bin)
+[[workspace.metadata.leptos]]
+name = "tiamat"
+bin-package = "communitee"
+lib-package = "communitee"
+assets-dir = "communitee/assets"
+style-file = "communitee/css/main.scss"
+site-root = "target/site/communitee"
+server-fn-prefix = "/custom/prefix"
+disable-server-fn-hash = true
+server-fn-mod-path = true
+
