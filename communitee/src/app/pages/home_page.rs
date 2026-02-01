@@ -1,4 +1,4 @@
-use crate::{app::{components::{error_box, AccessBar, AdColumns, MainColumn}, TopLevelContext}, structs::UserData};
+use crate::{app::{components::{error_box, AccessBar, AdColumns, Feed, MainColumn}, TopLevelContext}, server::get_user_feed, structs::{PostData, UserData}};
 use leptos::prelude::*;
 
 #[component]
@@ -14,42 +14,34 @@ pub fn HomePage() -> impl IntoView {
             session.get().map(|session| view!{
                 <ErrorBoundary fallback = error_box>
                     {session.map(|session|
-                        session.map(|session|
+                        session.map(|session| {
+                            let posts = Resource::new_blocking(||(), move|_| get_user_feed(session.user.clone(), 5));
                             view!{
-                                <HomePageWithUser user_data = session.user_data />
-                            })
-                        )
-                    }
+                                <HomePageWithUser user_data = session.user_data posts />
+                            }
+                        })
+                    )}
                 </ErrorBoundary>
             })}
         </Suspense>
     }
 }
 
-pub struct ExampleFeed {
-    num: usize
-}
-/*
-impl FeedSource for ExampleFeed {
-    fn next_post(&mut self) -> Option<Post> {
-        self.num += 1;
-        Some(Post {
-            user_uuid: Default::default(),
-            history: Default::default(),
-            text: format!("{} Another Fucking Stupid Post", self.num),
-        })
-    }
-}
- */
 #[component]
-pub fn HomePageWithUser(user_data: UserData) -> impl IntoView {
+pub fn HomePageWithUser(user_data: UserData, posts: Resource<Result<Vec<PostData>, ServerFnError>>) -> impl IntoView {
     view!{
         <MainColumn>
             <h1> "Hi there " {user_data.name.clone()} "!" </h1>
             <AccessBar user_data = user_data.clone()/>
             <AdColumns>
                 <h2> "Current feed: "</h2>
-                //<Feed feed = ExampleFeed{num: 0} max = 10/>
+                <Suspense fallback=move || view!{}>
+                    {move ||posts.get().map(|posts| view!{
+                        <ErrorBoundary fallback = error_box>
+                            { posts.map(|posts| view!{<Feed feed = posts.into_iter() max = 10/>}) }
+                        </ErrorBoundary>
+                    })}
+                </Suspense>
             </AdColumns>
         </MainColumn>
     }

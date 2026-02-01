@@ -14,5 +14,5 @@ pub use topbar::TopBar;
 pub use generics::{error_box, LabelledInput};
 pub use login_box::LoginBox;
 pub use ad_columns::AdColumns;
-//pub use feed::Feed;
+pub use feed::Feed;
 pub use footbar::FootBar;

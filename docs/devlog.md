@@ -1,5 +1,10 @@
 # Development Log
 
+## 01/12/26
+
+To fix the rust-analyser issue in which it only runs `cargo check` on code not guarded by the `ssr` feature,
+make sure `--all-features` is included as in `rust-analyzer.check.overrideCommand` in its settings.
+
 ## 04/10/25
 
 When compiling, the error

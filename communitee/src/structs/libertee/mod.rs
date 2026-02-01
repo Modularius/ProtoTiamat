@@ -91,20 +91,43 @@ cfg_if! {
         
         #[derive(Default, Clone, Debug)]
         pub struct Feed {
-            posts: Vec<Post>
+            pub(crate) posts: Vec<Post>
         }
         
         #[derive(Clone, Debug, Serialize, Deserialize)]
         pub struct Post {
-            data: PostData,
-            replies: Vec<Post>,
-            promotions: Real,
+            pub(crate) data: PostData,
+            pub(crate) replies: Vec<Post>,
+            pub(crate) promotions: Real,
+        }
+
+        impl Post {
+            pub(crate) fn new_random(author: Uuid) -> Self {
+                let alphabet = "abcdefghijklmnopqrstuvwxyz".chars().collect::<Vec<_>>();
+                Self {
+                    data: PostData {
+                        author: author,
+                        posted_at: Utc::now(),
+                        content: (0..rand::random_range(4..10)).map(|_|
+                            (0..rand::random_range(3..10)).map(|_|
+                                alphabet.choose(&mut rand::rng())
+                                    .to_owned()
+                                    .unwrap()
+                            ).collect::<String>()
+                        )
+                        .collect::<Vec<_>>()
+                        .join(" ")
+                    },
+                    replies: Default::default(),
+                    promotions: 0.0
+                }
+            }
         }
         
         #[derive(Clone, Debug)]
         pub struct User {
-            data: UserData,
-            feed: Feed,
+            pub(crate) data: UserData,
+            pub(crate) feed: Feed,
         }
 
         impl User {

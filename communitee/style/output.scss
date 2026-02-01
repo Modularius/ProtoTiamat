@@ -4,11 +4,20 @@
 @use "access-bar.scss";
 @use "home-page.scss";
 
+html {
+   margin: 0px;
+   height: 100%;
+   min-height: 100%;
+   width: 100%;
+}
+
 body {
     margin: 0;
     background-color: beige;
     font-family:sans-serif;
     font-size:20px;
+    height: 100%;
+    min-height: 100%;
 }
 
 div.middle-column {

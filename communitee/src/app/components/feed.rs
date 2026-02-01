@@ -1,9 +1,9 @@
-use crate::app::components::post::{PostBox, PostBoxProps};
+use crate::{app::components::post::{PostBox, PostBoxProps}, structs::PostData};
 use leptos::prelude::*;
-/*
+
 #[component]
-pub fn Feed<F>(mut feed: F, max: usize) -> impl IntoView where F: FeedSource {
-    let posts = (0..max).flat_map(|_|feed.next_post()).collect::<Vec<_>>();
+pub fn Feed<F>(feed: F, max: usize) -> impl IntoView where F: Iterator<Item = PostData> {
+    let posts = feed.take(max).collect::<Vec<_>>();
     view!{
         <For
             each = move ||posts.clone().into_iter().enumerate()
@@ -12,4 +12,3 @@ pub fn Feed<F>(mut feed: F, max: usize) -> impl IntoView where F: FeedSource {
         />
     }
 }
-    */

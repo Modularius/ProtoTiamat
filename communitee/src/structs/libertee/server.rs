@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use rand::seq::IteratorRandom;
 
-use crate::{structs::{libertee::{Group, Member}, GroupData, LoginAuth, Session, User, UserData}, Uuid};
+use crate::{structs::{libertee::{Group, Member, Post}, GroupData, LoginAuth, Session, User, UserData}, Uuid};
 
 #[derive(Default, Clone, Debug)]
 pub struct Server {
@@ -46,12 +46,21 @@ impl Server {
                 .filter(|_|rand::random_bool(0.5))
                 .map(|i|format!("{i}"))
                 .collect();
+            user.feed
+                .posts = (0..rand::random_range(3..6))
+                    .map(|_|
+                        Post::new_random(user_id.clone())
+                    )
+                .collect();
             for (i,group_id) in user.data.groups.iter().enumerate() {
-                groups.get_mut(group_id)
-                    .unwrap()
-                    .data
+                let group = groups.get_mut(group_id)
+                    .unwrap();
+                group.data
                     .members
                     .insert(format!("{i}").clone(), Member::new(user_id.clone()));
+                group.feed
+                    .posts
+                    .push(Post::new_random(user_id.clone()))
             }
         }
 
