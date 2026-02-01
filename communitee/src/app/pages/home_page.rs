@@ -13,7 +13,13 @@ pub fn HomePage() -> impl IntoView {
         <Suspense fallback=no_user> {move ||
             session.get().map(|session| view!{
                 <ErrorBoundary fallback = error_box>
-                    {session.map(|session|session.map(|session| view!{ <HomePageWithUser user_data = session.user_data /> }))}
+                    {session.map(|session|
+                        session.map(|session|
+                            view!{
+                                <HomePageWithUser user_data = session.user_data />
+                            })
+                        )
+                    }
                 </ErrorBoundary>
             })}
         </Suspense>
