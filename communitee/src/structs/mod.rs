@@ -9,16 +9,13 @@ pub use libertee::{GroupData, LoginAuth, PostData, Session, UserData};
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use clap::Args;
-        //use libertee::{EntiteeNode, UniteeNode};
         use std::sync::{Arc, Mutex};
-        pub use libertee::{User, Group, Feed, Server};
+        pub use libertee::{User, Server};
 
         /// Encapsulates all run-time settings which are only available to the server.
         #[derive(Default, Clone)]
         pub struct ServerSideData {
             pub server: Arc<Mutex<Server>>,
-            //pub entitee: Arc<Mutex<Option<EntiteeNode>>>,
-            //pub unitee: UniteeNode,
         }
     }
 }

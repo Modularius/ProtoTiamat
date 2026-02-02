@@ -78,6 +78,16 @@ pub async fn get_user_feed(
 }
 
 #[server]
+pub async fn get_user(
+    user_id: Uuid
+) -> Result<Option<UserData>, ServerFnError> {
+    let server_side_data = use_context::<ServerSideData>()
+        .expect("ServerSideData should be provided, this should never fail.");
+    let server = server_side_data.server.lock()?;
+    Ok(server.get_user(user_id).map(|user|user.data.clone()))
+}
+
+#[server]
 pub async fn get_user_friends(
     user_id: Uuid,
     max_friends: usize,

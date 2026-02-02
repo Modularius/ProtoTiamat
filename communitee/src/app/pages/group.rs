@@ -8,7 +8,7 @@ use crate::{
 use leptos::prelude::*;
 
 #[component]
-pub fn GroupsPage() -> impl IntoView {
+pub fn GroupPage() -> impl IntoView {
     let top_level_context = use_context::<TopLevelContext>()
         .expect("TopLevelContext should be provided, this should never fail.");
     let session = top_level_context.session;
@@ -25,21 +25,6 @@ pub fn GroupsPage() -> impl IntoView {
     }
 }
 
-pub struct ExampleFeed {
-    num: usize,
-}
-/*
-impl FeedSource for ExampleFeed {
-    fn next_post(&mut self) -> Option<Post> {
-        self.num += 1;
-        Some(Post {
-            user_uuid: Default::default(),
-            history: Default::default(),
-            text: format!("{} Another Fucking Stupid Post", self.num),
-        })
-    }
-}
- */
 #[component]
 pub fn GroupsPageWithUser(user_data: UserData) -> impl IntoView {
     view! {

@@ -1,7 +1,7 @@
 use crate::{
     app::{
         components::{FootBar, SessionView, TopBar},
-        pages::{FriendlistPage, GroupsPage, HomePage, LoginPage, RegisterPage},
+        pages::{FriendlistPage, GroupPage, GroupslistPage, HomePage, LoginPage, RegisterPage, UserPage},
     },
     server::require_login,
     structs::{ClientSideData, Session},
@@ -53,10 +53,12 @@ pub fn App() -> impl IntoView {
         <Router base=cfg_if! { if #[cfg(feature = "hydrate")] { public_path } else { "" } }>
             <Routes fallback = NotFound>
                 <Route path = path!("/") view = HomePage />
-                <Route path = path!("/friends") view = FriendlistPage />
                 <Route path = path!("/register") view = RegisterPage />
                 <Route path = path!("/login") view = LoginPage />
-                <Route path = path!("/groups") view = GroupsPage />
+                <Route path = path!("/friends") view = FriendlistPage />
+                <Route path = path!("/groups") view = GroupslistPage />
+                <Route path = path!("/user/:user_id") view = UserPage />
+                <Route path = path!("/group/:group_id") view = GroupPage />
                 <Route path = path!("/help") view = HomePage />
             </Routes>
         </Router>
@@ -67,6 +69,6 @@ pub fn App() -> impl IntoView {
 #[component]
 pub fn NotFound() -> impl IntoView {
     view! {
-        <p> Communitee: URL not found </p>
+        <p> "Communitee: URL not found" </p>
     }
 }

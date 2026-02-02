@@ -17,6 +17,7 @@ pub struct LoginAuth {
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct GroupData {
+    id: String,
     name: String,
     members: HashMap<Uuid, Member>,
     adjacent_groups: Vec<(Uuid, Real)>,
@@ -24,14 +25,16 @@ pub struct GroupData {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Member {
+    id: String,
     user: Uuid,
     joined: Timestamp,
     delegates: HashMap<Uuid, Real>,
 }
 
 impl Member {
-    pub fn new(user: Uuid) -> Self {
+    pub fn new(id: Uuid, user: Uuid) -> Self {
         Self {
+            id,
             user,
             joined: Utc::now(),
             delegates: Default::default(),
@@ -41,6 +44,7 @@ impl Member {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PostData {
+    pub id: String,
     pub author: Uuid,
     pub posted_at: Timestamp,
     pub content: String,
@@ -48,6 +52,7 @@ pub struct PostData {
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct UserData {
+    pub id: String,
     pub name: String,
     pub properties: HashMap<String, String>,
     pub groups: Vec<Uuid>,
@@ -57,7 +62,7 @@ pub struct UserData {
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         mod server;
-        use rand::seq::{IndexedRandom, IteratorRandom};
+        use rand::seq::IndexedRandom;
         pub use server::Server;
 
         #[derive(Clone, Debug)]
@@ -76,8 +81,9 @@ cfg_if! {
         }
 
         impl GroupData {
-            pub(crate) fn new_random() -> Self {
+            pub(crate) fn new_random(id: Uuid) -> Self {
                 Self {
+                    id,
                     name: ["UK", "Music", "UK Music", "Science", "Space", "Wanking About", "Product of Inbreeding (Self Help)"]
                         .as_slice()
                         .choose(&mut rand::rng())
@@ -101,11 +107,12 @@ cfg_if! {
         }
 
         impl Post {
-            pub(crate) fn new_random(author: Uuid) -> Self {
+            pub(crate) fn new_random(id: Uuid, author: Uuid) -> Self {
                 let alphabet = "abcdefghijklmnopqrstuvwxyz".chars().collect::<Vec<_>>();
                 Self {
                     data: PostData {
-                        author: author,
+                        id,
+                        author,
                         posted_at: Utc::now(),
                         content: (0..rand::random_range(4..10)).map(|_|
                             (0..rand::random_range(3..10)).map(|_|
@@ -139,8 +146,9 @@ cfg_if! {
         }
 
         impl UserData {
-            pub(crate) fn new_random() -> Self {
+            pub(crate) fn new_random(id: Uuid) -> Self {
                 Self {
+                    id,
                     name: ["Aaron", "April", "Abdul", "Bobby", "Beth", "Charlie", "Mike", "Laura", "Sandy", "Tamir", "Umar", "Zacahry"]
                         .as_slice()
                         .choose(&mut rand::rng())

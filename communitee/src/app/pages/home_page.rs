@@ -1,10 +1,5 @@
 use crate::{
-    app::{
-        TopLevelContext,
-        components::{
-            AccessBar, AdColumns, Feed, MainColumn, ResourceView, SessionView, error_box,
-        },
-    },
+    app::components::{AccessBar, AdColumns, Feed, MainColumn, ResourceView, SessionView},
     server::get_user_feed,
     structs::{PostData, UserData},
 };

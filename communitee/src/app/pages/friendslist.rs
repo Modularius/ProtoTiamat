@@ -1,5 +1,5 @@
 use crate::{
-    app::components::{AccessBar, AdColumns, MainColumn, ResourceView, SessionView, error_box},
+    app::components::{AccessBar, AdColumns, MainColumn, ResourceView, SessionView},
     server::get_user_friends,
     structs::{Session, UserData},
 };
@@ -32,7 +32,7 @@ pub fn FriendlistPageWithUser(
             <For
                 each = move ||friends.clone().into_iter().enumerate()
                 key = |(i,_)|*i
-                children = move |(_,friend)| view!{ <div> {friend.name} </div> }
+                children = move |(_,friend)| view!{ <div> <a href = format!("user/{}", friend.id)> {friend.name} </a> </div> }
             />
         }
     };

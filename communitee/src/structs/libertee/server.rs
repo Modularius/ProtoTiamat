@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use rand::seq::IteratorRandom;
-
 use crate::{
     Uuid,
     structs::{
@@ -40,10 +38,11 @@ impl Server {
 
     pub fn new_random() -> Self {
         let mut users = (0..rand::random_range(2..6))
-            .map(|i| (format!("{i}"), User::new(UserData::new_random())))
+            .map(|i| (format!("{i}"), User::new(UserData::new_random(format!("{i}")))))
             .collect::<HashMap<_, _>>();
+
         let mut groups = (0..rand::random_range(2..6))
-            .map(|i| (format!("{i}"), Group::new(GroupData::new_random())))
+            .map(|i| (format!("{i}"), Group::new(GroupData::new_random(format!("{i}")))))
             .collect::<HashMap<_, _>>();
 
         let num_users = users.len();
@@ -52,20 +51,24 @@ impl Server {
                 .filter(|_| rand::random_bool(0.5))
                 .map(|i| format!("{i}"))
                 .collect();
+
             user.data.groups = (0..groups.len())
                 .filter(|_| rand::random_bool(0.5))
                 .map(|i| format!("{i}"))
                 .collect();
+
             user.feed.posts = (0..rand::random_range(3..6))
-                .map(|_| Post::new_random(user_id.clone()))
+                .map(|id| Post::new_random(format!("{id}"), user_id.clone()))
                 .collect();
-            for (i, group_id) in user.data.groups.iter().enumerate() {
+
+            for group_id in user.data.groups.iter() {
                 let group = groups.get_mut(group_id).unwrap();
-                group
-                    .data
+                let member_id = format!("{}", group.data.members.len());
+                let post_id = format!("{}", group.feed.posts.len());
+                group.data
                     .members
-                    .insert(format!("{i}").clone(), Member::new(user_id.clone()));
-                group.feed.posts.push(Post::new_random(user_id.clone()))
+                    .insert(member_id.clone(), Member::new(member_id, user_id.clone()));
+                group.feed.posts.push(Post::new_random(post_id, user_id.clone()))
             }
         }
 
