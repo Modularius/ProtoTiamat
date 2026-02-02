@@ -6,6 +6,7 @@
     cmake
     pkg-config
     cargo-leptos
+    cargo-binutils
 
     # Code formatting tools
     alejandra
