@@ -1,6 +1,6 @@
 mod user_settings;
 
-use leptos::{either::Either, ev::MouseEvent, prelude::*, tachys::view};
+use leptos::{either::Either, ev::MouseEvent, prelude::*};
 use leptos_router::hooks::use_navigate;
 pub use user_settings::UserSettings;
 

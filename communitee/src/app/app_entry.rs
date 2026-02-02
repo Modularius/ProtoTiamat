@@ -1,6 +1,6 @@
 use crate::{
     app::{
-        components::{FootBar, SessionView, TopBar, error_box},
+        components::{FootBar, SessionView, TopBar},
         pages::{FriendlistPage, GroupsPage, HomePage, LoginPage, RegisterPage},
     },
     server::require_login,
