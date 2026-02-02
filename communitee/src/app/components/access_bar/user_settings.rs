@@ -6,7 +6,7 @@ use crate::{app::components::generics::BoundLabelledInput, structs::UserData};
 pub fn UserSettings(user_data: UserData) -> impl IntoView {
     let user_name = RwSignal::<String>::new(user_data.name.clone());
     let user_email = RwSignal::<String>::new(user_data.name.clone());
-    view!{
+    view! {
         <div class = "user-settings access-sub-bar">
             <div class = "user-settings access-sub-bar-inner">
                 <div class = "section">

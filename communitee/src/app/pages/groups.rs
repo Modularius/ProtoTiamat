@@ -1,15 +1,20 @@
-use crate::{app::{components::{error_box, AccessBar, AdColumns, MainColumn}, TopLevelContext}, structs::UserData};
+use crate::{
+    app::{
+        TopLevelContext,
+        components::{AccessBar, AdColumns, MainColumn, error_box},
+    },
+    structs::UserData,
+};
 use leptos::prelude::*;
-
 
 #[component]
 pub fn GroupsPage() -> impl IntoView {
     let top_level_context = use_context::<TopLevelContext>()
         .expect("TopLevelContext should be provided, this should never fail.");
     let session = top_level_context.session;
-    
+
     let no_user = move || view! {};
-    view!{
+    view! {
         <Suspense fallback=no_user> {move ||
             session.get().map(|session| view!{
                 <ErrorBoundary fallback = error_box>
@@ -21,7 +26,7 @@ pub fn GroupsPage() -> impl IntoView {
 }
 
 pub struct ExampleFeed {
-    num: usize
+    num: usize,
 }
 /*
 impl FeedSource for ExampleFeed {
@@ -37,7 +42,7 @@ impl FeedSource for ExampleFeed {
  */
 #[component]
 pub fn GroupsPageWithUser(user_data: UserData) -> impl IntoView {
-    view!{
+    view! {
         <MainColumn>
             <h1> "Hi there " {user_data.name.clone()} "!" </h1>
             <AccessBar user_data = user_data.clone()/>

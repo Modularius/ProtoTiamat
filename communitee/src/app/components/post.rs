@@ -4,7 +4,7 @@ use crate::structs::PostData;
 
 #[component]
 pub fn PostBox(post: PostData) -> impl IntoView {
-    view!{
+    view! {
         <div class = "post">
             <div class = "post-inner">
                 <div class = "header">

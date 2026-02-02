@@ -1,14 +1,14 @@
 mod app_entry;
-mod pages;
 mod components;
+mod pages;
 
 use crate::structs::ClientSideData;
+pub use app_entry::{App, TopLevelContext};
 use leptos::prelude::*;
 use leptos_meta::{HashedStylesheet, Meta, MetaTags, Title};
-pub use app_entry::{App, TopLevelContext};
 
 pub fn shell(leptos_options: LeptosOptions) -> impl IntoView {
-    let mut public_url : String = use_context::<ClientSideData>()
+    let mut public_url: String = use_context::<ClientSideData>()
         .expect("ClientSideData should be provided, this should never fail.")
         .public_url
         .into();
@@ -40,4 +40,3 @@ pub fn shell(leptos_options: LeptosOptions) -> impl IntoView {
         </html>
     }
 }
-

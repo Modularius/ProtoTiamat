@@ -2,14 +2,14 @@
 #![recursion_limit = "256"]
 
 mod app;
-mod structs;
 mod server;
+mod structs;
 
 use cfg_if::cfg_if;
 use chrono::{DateTime, Utc};
 
 pub use app::{App, shell};
-pub use structs::{DefaultData, ClientSideData};
+pub use structs::{ClientSideData, DefaultData};
 
 /// Used by instances of the website to refer to server-side sessions.
 pub type Uuid = String;

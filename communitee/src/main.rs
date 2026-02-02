@@ -116,8 +116,8 @@ cfg_if! {
 
 #[cfg(not(feature = "ssr"))]
 fn main() {
-    use console_error_panic_hook as _;
     use communitee as _;
+    use console_error_panic_hook as _;
     mount_to_body(|| {
         view! {
             "Please run using SSR"

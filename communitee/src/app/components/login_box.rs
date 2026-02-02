@@ -4,7 +4,7 @@ use leptos::prelude::*;
 #[component]
 pub fn LoginBox() -> impl IntoView {
     let login = ServerAction::<PerformLogin>::new();
-    view!{
+    view! {
         <div class = "login-box">
             <ActionForm action = login>
                 <div class = "login-box-inner">

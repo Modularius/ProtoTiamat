@@ -2,7 +2,7 @@ use leptos::prelude::*;
 
 #[component]
 pub fn AdColumns(children: ChildrenFragment) -> impl IntoView {
-    view!{
+    view! {
         <div class = "columns">
             <div class ="ads">
             </div>

@@ -2,10 +2,9 @@ use leptos::{either::Either, prelude::*};
 
 use crate::{app::components::LoginBox, structs::UserData};
 
-
 #[component]
 pub fn TopBar(user_data: Option<UserData>) -> impl IntoView {
-    view!{
+    view! {
         <div class = "top-bar">
             <div class = "top-bar-inner">
                 <div class = "tagline"> "The Internet we were Promised" </div>
@@ -24,7 +23,7 @@ pub fn TopBar(user_data: Option<UserData>) -> impl IntoView {
 
 #[component]
 pub fn UserBar(user_data: UserData) -> impl IntoView {
-    view!{
+    view! {
         <div class = "user-stack">
             <div class = "user-name"> {user_data.name} </div>
             <div class = "button user-settings"> {} </div>
@@ -35,7 +34,7 @@ pub fn UserBar(user_data: UserData) -> impl IntoView {
 
 #[component]
 pub fn LoginBar() -> impl IntoView {
-    view!{
+    view! {
         <div class = "login-stack">
             <LoginBox />
         </div>

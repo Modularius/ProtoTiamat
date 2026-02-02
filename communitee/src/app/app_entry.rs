@@ -1,15 +1,18 @@
 use crate::{
     app::{
-        components::{error_box, FootBar, TopBar},
-        pages::{FriendlistPage, GroupsPage, HomePage, LoginPage, RegisterPage}
+        components::{FootBar, SessionView, TopBar, error_box},
+        pages::{FriendlistPage, GroupsPage, HomePage, LoginPage, RegisterPage},
     },
     server::require_login,
-    structs::{ClientSideData, Session}
+    structs::{ClientSideData, Session},
 };
+use cfg_if::cfg_if;
 use leptos::prelude::*;
 use leptos_meta::provide_meta_context;
-use leptos_router::{components::{Route, Router, Routes}, path};
-use cfg_if::cfg_if;
+use leptos_router::{
+    components::{Route, Router, Routes},
+    path,
+};
 
 /// This struct enable a degree of type-checking for the [use_context]/[use_context] functions.
 /// Any component making use of the following fields should call `use_context::<TopLevelContext>()`
@@ -19,7 +22,6 @@ pub struct TopLevelContext {
     pub client_side_data: ClientSideData,
     pub session: Resource<Result<Option<Session>, ServerFnError>>,
 }
-
 
 /// An app router which renders the homepage and handles 404's
 #[component]
@@ -36,18 +38,18 @@ pub fn App() -> impl IntoView {
     #[cfg(feature = "hydrate")]
     let public_path = client_side_data.public_url.path().to_string();
 
-    let session = Resource::new_blocking(||(), move|_| require_login());
+    let session = Resource::new_blocking(|| (), move |_| require_login());
 
-    provide_context(TopLevelContext { client_side_data, session });
+    provide_context(TopLevelContext {
+        client_side_data,
+        session,
+    });
 
-    view!{
-        <Suspense fallback=move || view!{<TopBar user_data = None/>}>
-            {move ||session.get().map(|session| view!{
-                <ErrorBoundary fallback = error_box>
-                    {session.map(|session| view!{ <TopBar user_data = session.map(|s|s.user_data) /> })}
-                </ErrorBoundary>
-            })}
-        </Suspense>
+    view! {
+        <SessionView
+            fallback=move || view!{<TopBar user_data = None/>}
+            action=|session| view!{ <TopBar user_data = Some(session.user_data.clone()) /> }
+        />
         <Router base=cfg_if! { if #[cfg(feature = "hydrate")] { public_path } else { "" } }>
             <Routes fallback = NotFound>
                 <Route path = path!("/") view = HomePage />
@@ -64,7 +66,7 @@ pub fn App() -> impl IntoView {
 
 #[component]
 pub fn NotFound() -> impl IntoView {
-    view!{
+    view! {
         <p> Communitee: URL not found </p>
     }
 }

@@ -2,8 +2,8 @@ mod session;
 
 use cfg_if::cfg_if;
 use chrono::Utc;
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 use crate::{Real, Timestamp, Uuid};
 
@@ -54,13 +54,12 @@ pub struct UserData {
     pub friends: Vec<Uuid>,
 }
 
-
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         mod server;
         use rand::seq::{IndexedRandom, IteratorRandom};
         pub use server::Server;
-        
+
         #[derive(Clone, Debug)]
         pub struct Group {
             data: GroupData,
@@ -88,12 +87,12 @@ cfg_if! {
                 }
             }
         }
-        
+
         #[derive(Default, Clone, Debug)]
         pub struct Feed {
             pub(crate) posts: Vec<Post>
         }
-        
+
         #[derive(Clone, Debug, Serialize, Deserialize)]
         pub struct Post {
             pub(crate) data: PostData,
@@ -123,7 +122,7 @@ cfg_if! {
                 }
             }
         }
-        
+
         #[derive(Clone, Debug)]
         pub struct User {
             pub(crate) data: UserData,
@@ -138,7 +137,7 @@ cfg_if! {
                 }
             }
         }
-        
+
         impl UserData {
             pub(crate) fn new_random() -> Self {
                 Self {

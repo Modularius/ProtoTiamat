@@ -4,7 +4,7 @@ use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-pub use libertee::{UserData, Session, LoginAuth, PostData, GroupData};
+pub use libertee::{GroupData, LoginAuth, PostData, Session, UserData};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
@@ -12,7 +12,7 @@ cfg_if! {
         //use libertee::{EntiteeNode, UniteeNode};
         use std::sync::{Arc, Mutex};
         pub use libertee::{User, Group, Feed, Server};
-        
+
         /// Encapsulates all run-time settings which are only available to the server.
         #[derive(Default, Clone)]
         pub struct ServerSideData {
@@ -23,12 +23,10 @@ cfg_if! {
     }
 }
 
-
 /// Contains the settings defined in the CLI used as default values in the UI's inputs.
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "ssr", derive(Args))]
-pub struct DefaultData {
-}
+pub struct DefaultData {}
 
 /// Encapsulates all run-time settings which are available to the client.
 #[derive(Clone, Debug, Serialize, Deserialize)]

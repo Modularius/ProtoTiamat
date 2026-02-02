@@ -1,9 +1,8 @@
 use leptos::prelude::*;
 
-
 #[component]
 pub fn MainColumn(children: ChildrenFragment) -> impl IntoView {
-    view!{
+    view! {
         <div class = "middle-column">
             <div class = "middle-column-inner">
                 {children().nodes}
