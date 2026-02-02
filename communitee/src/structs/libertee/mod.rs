@@ -1,45 +1,21 @@
 mod session;
+mod group;
+mod user;
 
 use cfg_if::cfg_if;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 use crate::{Real, Timestamp, Uuid};
 
 pub use session::Session;
+pub use group::GroupData;
+pub use user::UserData;
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize, Hash, PartialEq, Eq)]
 pub struct LoginAuth {
     pub username: String,
     pub password: String,
-}
-
-#[derive(Default, Clone, Debug, Serialize, Deserialize)]
-pub struct GroupData {
-    id: String,
-    name: String,
-    members: HashMap<Uuid, Member>,
-    adjacent_groups: Vec<(Uuid, Real)>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Member {
-    id: String,
-    user: Uuid,
-    joined: Timestamp,
-    delegates: HashMap<Uuid, Real>,
-}
-
-impl Member {
-    pub fn new(id: Uuid, user: Uuid) -> Self {
-        Self {
-            id,
-            user,
-            joined: Utc::now(),
-            delegates: Default::default(),
-        }
-    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -50,49 +26,13 @@ pub struct PostData {
     pub content: String,
 }
 
-#[derive(Default, Clone, Debug, Serialize, Deserialize)]
-pub struct UserData {
-    pub id: String,
-    pub name: String,
-    pub properties: HashMap<String, String>,
-    pub groups: Vec<Uuid>,
-    pub friends: Vec<Uuid>,
-}
-
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         mod server;
         use rand::seq::IndexedRandom;
         pub use server::Server;
-
-        #[derive(Clone, Debug)]
-        pub struct Group {
-            data: GroupData,
-            feed: Feed,
-        }
-
-        impl Group {
-            pub(crate) fn new(data: GroupData) -> Self {
-                Self {
-                    data,
-                    feed: Default::default(),
-                }
-            }
-        }
-
-        impl GroupData {
-            pub(crate) fn new_random(id: Uuid) -> Self {
-                Self {
-                    id,
-                    name: ["UK", "Music", "UK Music", "Science", "Space", "Wanking About", "Product of Inbreeding (Self Help)"]
-                        .as_slice()
-                        .choose(&mut rand::rng())
-                        .expect("")
-                        .to_string(),
-                    ..Default::default()
-                }
-            }
-        }
+        pub use group::Group;
+        pub use user::User;
 
         #[derive(Default, Clone, Debug)]
         pub struct Feed {
@@ -126,35 +66,6 @@ cfg_if! {
                     },
                     replies: Default::default(),
                     promotions: 0.0
-                }
-            }
-        }
-
-        #[derive(Clone, Debug)]
-        pub struct User {
-            pub(crate) data: UserData,
-            pub(crate) feed: Feed,
-        }
-
-        impl User {
-            pub(crate) fn new(data: UserData) -> Self {
-                Self {
-                    data,
-                    feed: Default::default(),
-                }
-            }
-        }
-
-        impl UserData {
-            pub(crate) fn new_random(id: Uuid) -> Self {
-                Self {
-                    id,
-                    name: ["Aaron", "April", "Abdul", "Bobby", "Beth", "Charlie", "Mike", "Laura", "Sandy", "Tamir", "Umar", "Zacahry"]
-                        .as_slice()
-                        .choose(&mut rand::rng())
-                        .expect("")
-                        .to_string(),
-                    ..Default::default()
                 }
             }
         }
