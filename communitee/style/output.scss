@@ -28,16 +28,23 @@ a {
 }
 
 div.middle-column {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
     margin-top: 2rem;
     margin-left: 6rem;
     margin-right: 6rem;
-    margin-bottom: auto;
+    margin-bottom: 2rem;
     background-color: darkslateblue;
     box-shadow: 0rem 0rem 4rem darkslateblue;
 }
 
 div.middle-column-inner {
     display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
     flex-direction: column;
     align-items: center;
     color: white;

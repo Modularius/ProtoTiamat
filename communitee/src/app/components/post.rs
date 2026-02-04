@@ -15,7 +15,7 @@ pub fn PostBox(post: PostData) -> impl IntoView {
                     <div class = "header">
                         <div class = "user-name">
                             "Posted By: "
-                            <a href = {format!("user/{}", post.author)}>
+                            <a href = {format!("/user/{}", post.author)}>
                                 <ResourceView resource = author action = |author|author.map(|a|a.name) />
                             </a>
                         </div>

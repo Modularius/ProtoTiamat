@@ -4,7 +4,7 @@ use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-pub use libertee::{GroupData, LoginAuth, PostData, Session, UserData};
+pub use libertee::{GroupData, LoginAuth, PostData, Session, UserData, Member};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {

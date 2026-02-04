@@ -5,7 +5,7 @@ mod pages;
 use crate::structs::ClientSideData;
 pub use app_entry::{App, TopLevelContext};
 use leptos::prelude::*;
-use leptos_meta::{HashedStylesheet, Meta, MetaTags, Title};
+use leptos_meta::{HashedStylesheet, Meta, MetaTags, Title, provide_meta_context};
 
 pub fn shell(leptos_options: LeptosOptions) -> impl IntoView {
     let mut public_url: String = use_context::<ClientSideData>()
@@ -15,6 +15,7 @@ pub fn shell(leptos_options: LeptosOptions) -> impl IntoView {
     if let Some('/') = public_url.chars().last() {
         public_url.pop();
     }
+    provide_meta_context();
 
     view! {
         <!DOCTYPE html>

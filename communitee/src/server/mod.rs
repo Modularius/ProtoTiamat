@@ -3,7 +3,7 @@ use leptos::prelude::*;
 
 use crate::{
     Uuid,
-    structs::{LoginAuth, PostData, Session, UserData},
+    structs::{GroupData, LoginAuth, Member, PostData, Session, UserData},
 };
 
 cfg_if! {
@@ -78,6 +78,56 @@ pub async fn get_user_feed(
 }
 
 #[server]
+pub async fn get_group(
+    group_id: Uuid
+) -> Result<Option<GroupData>, ServerFnError> {
+    let server_side_data = use_context::<ServerSideData>()
+        .expect("ServerSideData should be provided, this should never fail.");
+    let server = server_side_data.server.lock()?;
+    Ok(server.get_group(group_id).map(|group|group.data.clone()))
+}
+
+#[server]
+pub async fn get_group_and_member(
+    group_id: Uuid,
+    user_id: Uuid
+) -> Result<Option<(GroupData,Member)>, ServerFnError> {
+    let server_side_data = use_context::<ServerSideData>()
+        .expect("ServerSideData should be provided, this should never fail.");
+    let server = server_side_data.server.lock()?;
+    Ok(server.get_group(group_id)
+        .and_then(|group|
+            group.data
+                .members
+                .get(&user_id)
+                .map(|member|
+                    (group.data.clone(), member.clone())
+            )
+        )
+    )
+}
+
+#[server]
+pub async fn get_group_member(
+    group_id: Uuid,
+    user_id: Uuid
+) -> Result<Option<Member>, ServerFnError> {
+    let server_side_data = use_context::<ServerSideData>()
+        .expect("ServerSideData should be provided, this should never fail.");
+    let server = server_side_data.server.lock()?;
+    Ok(server.get_group(group_id)
+        .and_then(|group|
+            group.data
+                .members
+                .get(&user_id)
+                .map(|member|
+                    member.clone()
+            )
+        )
+    )
+}
+
+#[server]
 pub async fn get_user(
     user_id: Uuid
 ) -> Result<Option<UserData>, ServerFnError> {
@@ -111,3 +161,30 @@ pub async fn get_user_friends(
         })
         .unwrap_or_default())
 }
+
+#[server]
+pub async fn get_user_groups(
+    user_id: Uuid,
+    max_groups: usize,
+) -> Result<Vec<GroupData>, ServerFnError> {
+    let server_side_data = use_context::<ServerSideData>()
+        .expect("ServerSideData should be provided, this should never fail.");
+    let server = server_side_data.server.lock()?;
+    Ok(server
+        .get_user(user_id)
+        .map(|user| {
+            user.data
+                .groups
+                .iter()
+                .take(max_groups)
+                .flat_map(|group_id| {
+                    server
+                        .get_group(group_id.clone())
+                        .map(|group| group.data.clone())
+                })
+                .collect()
+        })
+        .unwrap_or_default())
+}
+
+

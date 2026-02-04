@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Timestamp, Uuid, structs::libertee::UserData};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Session {
     pub user: Uuid,
     pub user_data: UserData,

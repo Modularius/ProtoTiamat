@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use crate::Uuid;
 
-#[derive(Default, Clone, Debug, Serialize, Deserialize)]
+#[derive(Default, Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct UserData {
     pub id: String,
     pub name: String,

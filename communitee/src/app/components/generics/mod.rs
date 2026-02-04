@@ -24,7 +24,7 @@ where
                 let action = action.clone();
                 resource.get().map(|resource| view!{
                     <ErrorBoundary fallback = error_box>
-                        {resource.map(action.clone())}
+                        {resource.map(|resource|action.clone()(resource))}
                     </ErrorBoundary>
                 })
             }

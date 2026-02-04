@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use crate::{Real, Timestamp, Uuid};
 
 pub use session::Session;
-pub use group::GroupData;
+pub use group::{GroupData, Member};
 pub use user::UserData;
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize, Hash, PartialEq, Eq)]
