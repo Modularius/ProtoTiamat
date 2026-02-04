@@ -50,7 +50,7 @@ pub fn App() -> impl IntoView {
             fallback=move || view!{<TopBar user_data = None/>}
             action=|session| view!{ <TopBar user_data = Some(session.user_data.clone()) /> }
         />
-        <Router base=cfg_if! { if #[cfg(feature = "hydrate")] { public_path } else { "" } }>
+        <Router /*base=cfg_if! { if #[cfg(feature = "hydrate")] { public_path } else { "" } }*/>
             <Routes fallback = NotFound>
                 <Route path = path!("/") view = HomePage />
                 <Route path = path!("/register") view = RegisterPage />

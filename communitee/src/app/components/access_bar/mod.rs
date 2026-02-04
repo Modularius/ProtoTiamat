@@ -102,7 +102,7 @@ fn Friends() -> impl IntoView {
 fn Friend(friend: UserData) -> impl IntoView {
     view!{
         <div class = "friend">
-            {friend.name}
+            <a href = {format!("friend/{}", friend.id)} >{friend.name}</a>
         </div>
     }
 }

@@ -20,7 +20,7 @@ pub struct LoginAuth {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PostData {
-    pub id: String,
+    pub id: Uuid,
     pub author: Uuid,
     pub posted_at: Timestamp,
     pub content: String,

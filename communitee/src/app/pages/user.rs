@@ -16,8 +16,8 @@ pub fn UserPage() -> impl IntoView {
     view! {
         <SessionView fallback=move || view! {} action = move |session| {
             let session = session.clone();
-            let user_id = params.read().
-                as_ref()
+            let user_id = params.read()
+                .as_ref()
                 .ok()
                 .and_then(move |p|p.user_id.clone())
                 .unwrap_or_default();
