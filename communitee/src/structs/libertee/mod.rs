@@ -23,6 +23,7 @@ pub struct PostData {
     pub id: Uuid,
     pub author: Uuid,
     pub posted_at: Timestamp,
+    pub title: String,
     pub content: String,
 }
 
@@ -54,15 +55,24 @@ cfg_if! {
                         id,
                         author,
                         posted_at: Utc::now(),
+                        title: (0..rand::random_range(1..4)).map(|_|
+                                (0..rand::random_range(3..6)).map(|_|
+                                    alphabet.choose(&mut rand::rng())
+                                        .to_owned()
+                                        .unwrap()
+                                ).collect::<String>()
+                            )
+                            .collect::<Vec<_>>()
+                            .join(" "),
                         content: (0..rand::random_range(4..10)).map(|_|
-                            (0..rand::random_range(3..10)).map(|_|
-                                alphabet.choose(&mut rand::rng())
-                                    .to_owned()
-                                    .unwrap()
-                            ).collect::<String>()
-                        )
-                        .collect::<Vec<_>>()
-                        .join(" ")
+                                (0..rand::random_range(3..10)).map(|_|
+                                    alphabet.choose(&mut rand::rng())
+                                        .to_owned()
+                                        .unwrap()
+                                ).collect::<String>()
+                            )
+                            .collect::<Vec<_>>()
+                            .join(" ")
                     },
                     replies: Default::default(),
                     promotions: 0.0

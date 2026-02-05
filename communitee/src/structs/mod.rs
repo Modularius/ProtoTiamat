@@ -1,10 +1,13 @@
+mod data;
 mod libertee;
 
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-pub use libertee::{GroupData, LoginAuth, PostData, Session, UserData, Member};
+pub use data::{UserPageData, GroupInData, FriendOf, UserFeedData, PostData};
+
+pub use libertee::{GroupData, LoginAuth, Session, UserData, Member};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {

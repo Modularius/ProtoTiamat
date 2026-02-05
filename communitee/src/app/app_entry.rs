@@ -6,7 +6,6 @@ use crate::{
     server::require_login,
     structs::{ClientSideData, Session},
 };
-use cfg_if::cfg_if;
 use leptos::prelude::*;
 use leptos_meta::provide_meta_context;
 use leptos_router::{

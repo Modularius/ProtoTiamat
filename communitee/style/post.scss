@@ -26,8 +26,13 @@ div.post div.header div {
     border-right: solid 1px darkblue;
 }
 
-div.post div.content-inner {
+div.post div.contents-inner {
     margin: 0.8rem;
+}
+
+div.post div.contents div.post-title {
+    font-weight: 1000;
+    padding-bottom: 0.5rem;
 }
 
 div.post div.replies {

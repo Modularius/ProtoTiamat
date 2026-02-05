@@ -3,7 +3,7 @@ mod labelled_input;
 
 pub use error_box::error_box;
 pub use labelled_input::{BoundLabelledInput, LabelledInput};
-use leptos::prelude::*;
+use leptos::{prelude::*, tachys::view::fragment::IntoFragment};
 
 use crate::{app::TopLevelContext, structs::Session};
 

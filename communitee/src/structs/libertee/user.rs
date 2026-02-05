@@ -2,15 +2,22 @@ use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::Uuid;
+use crate::{Timestamp, Uuid};
 
-#[derive(Default, Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct UserData {
     pub id: String,
     pub name: String,
+    pub datetime_joined: Timestamp,
     pub properties: HashMap<String, String>,
     pub groups: Vec<Uuid>,
-    pub friends: Vec<Uuid>,
+    pub friends: Vec<Friendship>,
+}
+
+#[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq)]
+pub struct Friendship {
+    pub user_id: Uuid,
+    pub datetime_of_friendship: Timestamp,
 }
 
 cfg_if! {

@@ -5,7 +5,7 @@ use chrono::SubsecRound;
 use leptos::{either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
 
-#[derive(Params, PartialEq)]
+#[derive(Clone, Params, PartialEq)]
 struct GroupParams {
     group_id: Option<String>,
 }
@@ -25,20 +25,16 @@ pub fn GroupsPageWithUser(user_data: UserData) -> impl IntoView {
     move || {
         let user_data = user_data.clone();
         let params = use_params::<GroupParams>();
-        let group_id = params.read()
-            .as_ref()
+        let group_id = move||params.get()
             .ok()
             .and_then(move |p|p.group_id.clone())
             .unwrap_or_default();
 
-        let group_data = {
-            let group_id = group_id.clone();
-            Resource::new_blocking(move || group_id.clone(), move|group_id| get_group(group_id))
-        };
+        let group_data = Resource::new_blocking(group_id.clone(), move|group_id| get_group(group_id));
         let group_member = {
             let group_id = group_id.clone();
             Resource::new_blocking(
-                move ||(group_id.clone(), user_data.id.clone()),
+                move ||(group_id(), user_data.id.clone()),
                 move|(group_id, user_id)| get_group_member(group_id, user_id)
             )
         };
@@ -47,12 +43,13 @@ pub fn GroupsPageWithUser(user_data: UserData) -> impl IntoView {
                 <h1> "Hi there " {user_data.name.clone()} "!" </h1>
                 //<AccessBar user_data = user_data.clone()/>
                 <AdColumns>
-                    <h2> "Groups you are currently subscribed to or following: "</h2>
+                    <div>
                     <ResourceView
                         resource = group_data
                         action = move |group_data|
                             view!{<GroupsPageWithUserAndGroup group_data = group_data group_member = group_member />}
                     />
+                    </div>
                 </AdColumns>
             </MainColumn>
         }
