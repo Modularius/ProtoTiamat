@@ -1,4 +1,4 @@
-use crate::{app::components::LabelledInput, server::PerformLogin};
+use crate::{app::components::LabelledInput, server_functions::PerformLogin};
 use leptos::prelude::*;
 
 #[component]

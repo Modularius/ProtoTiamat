@@ -4,7 +4,7 @@ use leptos::{either::Either, ev::MouseEvent, prelude::*};
 use leptos_router::hooks::use_navigate;
 pub use user_settings::UserSettings;
 
-use crate::{app::{TopLevelContext, components::{ResourceView, SessionView}}, server::get_user_friends, structs::UserData};
+use crate::{app::{TopLevelContext, components::{ResourceView, SessionView}}, server_functions::get_user_friends, structs::UserData};
 
 #[derive(Default, Clone, Debug, PartialEq)]
 pub enum ShowAccessBarSubBar {

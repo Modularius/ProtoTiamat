@@ -1,5 +1,5 @@
 use crate::{
-    app::components::{AdColumns, MainColumn, ResourceView, SessionView}, server::{get_group, get_group_and_member, get_group_member}, structs::{GroupData, Member, Session, UserData}
+    app::components::{AdColumns, MainColumn, ResourceView, SessionView}, server_functions::{get_group, get_group_and_member, get_group_member}, structs::{GroupData, Member, Session, UserData}
 };
 use chrono::SubsecRound;
 use leptos::{either::Either, prelude::*};

@@ -1,6 +1,6 @@
 use crate::{
     app::components::{AdColumns, MainColumn, ResourceView, SessionView},
-    server::get_user_page_data, structs::UserPageData
+    server_functions::get_user_page_data, structs::UserPageData
 };
 use leptos::{Params, either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};

@@ -1,6 +1,6 @@
 use crate::{
     app::components::{AccessBar, AdColumns, Feed, MainColumn, ResourceView, SessionView},
-    server::get_user_feed,
+    server_functions::get_user_feed,
     structs::{PostData, UserData},
 };
 use leptos::prelude::*;
@@ -17,9 +17,10 @@ pub fn HomePage() -> impl IntoView {
                     //<AccessBar user_data = user_data.clone()/>
                     <AdColumns>
                         <div>
-                        <ResourceView resource = user_feed_data
-                            action = |user_feed_data| user_feed_data.map(|user_feed_data|
-                                view!{
+                        <ResourceView
+                            resource = user_feed_data
+                            action = |user_feed_data| user_feed_data
+                                .map(|user_feed_data| view!{
                                     <h2> "Current feed (as of " {user_feed_data.datetime_feed_generated} "): "</h2>
                                     <Feed feed = user_feed_data.posts.into_iter() max = 10/>
                                 }

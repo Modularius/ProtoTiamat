@@ -3,7 +3,7 @@ use crate::{
         components::{FootBar, SessionView, TopBar},
         pages::{FriendlistPage, GroupPage, GroupslistPage, HomePage, LoginPage, RegisterPage, UserPage},
     },
-    server::require_login,
+    server_functions::require_login,
     structs::{ClientSideData, Session},
 };
 use leptos::prelude::*;
@@ -12,6 +12,7 @@ use leptos_router::{
     components::{Route, Router, Routes},
     path,
 };
+use cfg_if::cfg_if;
 
 /// This struct enable a degree of type-checking for the [use_context]/[use_context] functions.
 /// Any component making use of the following fields should call `use_context::<TopLevelContext>()`
@@ -35,7 +36,11 @@ pub fn App() -> impl IntoView {
     .into_inner();
 
     #[cfg(feature = "hydrate")]
-    let public_path = client_side_data.public_url.path().to_string();
+    let public_path = if client_side_data.public_url.path() == "/" {
+        String::default()
+    } else {
+        client_side_data.public_url.path().to_string()
+    };
 
     let session = Resource::new_blocking(|| (), move |_| require_login());
 
@@ -49,7 +54,7 @@ pub fn App() -> impl IntoView {
             fallback=move || view!{<TopBar user_data = None/>}
             action=|session| view!{ <TopBar user_data = Some(session.user_data.clone()) /> }
         />
-        <Router base = "" /*base=cfg_if! { if #[cfg(feature = "hydrate")] { public_path } else { "" } }*/>
+        <Router base=cfg_if! { if #[cfg(feature = "hydrate")] { public_path } else { "" } }>
             <Routes fallback = NotFound>
                 <Route path = path!("/") view = HomePage />
                 <Route path = path!("/register") view = RegisterPage />

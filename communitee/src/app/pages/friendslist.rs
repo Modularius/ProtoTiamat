@@ -1,5 +1,5 @@
 use crate::{
-    app::components::{AdColumns, MainColumn, ResourceView, SessionView}, server::get_user_friends, structs::{Session, UserData}
+    app::components::{AdColumns, MainColumn, ResourceView, SessionView}, server_functions::get_user_friends, structs::{Session, UserData}
 };
 use leptos::prelude::*;
 

@@ -2,7 +2,7 @@
 #![recursion_limit = "256"]
 
 mod app;
-mod server;
+mod server_functions;
 mod structs;
 
 use cfg_if::cfg_if;

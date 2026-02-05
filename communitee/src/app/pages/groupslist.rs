@@ -1,7 +1,7 @@
 use crate::{
     app::{
         components::{AdColumns, MainColumn, ResourceView, SessionView},
-    }, server::get_user_groups, structs::{Session, UserData}
+    }, server_functions::get_user_groups, structs::{Session, UserData}
 };
 use leptos::prelude::*;
 
