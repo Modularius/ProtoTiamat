@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use crate::{
     Uuid,
     app::components::{AdColumns, MainColumn, ResourceView, SessionView},
-    structs::{FriendOf, GroupInData},
 };
 use leptos::{Params, either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
@@ -25,7 +24,20 @@ pub struct UserPageData {
     pub datetime_joined: String,
     pub properties: HashMap<String, String>,
     pub groups_in: Vec<GroupInData>,
-    pub friends: Vec<FriendOf>,
+    pub friends: Vec<FriendOfData>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct GroupInData {
+    pub name: String,
+    pub link_to_group: String,
+    pub datetime_joined: String,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct FriendOfData {
+    pub name: String,
+    pub link_to_user: String,
+    pub datetime_of_friendship: String,
 }
 
 #[server]
@@ -61,7 +73,7 @@ async fn get_user_page_data(user_id: Option<Uuid>) -> Result<Option<UserPageData
                 .friends
                 .iter()
                 .flat_map(|friendship| {
-                    server.get_user(&friendship.user_id).map(|friend| FriendOf {
+                    server.get_user(&friendship.user_id).map(|friend| FriendOfData {
                         name: friend.data.name.clone(),
                         link_to_user: format!("/user/{}", friend.data.id),
                         datetime_of_friendship: format_datetime(&friendship.datetime_of_friendship),
@@ -124,6 +136,24 @@ pub fn UserPageWithData(user_page_data: UserPageData) -> impl IntoView {
         <h2> "Communitee User: " {user_page_data.name} </h2>
         <h3> "Joined Communitee on: " {user_page_data.datetime_joined} </h3>
         <h3> "Has " {user_page_data.friends.len()} " friend(s)." </h3>
+        <For
+            each = move ||user_page_data.friends.clone().into_iter().enumerate()
+            key = |(i,_)|*i
+            children = |(_,friend)| view!{
+                <div>
+                    <a href = {friend.link_to_user}> {friend.name} </a>
+                </div>
+            }
+        />
         <h3> "Is subscribed to " {user_page_data.groups_in.len()} " group(s)." </h3>
+        <For
+            each = move ||user_page_data.groups_in.clone().into_iter().enumerate()
+            key = |(i,_)|*i
+            children = |(_,group)| view!{
+                <div>
+                    <a href = {group.link_to_group}> {group.name} </a>
+                </div>
+            }
+        />
     }
 }

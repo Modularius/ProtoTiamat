@@ -3,7 +3,7 @@ use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::{Real, Timestamp, Uuid, structs::UserData};
+use crate::{Real, Timestamp, Uuid};
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct GroupData {
@@ -34,12 +34,13 @@ impl Member {
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use crate::structs::libertee::Feed;
         use rand::seq::IndexedRandom;
 
         #[derive(Clone, Debug)]
         pub struct Group {
             pub(crate) data: GroupData,
-            pub(crate) feed: super::Feed,
+            pub(crate) feed: Feed,
         }
 
         impl Group {

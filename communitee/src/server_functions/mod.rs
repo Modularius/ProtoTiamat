@@ -1,17 +1,12 @@
-mod group;
-mod user;
-
 use cfg_if::cfg_if;
-use chrono::{SubsecRound, Utc};
+use chrono::SubsecRound;
 use leptos::prelude::*;
 
 use crate::{
-    Timestamp, Uuid,
-    structs::{FriendOf, GroupData, GroupInData, LoginAuth, Member, Session},
+    Timestamp,
+    structs::{LoginAuth, Session},
 };
 
-pub use group::{get_group, get_group_and_member, get_group_member};
-pub use user::{get_user_friends, get_user_groups};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {

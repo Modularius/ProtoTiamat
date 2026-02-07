@@ -7,6 +7,7 @@ mod login_box;
 mod main_column;
 mod post;
 mod topbar;
+mod new_post;
 
 pub use access_bar::AccessBar;
 pub use ad_columns::AdColumns;
@@ -16,4 +17,5 @@ pub use generics::{LabelledInput, ResourceView, SessionView, error_box};
 pub use login_box::LoginBox;
 pub use main_column::MainColumn;
 pub use post::{PostBox, PostData};
+pub use new_post::NewPostBox;
 pub use topbar::TopBar;

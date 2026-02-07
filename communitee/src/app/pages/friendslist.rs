@@ -1,20 +1,29 @@
 use crate::{
     Uuid,
     app::components::{AdColumns, MainColumn, ResourceView, SessionView},
-    server_functions::get_user_friends,
-    structs::{Session, UserData},
+    structs::Session,
 };
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
-    use crate::ServerSideData;
+    use crate::{ServerSideData, structs::User};
 } }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct FriendData {
     name: String,
     link: String,
+}
+
+#[cfg(feature = "ssr")]
+impl FriendData {
+    fn from(friend: &User) -> Self  {
+        Self {
+            name: friend.data.name.clone(),
+            link: format!("/user/{}", friend.data.id),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -31,27 +40,23 @@ async fn get_friendslist_page_data(
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
     let server = server_side_data.server.lock()?;
+
     let data = FriendslistPageData {
         user_name: session.user_data.name.clone(),
-        friends: server
-            .get_user(&session.user)
-            .map(|user| {
-                user.data
-                    .friends
-                    .iter()
-                    .take(max_friends)
-                    .flat_map(|friendship| {
-                        server
-                            .get_user(&friendship.user_id)
-                            .map(|friend| FriendData {
-                                name: friend.data.name.clone(),
-                                link: format!("/user/{}", friend.data.id),
-                            })
-                    })
-                    .collect()
-            })
+        friends: server.get_user(&session.user)
+            .map(|user| user.data
+                .friends
+                .iter()
+                .take(max_friends)
+                .flat_map(|friendship| {
+                    server.get_user(&friendship.user_id)
+                        .map(|friend| FriendData::from(friend))
+                })
+                .collect()
+            )
             .unwrap_or_default(),
     };
+    
     Ok(data)
 }
 

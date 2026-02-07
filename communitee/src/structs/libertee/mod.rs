@@ -32,7 +32,7 @@ cfg_if! {
         mod server;
         use rand::seq::IndexedRandom;
         pub use server::Server;
-        pub use group::Group;
+        pub use group::{Group};
         pub use user::User;
 
         #[derive(Default, Clone, Debug)]

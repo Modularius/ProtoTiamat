@@ -9,7 +9,6 @@ use crate::{
         TopLevelContext,
         components::{ResourceView, SessionView},
     },
-    server_functions::get_user_friends,
     structs::UserData,
 };
 
@@ -89,19 +88,19 @@ pub fn AccessBar(user_data: UserData) -> impl IntoView {
 #[component]
 fn Friends() -> impl IntoView {
     view! {
-        <SessionView action = |session| {
-            let session = session.clone();
-            let friends = Resource::new_blocking(||(), move |_| get_user_friends(session.user.clone(), 5));
-            view!{
-                <ResourceView resource = friends action = |friends| view!{
-                    <For
-                        each = move ||friends.clone().into_iter().enumerate()
-                        key = |(i,_)|*i
-                        children = move |(_,friend)| view!{ <Friend friend/> }
-                    />
-                }/>
-            }
-        } />
+        // <SessionView action = |session| {
+        //     let session = session.clone();
+        //     let friends = Resource::new_blocking(||(), move |_| get_user_friends(session.user.clone(), 5));
+        //     view!{
+        //         <ResourceView resource = friends action = |friends| view!{
+        //             <For
+        //                 each = move ||friends.clone().into_iter().enumerate()
+        //                 key = |(i,_)|*i
+        //                 children = move |(_,friend)| view!{ <Friend friend/> }
+        //             />
+        //         }/>
+        //     }
+        // } />
     }
 }
 

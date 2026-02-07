@@ -1,7 +1,7 @@
 use crate::{
     Uuid,
     app::components::{
-        AccessBar, AdColumns, Feed, MainColumn, PostBox, PostData, ResourceView, SessionView,
+        AccessBar, AdColumns, Feed, MainColumn, NewPostBox, PostBox, PostData, ResourceView, SessionView
     },
     structs::Session,
 };
@@ -74,6 +74,8 @@ fn HomePageWithData(home_page_data: HomePageData) -> impl IntoView {
             <h1> "Hi there " {home_page_data.user_name} "!" </h1>
             //<AccessBar user_data = user_data.clone()/>
             <AdColumns>
+                <h2> "Submit a post." </h2>
+                <NewPostBox />
                 <h2> "Current feed (as of " {home_page_data.datetime_feed_generated} "): "</h2>
                 <For
                     each = move ||home_page_data.posts.clone().into_iter().enumerate()
