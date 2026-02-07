@@ -40,16 +40,27 @@ impl Server {
 
     pub fn new_random() -> Self {
         let mut users = (0..rand::random_range(14..19))
-            .map(|i| (i.to_string(), User::new(UserData::new_random(i.to_string()))))
+            .map(|i| {
+                (
+                    i.to_string(),
+                    User::new(UserData::new_random(i.to_string())),
+                )
+            })
             .collect::<HashMap<_, _>>();
 
         let mut groups = (0..rand::random_range(5..8))
-            .map(|i| (i.to_string(), Group::new(GroupData::new_random(i.to_string()))))
+            .map(|i| {
+                (
+                    i.to_string(),
+                    Group::new(GroupData::new_random(i.to_string())),
+                )
+            })
             .collect::<HashMap<_, _>>();
 
         let user_ids = users.keys().cloned().collect::<Vec<_>>();
         for (user_id, user) in users.iter_mut() {
-            user.data.friends = user_ids.iter()
+            user.data.friends = user_ids
+                .iter()
                 .filter(|_| rand::random_bool(0.5))
                 .filter(|&id| id != user_id)
                 .map(|id| Friendship {
@@ -58,7 +69,8 @@ impl Server {
                 })
                 .collect();
 
-            user.data.groups = groups.iter()
+            user.data.groups = groups
+                .iter()
                 .filter(|_| rand::random_bool(0.5))
                 .map(|(id, _)| id.clone())
                 .collect();
@@ -71,28 +83,23 @@ impl Server {
                 let group = groups.get_mut(group_id).unwrap();
                 group.add_member(user_id.clone());
                 for _ in 0..4 {
-                    group.feed
-                        .posts
-                        .push(Post::new_random(
-                            group.feed
-                                .posts
-                                .len()
-                                .to_string(),
-                            user_id.clone()
-                        ))
+                    group.feed.posts.push(Post::new_random(
+                        group.feed.posts.len().to_string(),
+                        user_id.clone(),
+                    ))
                 }
             }
         }
 
         let sessions = [(
             LoginAuth::default(),
-            Session::new("0".into(), users.get(&"0".to_string())
-                .unwrap()
-                .data
-                .clone()
+            Session::new(
+                "0".into(),
+                users.get(&"0".to_string()).unwrap().data.clone(),
             ),
-        )].into_iter()
-            .collect::<HashMap<_, _>>();
+        )]
+        .into_iter()
+        .collect::<HashMap<_, _>>();
         Self {
             users,
             groups,

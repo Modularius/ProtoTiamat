@@ -4,7 +4,14 @@ use leptos::{either::Either, ev::MouseEvent, prelude::*};
 use leptos_router::hooks::use_navigate;
 pub use user_settings::UserSettings;
 
-use crate::{app::{TopLevelContext, components::{ResourceView, SessionView}}, server_functions::get_user_friends, structs::UserData};
+use crate::{
+    app::{
+        TopLevelContext,
+        components::{ResourceView, SessionView},
+    },
+    server_functions::get_user_friends,
+    structs::UserData,
+};
 
 #[derive(Default, Clone, Debug, PartialEq)]
 pub enum ShowAccessBarSubBar {
@@ -81,7 +88,7 @@ pub fn AccessBar(user_data: UserData) -> impl IntoView {
 
 #[component]
 fn Friends() -> impl IntoView {
-    view!{
+    view! {
         <SessionView action = |session| {
             let session = session.clone();
             let friends = Resource::new_blocking(||(), move |_| get_user_friends(session.user.clone(), 5));
@@ -100,7 +107,7 @@ fn Friends() -> impl IntoView {
 
 #[component]
 fn Friend(friend: UserData) -> impl IntoView {
-    view!{
+    view! {
         <div class = "friend">
             <a href = {format!("friend/{}", friend.id)} >{friend.name}</a>
         </div>

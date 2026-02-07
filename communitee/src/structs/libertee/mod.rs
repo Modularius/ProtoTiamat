@@ -1,5 +1,5 @@
-mod session;
 mod group;
+mod session;
 mod user;
 
 use cfg_if::cfg_if;
@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Real, Timestamp, Uuid};
 
-pub use session::Session;
 pub use group::{GroupData, Member};
+pub use session::Session;
 pub use user::UserData;
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize, Hash, PartialEq, Eq)]

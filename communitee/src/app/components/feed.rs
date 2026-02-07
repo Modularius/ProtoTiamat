@@ -1,6 +1,6 @@
-use crate::{
-    app::components::post::{PostBox, PostBoxProps},
-    structs::PostData,
+use crate::app::components::{
+    PostData,
+    post::{PostBox, PostBoxProps},
 };
 use leptos::prelude::*;
 

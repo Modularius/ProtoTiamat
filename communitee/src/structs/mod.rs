@@ -5,15 +5,15 @@ use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-pub use data::{UserPageData, GroupInData, FriendOf, UserFeedData, PostData};
+pub use data::{FriendOf, GroupInData};
 
-pub use libertee::{GroupData, LoginAuth, Session, UserData, Member};
+pub use libertee::{GroupData, LoginAuth, Member, Session, UserData};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use clap::Args;
         use std::sync::{Arc, Mutex};
-        pub use libertee::{User, Server};
+        pub use libertee::{User, Server, Post};
 
         /// Encapsulates all run-time settings which are only available to the server.
         #[derive(Default, Clone)]

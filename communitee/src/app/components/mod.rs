@@ -15,4 +15,5 @@ pub use footbar::FootBar;
 pub use generics::{LabelledInput, ResourceView, SessionView, error_box};
 pub use login_box::LoginBox;
 pub use main_column::MainColumn;
+pub use post::{PostBox, PostData};
 pub use topbar::TopBar;

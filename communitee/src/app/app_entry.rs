@@ -1,18 +1,20 @@
 use crate::{
     app::{
         components::{FootBar, SessionView, TopBar},
-        pages::{FriendlistPage, GroupPage, GroupslistPage, HomePage, LoginPage, RegisterPage, UserPage},
+        pages::{
+            FriendlistPage, GroupPage, GroupslistPage, HomePage, LoginPage, RegisterPage, UserPage,
+        },
     },
     server_functions::require_login,
     structs::{ClientSideData, Session},
 };
+use cfg_if::cfg_if;
 use leptos::prelude::*;
 use leptos_meta::provide_meta_context;
 use leptos_router::{
     components::{Route, Router, Routes},
     path,
 };
-use cfg_if::cfg_if;
 
 /// This struct enable a degree of type-checking for the [use_context]/[use_context] functions.
 /// Any component making use of the following fields should call `use_context::<TopLevelContext>()`
