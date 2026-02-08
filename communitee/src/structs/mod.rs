@@ -10,7 +10,7 @@ cfg_if! {
     if #[cfg(feature = "ssr")] {
         use clap::Args;
         use std::sync::{Arc, Mutex};
-        pub use libertee::{User, Server, Post, Feed};
+        pub use libertee::{User, Server, Post, Feed, Member, Group};
 
         /// Encapsulates all run-time settings which are only available to the server.
         #[derive(Default, Clone)]

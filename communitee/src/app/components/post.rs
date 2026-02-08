@@ -18,10 +18,10 @@ pub struct PostData {
 
 #[cfg(feature = "ssr")]
 impl PostData {
-    pub fn generate_from(post: &Post, author_user: &User) -> Self {
+    pub fn new(post: &Post, author_user: &User) -> Self {
         Self {
             author: author_user.data.name.clone(),
-            author_link: format!("/user/{}", author_user.data.id),
+            author_link: format!("http://localhost:3000/user/{}", author_user.data.id),
             datetime_posted: format_datetime(&post.data.posted_at),
             title: post.data.title.clone(),
             contents: post.data.content.clone(),

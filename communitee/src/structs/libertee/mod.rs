@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Real, Timestamp, Uuid};
 
-pub use group::{GroupData, Member};
+pub use group::GroupData;
 pub use session::Session;
 pub use user::UserData;
 
@@ -32,12 +32,28 @@ cfg_if! {
         mod server;
         use rand::seq::IndexedRandom;
         pub use server::Server;
-        pub use group::{Group};
+        pub use group::{Group, Member};
         pub use user::User;
 
         #[derive(Default, Clone, Debug)]
         pub struct Feed {
             pub(crate) posts: Vec<Post>
+        }
+
+        impl Feed {
+            pub(crate) fn add_post(&mut self, author: String, title: String, content: String) {
+                self.posts.push(Post {
+                    data: PostData {
+                        id: format!("{}", self.posts.len()),
+                        author,
+                        posted_at: Utc::now(),
+                        title,
+                        content
+                    },
+                    replies: Default::default(),
+                    promotions: 0.0
+                });
+            }
         }
 
         #[derive(Clone, Debug, Serialize, Deserialize)]

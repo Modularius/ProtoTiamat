@@ -15,6 +15,7 @@ cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct HomePageData {
+    user_id: String,
     user_name: String,
     datetime_feed_generated: String,
     posts: Vec<PostData>,
@@ -28,21 +29,26 @@ pub async fn get_home_page_data(
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
     let server = server_side_data.server.lock()?;
-    Ok(server.get_user(&session.user).map(|user| HomePageData {
-        user_name: session.user_data.name.clone(),
-        datetime_feed_generated: format_datetime(&Utc::now()),
-        posts: user
-            .feed
-            .posts
-            .iter()
-            .take(max_posts)
-            .flat_map(|post| {
-                server
-                    .get_user(&post.data.author)
-                    .map(|author_user| PostData::generate_from(post, author_user))
-            })
-            .collect(),
-    }))
+    
+    let data = server
+        .get_user(&session.user)
+        .map(|user| HomePageData {
+            user_id: user.data.id.clone(),
+            user_name: session.user_data.name.clone(),
+            datetime_feed_generated: format_datetime(&Utc::now()),
+            posts: user
+                .feed
+                .posts
+                .iter()
+                .take(max_posts)
+                .flat_map(|post| {
+                    server
+                        .get_user(&post.data.author)
+                        .map(|author_user| PostData::new(post, author_user))
+                })
+                .collect(),
+        });
+    Ok(data)
 }
 
 #[component]
@@ -75,7 +81,7 @@ fn HomePageWithData(home_page_data: HomePageData) -> impl IntoView {
             //<AccessBar user_data = user_data.clone()/>
             <AdColumns>
                 <h2> "Submit a post." </h2>
-                <NewPostBox />
+                <NewPostBox user_id = home_page_data.user_id group_id = None />
                 <h2> "Current feed (as of " {home_page_data.datetime_feed_generated} "): "</h2>
                 <For
                     each = move ||home_page_data.posts.clone().into_iter().enumerate()

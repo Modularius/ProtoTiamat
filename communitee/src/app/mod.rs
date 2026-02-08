@@ -4,6 +4,7 @@ mod pages;
 
 use crate::structs::ClientSideData;
 pub use app_entry::{App, TopLevelContext};
+pub use components::SubmitPost;
 use leptos::prelude::*;
 use leptos_meta::{HashedStylesheet, Meta, MetaTags, Title, provide_meta_context};
 

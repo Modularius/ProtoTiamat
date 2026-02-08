@@ -91,6 +91,7 @@ cfg_if! {
 
                 info!("listening on http://{}", &addr);
                 actix_web::App::new()
+                    .route("/api/{tail:.*}", leptos_actix::handle_server_fns())
                     .service(Files::new("/pkg", format!("{site_root}/pkg")))
                     .leptos_routes_with_context(routes, {
                         let server_side_data = server_side_data.clone();

@@ -12,7 +12,7 @@ use cfg_if::cfg_if;
 use leptos::prelude::*;
 use leptos_meta::provide_meta_context;
 use leptos_router::{
-    components::{Route, Router, Routes},
+    components::{Outlet, ParentRoute, Route, Router, Routes},
     path,
 };
 
@@ -63,7 +63,9 @@ pub fn App() -> impl IntoView {
                 <Route path = path!("/login") view = LoginPage />
                 <Route path = path!("/friends") view = FriendlistPage />
                 <Route path = path!("/groups") view = GroupslistPage />
-                <Route path = path!("/user/:user_id") view = UserPage />
+                <ParentRoute path = path!("/user") view = ||view!{<Outlet />}>
+                    <Route path = path!(":user_id") view = UserPage />
+                </ParentRoute>
                 <Route path = path!("/group/:group_id") view = GroupPage />
                 <Route path = path!("/help") view = HomePage />
             </Routes>

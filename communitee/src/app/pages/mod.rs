@@ -1,4 +1,3 @@
-mod favourites;
 mod friendslist;
 mod group;
 mod groupslist;

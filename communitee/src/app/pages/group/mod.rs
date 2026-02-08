@@ -14,14 +14,14 @@ struct GroupParams {
 }
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
-    use crate::ServerSideData;
-    use crate::structs::UserData;
-    use crate::structs::Feed;
+    use crate::{Server, ServerSideData, structs::{Group, UserData, Member}};
 } }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GroupPageData {
+    user_id: String,
     user_name: String,
+    group_id: String,
     group_name: String,
     member: Option<GroupWithMemberPageData>,
 }
@@ -33,18 +33,19 @@ pub struct GroupWithMemberPageData {
     delegates: Vec<Option<GroupWithMemberDelegatePageData>>,
 }
 
+#[cfg(feature = "ssr")]
 impl GroupWithMemberPageData {
-    fn new(member: &Member, feed: &Feed) -> Self {
+    fn new(server: &Server, group: &Group, member: &Member) -> Self {
         Self {
             datetime_joined: format_datetime(&member.joined),
-            feed: feed
+            feed: group.feed
                 .posts
                 .iter()
                 .take(10)
                 .flat_map(|post| {
                     server
                         .get_user(&post.data.author)
-                        .map(|author_user| PostData::generate_from(post, author_user))
+                        .map(|author_user| PostData::new(post, author_user))
                 })
                 .collect(),
             delegates: member
@@ -55,7 +56,9 @@ impl GroupWithMemberPageData {
                         .members
                         .get(delegate_id)
                         .and_then(|delegate|server.get_user(&delegate.user))
-                        .map(|delegate|GroupWithMemberDelegatePageData::new(&delegate.data, weight))
+                        .map(|delegate|GroupWithMemberDelegatePageData
+                            ::new(&delegate.data, weight)
+                        )
                 })
                 .collect(),
         }
@@ -92,16 +95,17 @@ pub async fn get_group_page_data(
     let group = server.get_group(&group_id);
 
     let data = GroupPageData {
+        user_id: session.user_data.id,
         user_name: session.user_data.name,
+        group_id: group_id.clone(),
         group_name: group
             .map(|group| group.data.name.clone())
             .unwrap_or("No Group".into()),
         member: group.and_then(|group| {
-            group
-                .data
+            group.data
                 .members
                 .get(&session.user)
-                .map(|member| GroupWithMemberPageData::new(member, &group.feed))
+                .map(|member|GroupWithMemberPageData::new(&server, group, member))
         }),
     };
     Ok(data)
@@ -155,13 +159,13 @@ fn GroupPageWithData(group_page_data: GroupPageData) -> impl IntoView {
                         Either::Left(view!{
                             <h3> "You joined on " {member.datetime_joined.clone()} "." </h3>
                             <DelegatePanel delegates = member.delegates.clone()/>
-                            <h3> "Current Group Feed" </h3>
+                            <h2> "Submit a post." </h2>
+                            //<NewPostBox user_id = group_page_data.user_id group_id = Some(group_page_data.group_id) />
+                            <h2> "Current Group Feed" </h2>
                             <For
                                 each = move ||member.feed.clone().into_iter().enumerate()
                                 key = |(i,_)|*i
-                                children = |(_,post)| view!{
-                                    <PostBox post/>
-                                }
+                                children = |(_,post)| view!{ <PostBox post/> }
                             />
                         })
                     } else {
@@ -176,7 +180,7 @@ fn GroupPageWithData(group_page_data: GroupPageData) -> impl IntoView {
 }
 
 #[component]
-fn DelegatePanel(delegates: Vec<GroupWithMemberDelegatePageData>) -> impl IntoView {
+fn DelegatePanel(delegates: Vec<Option<GroupWithMemberDelegatePageData>>) -> impl IntoView {
     view!{
         <h3> "You have " {delegates.len()} " delegates(s) in this group." </h3>
         <div> <input type = "button" value = "Add New Delegate" /> </div>
@@ -189,14 +193,20 @@ fn DelegatePanel(delegates: Vec<GroupWithMemberDelegatePageData>) -> impl IntoVi
 }
 
 #[component]
-fn Delegate(delegate: GroupWithMemberDelegatePageData) -> impl IntoView {
-    view! {
-        <div>
-            <a href = {delegate.link}> {delegate.name} </a>: {delegate.weight}
-        </div>
-        <div>
-            <input type = "button" value = "Edit Weight" />
-            <input type = "button" value = "Remove Delegate" />
-        </div>
+fn Delegate(delegate: Option<GroupWithMemberDelegatePageData>) -> impl IntoView {
+    if let Some(delegate) = delegate {
+        Either::Left(view!{
+            <div>
+                <a href = {delegate.link}> {delegate.name} </a>: {delegate.weight}
+            </div>
+            <div>
+                <input type = "button" value = "Edit Weight" />
+                <input type = "button" value = "Remove Delegate" />
+            </div>
+        })
+    } else {
+        Either::Right(view!{
+            <div> "Delegate not found." </div>
+        })
     }
 }

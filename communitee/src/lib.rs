@@ -8,7 +8,7 @@ mod structs;
 use cfg_if::cfg_if;
 use chrono::{DateTime, Utc};
 
-pub use app::{App, shell};
+pub use app::{App, shell, SubmitPost};
 pub use structs::{ClientSideData, DefaultData};
 
 /// Used by instances of the website to refer to server-side sessions.
