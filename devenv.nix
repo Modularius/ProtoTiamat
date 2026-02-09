@@ -26,6 +26,7 @@
     openssl
     su
     nushell
+    tailwindcss_4
   ];
 
   env.LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";

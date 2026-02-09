@@ -53,8 +53,8 @@ pub fn App() -> impl IntoView {
 
     view! {
         <SessionView
-            fallback=move || view!{<TopBar user_data = None/>}
-            action=|session| view!{ <TopBar user_data = Some(session.user_data.clone()) /> }
+            fallback=|| view!{<TopBar session = None/>}
+            action=|session| view!{ <TopBar session = Some(session.clone()) /> }
         />
         <Router base=cfg_if! { if #[cfg(feature = "hydrate")] { public_path } else { "" } }>
             <Routes fallback = NotFound>
@@ -66,7 +66,9 @@ pub fn App() -> impl IntoView {
                 <ParentRoute path = path!("/user") view = ||view!{<Outlet />}>
                     <Route path = path!(":user_id") view = UserPage />
                 </ParentRoute>
-                <Route path = path!("/group/:group_id") view = GroupPage />
+                <ParentRoute path = path!("/group") view = ||view!{<Outlet />}>
+                    <Route path = path!(":group_id") view = GroupPage />
+                </ParentRoute>
                 <Route path = path!("/help") view = HomePage />
             </Routes>
         </Router>

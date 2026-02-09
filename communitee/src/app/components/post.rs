@@ -1,4 +1,5 @@
 use leptos::prelude::*;
+use leptos_router::components::A;
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -21,7 +22,7 @@ impl PostData {
     pub fn new(post: &Post, author_user: &User) -> Self {
         Self {
             author: author_user.data.name.clone(),
-            author_link: format!("http://localhost:3000/user/{}", author_user.data.id),
+            author_link: format!("/user/{}", author_user.data.id),
             datetime_posted: format_datetime(&post.data.posted_at),
             title: post.data.title.clone(),
             contents: post.data.content.clone(),
@@ -39,7 +40,7 @@ pub fn PostBox(post: PostData) -> impl IntoView {
                 <div class = "post-inner">
                     <div class = "header">
                         <div class = "user-name">
-                            "Posted By: " <a href = {post.author_link}> {post.author} </a>
+                            "Posted By: " <A exact = true href = {post.author_link}> {post.author} </A>
                         </div>
                         <div class = "datetime">
                             {post.datetime_posted}

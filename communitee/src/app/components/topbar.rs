@@ -1,33 +1,31 @@
 use leptos::{either::Either, prelude::*};
 
-use crate::{app::components::LoginBox, structs::UserData};
+use crate::{app::components::LoginBox, structs::Session};
 
 #[component]
-pub fn TopBar(user_data: Option<UserData>) -> impl IntoView {
+pub fn TopBar(session: Option<Session>) -> impl IntoView {
     view! {
-        <div class = "top-bar">
-            <div class = "top-bar-inner">
-                <div class = "tagline"> "The Internet we were Promised" </div>
-                <div class = "title"> "Communitee" </div>
-                <div class = "right-bar">
-                    {if let Some(user_data) = user_data {
-                        Either::Left(UserBar(UserBarProps { user_data }))
-                    } else {
-                        Either::Right(LoginBar())
-                    }}
-                </div>
-            </div>
+        <div class = "bg-red-200 flex flex-row place-content-evenly align-center">
+            <div class = "text-lg align-bottom"> "The internet we were promised" </div>
+            <div class = "text-6xl"> "Communitee" </div>
+            {if let Some(session) = session {
+                Either::Left(UserBar(UserBarProps { session }))
+            } else {
+                Either::Right(LoginBar())
+            }}
         </div>
     }
 }
 
 #[component]
-pub fn UserBar(user_data: UserData) -> impl IntoView {
+pub fn UserBar(session: Session) -> impl IntoView {
     view! {
-        <div class = "user-stack">
-            <div class = "user-name"> {user_data.name} </div>
-            <div class = "button user-settings"> {} </div>
-            <div class = "button user-logout"> {} </div>
+        <div class = "align-bottom flex flex-row justify-self-end">
+            <div class = "text-nowrap">
+                <a rel = "external" href = format!("/user/{}", session.user_data.id)>{session.user_data.name}</a>
+            </div>
+            <input type = "button" class = "w-8 bg-red-500 hover:bg-red-300" value = "S" alt = "Settings" />
+            <input type = "button" class = "w-8 bg-red-500 hover:bg-red-300" value = "X" alt = "Logout"/>
         </div>
     }
 }
