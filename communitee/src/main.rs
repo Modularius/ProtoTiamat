@@ -30,7 +30,7 @@ cfg_if! {
             default_data: DefaultData,
 
             /// Origin of the host from which the app is served (without the trailing slash).
-            #[clap(long, default_value = "http://localhost:3000")]
+            #[clap(long, default_value = "http://localhost:3000/")]
             public_url: Url,
         }
 

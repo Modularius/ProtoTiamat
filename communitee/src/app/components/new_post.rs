@@ -1,7 +1,7 @@
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::Uuid;
+use crate::{Uuid, app::generic_components::{Control, ControlStack, LabelledInput, LabelledTextArea}};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::{ServerSideData, structs::Post};
@@ -47,19 +47,20 @@ pub fn NewPostBox(user_id: Uuid, group_id: Option<Uuid>) -> impl IntoView {
             <input name = "data[group_id]" hidden = true value = {group_id} />
             <div class = "post new-post">
                 <div class = "post-inner new-post-inner">
-                    <div class = "contents">
-                        <div class = "contents-inner">
-                            <div class = "post-title">
-                                <label for = "subject"> "Subject: " </label>
-                                <input name = "data[subject]" type = "text" />
-                            </div>
-                            <label for = "contents"> "Content: " </label>
-                            <textarea name = "data[contents]"/>
-                        </div>
-                    </div>
-                    <div>
-                        <input type = "submit" value = "Submit" />
-                    </div> 
+                    <ControlStack>
+                        <LabelledInput name = "data[subject]" label = "Subject: " typ = "text" value = "" />
+                    </ControlStack>
+                    <ControlStack>
+                        <LabelledTextArea name = "data[contents]" label = "Content: "  value = "" />
+                    </ControlStack>
+                    <ControlStack>
+                        <Control>
+                            <input type = "submit" value = "Submit" />
+                        </Control>
+                        <Control>
+                            <input type = "button" value = "Clear" />
+                        </Control>
+                    </ControlStack>
                 </div>
             </div>
         </ActionForm>

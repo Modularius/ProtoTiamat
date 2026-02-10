@@ -1,6 +1,7 @@
 use crate::{
     app::{
-        components::{FootBar, SessionView, TopBar},
+        components::{FootBar, TopBar},
+        generic_components::SessionView,
         pages::{
             FriendlistPage, GroupPage, GroupslistPage, HomePage, LoginPage, RegisterPage, UserPage,
         },
@@ -39,7 +40,7 @@ pub fn App() -> impl IntoView {
 
     #[cfg(feature = "hydrate")]
     let public_path = if client_side_data.public_url.path() == "/" {
-        String::default()
+        client_side_data.public_url.path().to_string()
     } else {
         client_side_data.public_url.path().to_string()
     };
@@ -78,7 +79,14 @@ pub fn App() -> impl IntoView {
 
 #[component]
 pub fn NotFound() -> impl IntoView {
-    view! {
-        <p> "Communitee: URL not found" </p>
+    || {
+        let loc = leptos_router::hooks::use_url().get();
+        let origin = loc.origin().to_string();
+        let path = loc.path().to_string();
+        view! {
+            <p> "Communitee: URL not found" </p>
+            <p> "Communitee: " {origin} </p>
+            <p> "Communitee: " {path} </p>
+        }
     }
 }

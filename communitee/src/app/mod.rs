@@ -1,5 +1,6 @@
 mod app_entry;
 mod components;
+mod generic_components;
 mod pages;
 
 use crate::structs::ClientSideData;

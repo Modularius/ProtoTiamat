@@ -1,8 +1,10 @@
+mod control_stack;
 mod error_box;
 mod labelled_input;
 
 pub use error_box::error_box;
-pub use labelled_input::{BoundLabelledInput, LabelledInput};
+pub use labelled_input::{BoundLabelledInput, LabelledInput, LabelledTextArea};
+pub use control_stack::{Control, ControlStack};
 use leptos::{prelude::*, tachys::view::fragment::IntoFragment};
 
 use crate::{app::TopLevelContext, structs::Session};

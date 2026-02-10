@@ -1,5 +1,6 @@
 use crate::{
-    app::components::{AdColumns, MainColumn, ResourceView, SessionView},
+    app::components::{AdColumns, MainColumn},
+    app::generic_components::{ResourceView, SessionView},
     structs::{GroupData, Session},
 };
 use leptos::prelude::*;

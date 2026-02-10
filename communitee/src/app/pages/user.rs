@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use crate::{
     Uuid,
-    app::components::{AdColumns, MainColumn, ResourceView, SessionView},
+    app::components::{AdColumns, MainColumn},
+    app::generic_components::{ResourceView, SessionView},
 };
 use leptos::{Params, either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};

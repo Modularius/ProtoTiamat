@@ -1,6 +1,6 @@
 use leptos::prelude::*;
 
-use crate::{app::components::generics::BoundLabelledInput, structs::UserData};
+use crate::{app::generic_components::BoundLabelledInput, structs::UserData};
 
 #[component]
 pub fn UserSettings(user_data: UserData) -> impl IntoView {

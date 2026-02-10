@@ -1,6 +1,6 @@
 use crate::{
     Uuid,
-    app::components::{AdColumns, MainColumn, PostBox, PostData, ResourceView, SessionView},
+    app::{components::{AdColumns, MainColumn, PostBox, PostData}, generic_components::{ResourceView, SessionView}},
     server_functions::format_datetime,
     structs::Session,
 };

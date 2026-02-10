@@ -2,6 +2,8 @@ use leptos::prelude::*;
 use leptos_router::components::A;
 use serde::{Deserialize, Serialize};
 
+use crate::app::generic_components::{Control, ControlStack};
+
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::{ServerSideData, server_functions::format_datetime, structs::{Post, User}};
     use chrono::Utc;
@@ -36,31 +38,48 @@ pub fn PostBox(post: PostData) -> impl IntoView {
     move || {
         let post = post.clone();
         view! {
-            <div class = "post">
-                <div class = "post-inner">
-                    <div class = "header">
-                        <div class = "user-name">
-                            "Posted By: " <A exact = true href = {post.author_link}> {post.author} </A>
-                        </div>
-                        <div class = "datetime">
-                            {post.datetime_posted}
-                        </div>
+            <div class = "flex flex-col
+                bg-indigo-300 hover:bg-indigo-200
+                w-11/12 md:w-4/5
+                p-1 md:p-1
+                m-4 md:m-4
+            ">
+                <div class = "flex flex-row justify-even w-full p-1 m-1">
+                    <div class = "bg-indigo-400
+                        p-1 m-1
+                        text-left
+                    ">
+                        "Posted By: " <A exact = true href = {post.author_link}> {post.author} </A>
                     </div>
-                    <div class = "contents">
-                        <div class = "contents-inner">
-                            <div class = "post-title"> {post.title} </div>
-                            {post.contents}
-                        </div>
-                    </div>
-                    <div class = "replies">
-                    </div>
-                    <div class = "controls">
-                        <div class = "button">Promote</div>
-                        <div class = "button">Reply</div>
-                        <div class = "button">Message</div>
-                        <div class = "button">Block</div>
+                    <div class = "bg-indigo-400
+                        p-1 m-1
+                        text-left
+                    ">
+                        {post.datetime_posted}
                     </div>
                 </div>
+                <div class = "flex flex-col p-1 m-1">
+                    <div class = "bg-indigo-400 p-1 text-left"> {post.title} </div>
+                    <div class = "bg-indigo-400 p-1 text-left">
+                        {post.contents}
+                    </div>
+                </div>
+                <div class = "p-1 m-1 bg-indigo-500">
+                </div>
+                <ControlStack>
+                    <Control>
+                        <input type = "button" value = "Promote" />
+                    </Control>
+                    <Control>
+                        <input type = "button" value = "Reply" />
+                    </Control>
+                    <Control>
+                        <input type = "button" value = "Message" />
+                    </Control>
+                    <Control>
+                        <input type = "button" value = "Block" />
+                    </Control>
+                </ControlStack>
             </div>
         }
     }

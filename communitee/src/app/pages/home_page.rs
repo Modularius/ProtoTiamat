@@ -1,8 +1,9 @@
 use crate::{
     Uuid,
     app::components::{
-        AccessBar, AdColumns, Feed, MainColumn, NewPostBox, PostBox, PostData, ResourceView, SessionView
+        AccessBar, AdColumns, Feed, MainColumn, NewPostBox, PostBox, PostData
     },
+    app::generic_components::{ResourceView, SessionView},
     structs::Session,
 };
 use leptos::prelude::*;

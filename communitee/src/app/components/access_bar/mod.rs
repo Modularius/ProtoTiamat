@@ -7,7 +7,7 @@ pub use user_settings::UserSettings;
 use crate::{
     app::{
         TopLevelContext,
-        components::{ResourceView, SessionView},
+        generic_components::{ResourceView, SessionView},
     },
     structs::UserData,
 };

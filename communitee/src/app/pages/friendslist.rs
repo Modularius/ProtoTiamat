@@ -1,6 +1,7 @@
 use crate::{
     Uuid,
-    app::components::{AdColumns, MainColumn, ResourceView, SessionView},
+    app::components::{AdColumns, MainColumn},
+    app::generic_components::{ResourceView, SessionView},
     structs::Session,
 };
 use leptos::prelude::*;
