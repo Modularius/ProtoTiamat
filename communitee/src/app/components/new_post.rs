@@ -1,7 +1,7 @@
-use leptos::prelude::*;
+use leptos::{ev::MouseEvent, prelude::*};
 use serde::{Deserialize, Serialize};
 
-use crate::{Uuid, app::generic_components::{Control, ControlStack, LabelledInput, LabelledTextArea}};
+use crate::{Uuid, app::generic_components::{ButtonControl, Control, ControlStack, LabelledInput, LabelledTextArea, SubmitControl}};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::{ServerSideData, structs::Post};
@@ -54,12 +54,8 @@ pub fn NewPostBox(user_id: Uuid, group_id: Option<Uuid>) -> impl IntoView {
                         <LabelledTextArea name = "data[contents]" label = "Content: "  value = "" />
                     </ControlStack>
                     <ControlStack>
-                        <Control>
-                            <input type = "submit" value = "Submit" />
-                        </Control>
-                        <Control>
-                            <input type = "button" value = "Clear" />
-                        </Control>
+                        <SubmitControl value = "Submit" />
+                        <ButtonControl value = "Clear" on_click = |_ev|{} />
                     </ControlStack>
                 </div>
             </div>

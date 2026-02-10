@@ -27,6 +27,13 @@ a {
     color: inherit;
     text-decoration: none;
 }
+a:hover {
+    color: powderblue;
+}
+
+div.closable-container.closed>div.closable {
+  display: none;
+}
 
 div.middle-column {
     display: flex;

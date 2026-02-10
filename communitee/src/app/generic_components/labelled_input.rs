@@ -29,7 +29,7 @@ pub fn LabelledTextArea(
         <Control>
             <div class = "text-left flex flex-col w-full">
                 <label class = "w-full" for = {name}> {label} </label>
-                <textarea class = "w-full" name = {name}></textarea>
+                <textarea class = "w-full" name = {name}>{value}</textarea>
             </div>
         </Control>
     }

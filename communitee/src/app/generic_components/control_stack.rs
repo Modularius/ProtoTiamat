@@ -4,7 +4,7 @@ use leptos::prelude::*;
 pub fn ControlStack(children: Children) -> impl IntoView {
     view! {
         <div class = "flex flex-grow
-            flex-col md:flex-row
+            flex-col lg:flex-row
             p-1 md:p-2
             m-1 md:m-2
             space-x-1 lg:space-x-2
@@ -19,7 +19,7 @@ pub fn ControlStack(children: Children) -> impl IntoView {
 pub fn Control(children: Children) -> impl IntoView {
     view! {
         <div class = "flex flex-grow
-            flex-col md:flex-row
+            flex-col lg:flex-row
             p-1 lg:p-2
             bg-blue-700 hover:bg-blue-800
             text-center">

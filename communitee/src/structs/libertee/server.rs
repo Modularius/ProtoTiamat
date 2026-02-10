@@ -76,7 +76,13 @@ impl Server {
                 .collect();
 
             user.feed.posts = (0..rand::random_range(6..11))
-                .map(|id| Post::new_random(id.to_string(), user_id.clone()))
+                .map(|id| {
+                    let mut post = Post::new_random(id.to_string(), user_id.clone());
+                    post.replies = (0..rand::random_range(0..2))
+                        .map(|rid|Post::new_random((rid + id*10000).to_string(), user_id.clone()))
+                        .collect::<Vec<_>>();
+                    post
+                })
                 .collect();
 
             for group_id in user.data.groups.iter() {
