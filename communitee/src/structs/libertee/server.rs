@@ -3,18 +3,18 @@ use std::collections::HashMap;
 use chrono::Utc;
 
 use crate::{
-    Uuid,
-    structs::{
+    Uuid, Uuidlike, structs::{
         GroupData, LoginAuth, Session, User, UserData,
         libertee::{Group, Post, user::Friendship},
-    },
+    }
 };
 
 #[derive(Default, Clone, Debug)]
 pub struct Server {
     users: HashMap<Uuid, User>,
     groups: HashMap<Uuid, Group>,
-    sessions: HashMap<LoginAuth, Session>,
+    sessions: HashMap<Uuid, Session>,
+    credentials: HashMap<LoginAuth, Uuid>,
 }
 
 impl Server {
@@ -34,8 +34,19 @@ impl Server {
         self.groups.get_mut(uuid)
     }
 
-    pub(crate) fn get_session(&self, auth: &LoginAuth) -> Option<&Session> {
+    pub(crate) fn get_session(&self, auth: &Uuid) -> Option<&Session> {
         self.sessions.get(auth)
+    }
+
+    pub(crate) fn create_new_session(&mut self, auth: &LoginAuth) -> Option<&Session> {
+        // Fixme: should guard against clashes with existing Uuids
+        let session_id = Uuid::generate_random(16);
+        if let Some(user_id) = self.credentials.get(auth) {
+            if let Some(user) = self.get_user(user_id) {
+                self.sessions.insert(session_id.clone(), Session::new(session_id.clone(), user_id.clone(), user.data.clone()));
+            }
+        }
+        self.sessions.get(&session_id)
     }
 
     pub fn new_random() -> Self {
@@ -97,19 +108,17 @@ impl Server {
             }
         }
 
-        let sessions = [(
+        let credentials = [(
             LoginAuth::default(),
-            Session::new(
-                "0".into(),
-                users.get(&"0".to_string()).unwrap().data.clone(),
-            ),
+            "0".into(),
         )]
         .into_iter()
         .collect::<HashMap<_, _>>();
         Self {
             users,
             groups,
-            sessions,
+            sessions: Default::default(),
+            credentials
         }
     }
 }

@@ -5,6 +5,7 @@ use crate::{Timestamp, Uuid, structs::libertee::UserData};
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Session {
+    pub uuid: Uuid,
     pub user: Uuid,
     pub user_data: UserData,
     started: Timestamp,
@@ -12,8 +13,9 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn new(user: Uuid, user_data: UserData) -> Self {
+    pub fn new(uuid: Uuid, user: Uuid, user_data: UserData) -> Self {
         Self {
+            uuid,
             user,
             user_data,
             started: Utc::now(),

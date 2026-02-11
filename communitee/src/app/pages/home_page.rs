@@ -75,19 +75,23 @@ pub fn HomePage() -> impl IntoView {
 fn HomePageWithData(home_page_data: HomePageData) -> impl IntoView {
     view! {
         <MainColumn>
-            <h1> "Hi there " {home_page_data.user_name} "!" </h1>
+            <h1 class = "text-3xl m-6"> "Hi there " {home_page_data.user_name} "!" </h1>
             //<AccessBar user_data = user_data.clone()/>
             <AdColumns>
-                <h2> "Submit a post." </h2>
-                <NewPostBox user_id = home_page_data.user_id group_id = None />
-                <h2> "Current feed (as of " {home_page_data.datetime_feed_generated} "): "</h2>
-                <For
-                    each = move ||home_page_data.posts.clone().into_iter().enumerate()
-                    key = |(i,_)|*i
-                    children = |(_,post)| view!{
-                        <PostBox post = post.clone()/>
-                    }
-                />
+                <div class = "bg-indigo-700 m-4 p-2 rounded-2xl">
+                    <h2 class = "text-xl m-2"> "Submit a post:" </h2>
+                    <NewPostBox user_id = home_page_data.user_id group_id = None />
+                </div>
+                <div class = "bg-indigo-700 m-4 p-2 rounded-2xl">
+                    <h2 class = "text-lg m-2"> "Current feed (as of " {home_page_data.datetime_feed_generated} "): "</h2>
+                    <For
+                        each = move ||home_page_data.posts.clone().into_iter().enumerate()
+                        key = |(i,_)|*i
+                        children = |(_,post)| view!{
+                            <PostBox post = post.clone()/>
+                        }
+                    />
+                </div>
             </AdColumns>
         </MainColumn>
     }

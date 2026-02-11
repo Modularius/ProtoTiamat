@@ -35,7 +35,7 @@ pub fn Control(children: Children) -> impl IntoView {
         <div class = "flex flex-grow
             flex-col lg:flex-row
             p-1 lg:p-2
-            bg-blue-700 hover:bg-blue-800
+            bg-blue-700 hover:bg-blue-500
             text-center">
             {children()}
         </div>

@@ -13,7 +13,7 @@ pub fn LabelledInput(
         <Control>
             <div class = "text-left justify-between">
                 <label for = {name}> {label} </label>
-                <input name = {name} type = {typ} value = {value} />
+                <input class = "italic" name = {name} type = {typ} value = {value} />
             </div>
         </Control>
     }
@@ -29,7 +29,7 @@ pub fn LabelledTextArea(
         <Control>
             <div class = "text-left flex flex-col w-full">
                 <label class = "w-full" for = {name}> {label} </label>
-                <textarea class = "w-full" name = {name}>{value}</textarea>
+                <textarea class = "w-full italic" name = {name}>{value}</textarea>
             </div>
         </Control>
     }

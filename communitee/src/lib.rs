@@ -20,6 +20,23 @@ pub type Real = f64;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         pub use structs::{ServerSideData, Server};
+        use rand::seq::IteratorRandom;
+        
+        pub trait Uuidlike {
+            fn generate_random(size: usize) -> Self;
+        }
+
+        impl Uuidlike for Uuid {
+            fn generate_random(size: usize) -> Self {
+                let alphabet = "abcdefghijklmnopqrstuvwxyz".chars().collect::<Vec<_>>();
+                (0..size).map(|_|
+                    alphabet.iter()
+                        .choose(&mut rand::rng())
+                        .to_owned()
+                        .unwrap()
+                    ).collect::<Uuid>()
+            }
+        }
     }
 }
 
@@ -43,6 +60,6 @@ pub fn hydrate() {
     // By passing it to `set_server_url` we ensure this doesn't happen until the app is closed.
     // Maybe, one day, leptos will allow `set_server_url` to be a String, allowing us to avoid
     // having to use this scary sounding `leak` method... but this is not that day.
-    let public_url: &'static str = client_side_data.public_url.to_string().leak();
-    leptos::server_fn::client::set_server_url(public_url);
+    //let public_url: &'static str = client_side_data.public_url.to_string().leak();
+    //leptos::server_fn::client::set_server_url(public_url);
 }
