@@ -95,7 +95,7 @@ async fn get_user_page_data(user_id: Option<Uuid>) -> Result<Option<UserPageData
 
 #[component]
 pub fn UserPage() -> impl IntoView {
-    || {
+    {
         view! {
             <SessionView action = |session| {
                 let session = session.clone();

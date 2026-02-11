@@ -7,8 +7,22 @@ pub fn ControlStack(children: Children) -> impl IntoView {
             flex-col lg:flex-row
             p-1 md:p-2
             m-1 md:m-2
-            space-x-1 lg:space-x-2
-            space-y-1 lg:space-y-2
+            space-x-0 lg:space-x-2
+            space-y-1 lg:space-y-0
+            bg-blue-600">
+            {children()}
+        </div>
+    }
+}
+
+#[component]
+pub fn ControlStackRow(children: Children) -> impl IntoView {
+    view! {
+        <div class = "flex flex-grow flex-col
+            p-1 md:p-2
+            m-1 md:m-2
+            space-x-0 lg:space-x-2
+            space-y-1 lg:space-y-0
             bg-blue-600">
             {children()}
         </div>

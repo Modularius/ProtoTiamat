@@ -5,7 +5,7 @@ mod labelled_input;
 
 pub use error_box::error_box;
 pub use labelled_input::{BoundLabelledInput, LabelledInput, LabelledTextArea};
-pub use control_stack::{Control, ControlStack};
+pub use control_stack::{Control, ControlStack, ControlStackRow};
 pub use button::{ButtonControl, SubmitControl, CloseButton};
 use leptos::prelude::*;
 

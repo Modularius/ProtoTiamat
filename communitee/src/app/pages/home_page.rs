@@ -1,12 +1,11 @@
 use crate::{
     Uuid,
-    app::components::{
+    app::{TopLevelContext, components::{
         AccessBar, AdColumns, Feed, MainColumn, NewPostBox, PostBox, PostData
-    },
-    app::generic_components::{ResourceView, SessionView},
+    }, generic_components::{ResourceView, SessionView}},
     structs::Session,
 };
-use leptos::prelude::*;
+use leptos::{either::Either, prelude::*};
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -54,23 +53,21 @@ pub async fn get_home_page_data(
 
 #[component]
 pub fn HomePage() -> impl IntoView {
-    || {
-        view! {
-            <SessionView action = |session| {
-                let session = session.clone();
-                let home_page_data = Resource::new_blocking(
-                    move ||session.clone(),
-                    |session| get_home_page_data(session, 10)
-                );
-                view!{
-                    <ResourceView
-                        resource = home_page_data
-                        action = |home_page_data| home_page_data
-                            .map(|home_page_data|HomePageWithData(HomePageWithDataProps{home_page_data}))
-                    />
-                }
-            } />
-        }
+    view! {
+        <SessionView action = |session| {
+            let session = session.clone();
+            let home_page_data = Resource::new_blocking(
+                move ||session.clone(),
+                |session| get_home_page_data(session, 10)
+            );
+            view!{
+                <ResourceView
+                    resource = home_page_data
+                    action = |home_page_data| home_page_data
+                        .map(|home_page_data|HomePageWithData(HomePageWithDataProps{home_page_data}))
+                />
+            }
+        } />
     }
 }
 

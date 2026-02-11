@@ -34,7 +34,7 @@ pub fn App() -> impl IntoView {
 
     let client_side_data = SharedValue::new(|| {
         use_context::<ClientSideData>()
-            .expect("TopLevelContext should be provided, this should never fail.")
+            .expect("ClientSideData should be provided, this should never fail.")
     })
     .into_inner();
 
@@ -42,21 +42,16 @@ pub fn App() -> impl IntoView {
     let public_path = if client_side_data.public_url.path() == "/" {
         client_side_data.public_url.path().to_string()
     } else {
-        client_side_data.public_url.path().to_string()
+        Default::default()
     };
-
-    let session = Resource::new_blocking(|| (), move |_| require_login());
 
     provide_context(TopLevelContext {
         client_side_data,
-        session,
+        session: Resource::new_blocking(|| (), move |_| require_login())
     });
 
     view! {
-        <SessionView
-            fallback=|| view!{<TopBar session = None/>}
-            action=|session| view!{ <TopBar session = Some(session.clone()) /> }
-        />
+        <TopBar/>
         <Router base=cfg_if! { if #[cfg(feature = "hydrate")] { public_path } else { "" } }>
             <Routes fallback = NotFound>
                 <Route path = path!("/") view = HomePage />

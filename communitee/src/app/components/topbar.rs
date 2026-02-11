@@ -1,18 +1,20 @@
 use leptos::{either::Either, prelude::*};
+use leptos_router::components::A;
 
-use crate::{app::components::LoginBox, structs::Session};
+use crate::{app::{components::LoginBox, generic_components::{ButtonControl, ControlStack, SessionView}}, structs::Session};
 
 #[component]
-pub fn TopBar(session: Option<Session>) -> impl IntoView {
+pub fn TopBar() -> impl IntoView {
     view! {
-        <div class = "bg-red-200 flex flex-row place-content-evenly align-center">
-            <div class = "text-lg align-bottom"> "The internet we were promised" </div>
-            <div class = "text-6xl"> "Communitee" </div>
-            {if let Some(session) = session {
-                Either::Left(UserBar(UserBarProps { session }))
-            } else {
-                Either::Right(LoginBar())
-            }}
+        <div class = "bg-indigo-700 flex flex-col justify-even lg:flex-row">
+            <div class = "text-lg text-nowrap text-purple-100 align-bottom w-1/3"> "The internet we were promised" </div>
+            <div class = "text-4xl text-shadow-lg text-purple-100 text-nowrap text-center w-1/3"> "Communitee" </div>
+            <div class = "w-1/3 text-purple-100">
+                <SessionView
+                    fallback = ||LoginBar()
+                    action = |session|UserBar(UserBarProps { session: session.clone() })
+                />
+            </div>
         </div>
     }
 }
@@ -20,13 +22,13 @@ pub fn TopBar(session: Option<Session>) -> impl IntoView {
 #[component]
 pub fn UserBar(session: Session) -> impl IntoView {
     view! {
-        <div class = "align-bottom flex flex-row justify-self-end">
-            <div class = "text-nowrap">
-                <a rel = "external" href = format!("/user/{}", session.user_data.id)>{session.user_data.name}</a>
+        <ControlStack>
+            <div class = "text-nowrap m-1 p-1">
+                <A href = format!("/user/{}", session.user_data.id)>{session.user_data.name}</A>
             </div>
-            <input type = "button" class = "w-8 bg-red-500 hover:bg-red-300" value = "S" alt = "Settings" />
-            <input type = "button" class = "w-8 bg-red-500 hover:bg-red-300" value = "X" alt = "Logout"/>
-        </div>
+            <ButtonControl value = "Settings" on_click = |_ev|{} />
+            <ButtonControl value = "Logout" on_click = |_ev|{}/>
+        </ControlStack>
     }
 }
 
