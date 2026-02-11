@@ -10,13 +10,10 @@ use leptos::prelude::*;
 use leptos_meta::{HashedStylesheet, Meta, MetaTags, Title, provide_meta_context};
 
 pub fn shell(leptos_options: LeptosOptions) -> impl IntoView {
-    let mut public_url: String = use_context::<ClientSideData>()
+    let public_url: String = use_context::<ClientSideData>()
         .expect("ClientSideData should be provided, this should never fail.")
         .public_url
-        .into();
-    if let Some('/') = public_url.chars().last() {
-        public_url.pop();
-    }
+        .header_form();
     provide_meta_context();
 
     view! {
@@ -27,8 +24,8 @@ pub fn shell(leptos_options: LeptosOptions) -> impl IntoView {
                 <meta name="viewport" content="width=device-width, initial-scale=1"/>
                 <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
                 <AutoReload options=leptos_options.clone() />
-                <HydrationScripts options=leptos_options.clone() root = public_url.clone() />
-                <HashedStylesheet options=leptos_options root = public_url />
+                <HydrationScripts options=leptos_options.clone() /*root = public_url.clone()*/ />
+                <HashedStylesheet options=leptos_options /*root = public_url*/ />
                 <MetaTags/>
                 // sets the document title
                 <Title text="Communitee" />

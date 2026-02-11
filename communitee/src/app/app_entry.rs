@@ -38,12 +38,7 @@ pub fn App() -> impl IntoView {
     })
     .into_inner();
 
-    #[cfg(feature = "hydrate")]
-    let public_path = if client_side_data.public_url.path() == "/" {
-        client_side_data.public_url.path().to_string()
-    } else {
-        Default::default()
-    };
+    //let public_path = client_side_data.public_url.router_base_form();
 
     provide_context(TopLevelContext {
         client_side_data,
@@ -52,7 +47,7 @@ pub fn App() -> impl IntoView {
 
     view! {
         <TopBar/>
-        <Router base=cfg_if! { if #[cfg(feature = "hydrate")] { public_path } else { "" } }>
+        <Router /* base = client_side_data.public_url.router_base_form() */ /*base=cfg_if! { if #[cfg(feature = "hydrate")] { public_path } else { "" } }*/>
             <Routes fallback = NotFound>
                 <Route path = path!("/") view = HomePage />
                 <Route path = path!("/register") view = RegisterPage />

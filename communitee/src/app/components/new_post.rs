@@ -8,7 +8,7 @@ cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
 } }
 
 #[server]
-pub async fn submit_post(data: SubmitPostData) -> Result<(), ServerFnError> {
+pub async fn submit_post(data: SubmitPostData) -> Result<Option<Uuid>, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
     let mut server = server_side_data.server.lock()?;
@@ -16,18 +16,22 @@ pub async fn submit_post(data: SubmitPostData) -> Result<(), ServerFnError> {
     let user_id = server
         .get_user(&data.user_id)
         .map(|user|user.data.id.clone());
-    if let Some(group_id) = data.group_id {
+    let post_id = if let Some(group_id) = data.group_id {
         if let Some(group) = server.get_group_mut(&group_id) {
-            if let Some(user_id) = user_id {
-                group.feed.add_post(user_id, data.subject, data.contents);
-            }
+            user_id.map(|user_id|
+                group.feed
+                    .add_post(user_id, data.subject, data.contents)
+            )
+        } else {
+            None
         }
     } else {
-        if let Some(user) = server.get_user_mut(&data.user_id) {
-            user.feed.add_post(data.user_id, data.subject, data.contents);
-        }
-    }
-    Ok(())
+        server.get_user_mut(&data.user_id)
+            .map(|user| user.feed
+                .add_post(data.user_id, data.subject, data.contents)
+            )
+    };
+    Ok(post_id)
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

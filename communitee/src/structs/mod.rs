@@ -1,10 +1,11 @@
+mod public_url;
 mod libertee;
 
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
-use url::Url;
 
 pub use libertee::{GroupData, LoginAuth, Session, UserData};
+pub use public_url::PublicUrl;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
@@ -29,5 +30,5 @@ pub struct DefaultData {}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ClientSideData {
     pub default_data: DefaultData,
-    pub public_url: Url,
+    pub public_url: PublicUrl,
 }

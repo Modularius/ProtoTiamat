@@ -43,8 +43,10 @@ pub async fn perform_login(
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
 
-    let server = server_side_data.server.lock()?;
-    Ok(server.get_session(&auth).cloned())
+    let mut server = server_side_data.server.lock()?;
+    let session = server.create_new_session(&auth).cloned();
+    Ok(session)
+    //Ok(server.get_session(&auth).cloned())
     //let nav = use_navigate();
     //nav(&new_path, Default::default());
     //Ok(())

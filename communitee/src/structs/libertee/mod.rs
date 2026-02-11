@@ -41,10 +41,11 @@ cfg_if! {
         }
 
         impl Feed {
-            pub(crate) fn add_post(&mut self, author: String, title: String, content: String) {
+            pub(crate) fn add_post(&mut self, author: String, title: String, content: String) -> Uuid {
+                let id = format!("{}", self.posts.len());
                 self.posts.push(Post {
                     data: PostData {
-                        id: format!("{}", self.posts.len()),
+                        id: id.clone(),
                         author,
                         posted_at: Utc::now(),
                         title,
@@ -53,6 +54,7 @@ cfg_if! {
                     replies: Default::default(),
                     promotions: 0.0
                 });
+                id
             }
         }
 

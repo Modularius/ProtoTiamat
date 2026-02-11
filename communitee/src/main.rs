@@ -4,7 +4,7 @@ use leptos::prelude::*;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use clap::Parser;
-        use communitee::{App, ClientSideData, DefaultData, ServerSideData, shell, Server};
+        use communitee::{App, ClientSideData, DefaultData, ServerSideData, shell, Server, PublicUrl};
         use std::net::SocketAddr;
         use std::sync::{Arc, Mutex};
         use tracing::info;
@@ -31,7 +31,7 @@ cfg_if! {
 
             /// Origin of the host from which the app is served (without the trailing slash).
             #[clap(long, default_value = "http://localhost:3000/")]
-            public_url: Url,
+            public_url: PublicUrl,
         }
 
         #[actix_web::main]
@@ -90,7 +90,7 @@ cfg_if! {
 
                 info!("listening on http://{}", &addr);
                 actix_web::App::new()
-                    .route("/api/{tail:.*}", leptos_actix::handle_server_fns())
+                    //.route("/api/{tail:.*}", leptos_actix::handle_server_fns())
                     .service(Files::new("/pkg", format!("{site_root}/pkg")))
                     .leptos_routes_with_context(routes, {
                         let server_side_data = server_side_data.clone();
