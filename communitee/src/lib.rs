@@ -9,7 +9,7 @@ use cfg_if::cfg_if;
 use chrono::{DateTime, Utc};
 
 pub use app::{App, shell, SubmitPost};
-pub use structs::{ClientSideData, DefaultData, PublicUrl};
+pub use structs::{ClientSideData, DefaultData, PublicUrl, RandomGeneration};
 
 /// Used by instances of the website to refer to server-side sessions.
 pub type Uuid = String;
@@ -60,6 +60,6 @@ pub fn hydrate() {
     // By passing it to `set_server_url` we ensure this doesn't happen until the app is closed.
     // Maybe, one day, leptos will allow `set_server_url` to be a String, allowing us to avoid
     // having to use this scary sounding `leak` method... but this is not that day.
-    //let public_url: &'static str = client_side_data.public_url.to_string().leak();
-    //leptos::server_fn::client::set_server_url(public_url);
+    let public_url: &'static str = client_side_data.public_url.hydrate_form();
+    leptos::server_fn::client::set_server_url(public_url);
 }

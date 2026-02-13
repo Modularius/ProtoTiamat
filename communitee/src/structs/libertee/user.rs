@@ -2,7 +2,7 @@ use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::{Timestamp, Uuid};
+use crate::{Timestamp, Uuid, structs::libertee::RandomGeneration};
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct UserData {
@@ -40,8 +40,10 @@ cfg_if! {
             }
         }
 
-        impl UserData {
-            pub(crate) fn new_random(id: Uuid) -> Self {
+        impl RandomGeneration for UserData {
+            type Parameter = Uuid;
+
+            fn new_random(id: Uuid) -> Self {
                 let first = *["Aaron", "April", "Abdul", "Bobby", "Beth", "Charlie", "Mike", "Laura", "Sandy", "Tamir", "Umar", "Zacahry"]
                     .as_slice()
                     .choose(&mut rand::rng())
@@ -57,6 +59,7 @@ cfg_if! {
                 Self {
                     id,
                     name,
+                    properties: HashMap::from([("Personality".into(), "Bastard".into())]),
                     ..Default::default()
                 }
             }

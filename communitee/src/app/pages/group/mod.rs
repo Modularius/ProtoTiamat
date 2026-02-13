@@ -1,6 +1,6 @@
 use crate::{
     Uuid,
-    app::{components::{AdColumns, MainColumn, PostBox, PostData}, generic_components::{ResourceView, SessionView}},
+    app::{components::{AdColumns, MainColumn, NewPostBox, PostBox, PostData}, generic_components::{ButtonControl, ControlStack, ResourceView, SessionView}},
     server_functions::format_datetime,
     structs::Session,
 };
@@ -150,23 +150,25 @@ fn GroupPageWithData(group_page_data: GroupPageData) -> impl IntoView {
     let member = group_page_data.member;
     view! {
         <MainColumn>
-            <h1> "Hi there " {group_page_data.user_name} "!" </h1>
+            <h1 class = "text-4xl m-2"> "Hi there " {group_page_data.user_name} "!" </h1>
             //<AccessBar user_data = user_data.clone()/>
             <AdColumns>
-                <h2> "Group Name: " {group_page_data.group_name} </h2>
+                <h2 class = "text-2xl m-2"> "Group Name: " {group_page_data.group_name} </h2>
                 {
                     if let Some(member) = member{
                         Either::Left(view!{
-                            <h3> "You joined on " {member.datetime_joined.clone()} "." </h3>
+                            <h3 class = "text-lg m-2"> "You joined on " {member.datetime_joined.clone()} "." </h3>
                             <DelegatePanel delegates = member.delegates.clone()/>
-                            <h2> "Submit a post." </h2>
-                            //<NewPostBox user_id = group_page_data.user_id group_id = Some(group_page_data.group_id) />
-                            <h2> "Current Group Feed" </h2>
-                            <For
-                                each = move ||member.feed.clone().into_iter().enumerate()
-                                key = |(i,_)|*i
-                                children = |(_,post)| view!{ <PostBox post/> }
-                            />
+                            <h2 class = "text-lg m-2"> "Submit a post." </h2>
+                            <NewPostBox user_id = group_page_data.user_id group_id = Some(group_page_data.group_id) />
+                            <div class = "bg-indigo-700 m-4 p-2 rounded-2xl">
+                                <h2 class = "text-lg m-2"> "Current Group Feed" </h2>
+                                <For
+                                    each = move ||member.feed.clone().into_iter().enumerate()
+                                    key = |(i,_)|*i
+                                    children = |(_,post)| view!{ <PostBox post/> }
+                                />
+                            </div>
                         })
                     } else {
                         Either::Right(view!{
@@ -182,13 +184,18 @@ fn GroupPageWithData(group_page_data: GroupPageData) -> impl IntoView {
 #[component]
 fn DelegatePanel(delegates: Vec<Option<GroupWithMemberDelegatePageData>>) -> impl IntoView {
     view!{
-        <h3> "You have " {delegates.len()} " delegates(s) in this group." </h3>
-        <div> <input type = "button" value = "Add New Delegate" /> </div>
-        <For
-            each=move||delegates.clone().into_iter().enumerate()
-            key=|(i,_)|*i
-            children=|(_,delegate)| Delegate(DelegateProps{ delegate })
-        />
+        <div class = "bg-indigo-700 m-4 p-2 rounded-2xl">
+            <h3 class = "text-lg m-2"> "You have " {delegates.len()} " delegates(s) in this group." </h3>
+            <ControlStack>
+                <ButtonControl value = "Add New Delegate" on_click = |_|{} />
+                <ButtonControl value = "Help on Delegates" on_click = |_|{} />
+            </ControlStack>
+            <For
+                each=move||delegates.clone().into_iter().enumerate()
+                key=|(i,_)|*i
+                children=|(_,delegate)| Delegate(DelegateProps{ delegate })
+            />
+        </div>
     }
 }
 
@@ -196,17 +203,21 @@ fn DelegatePanel(delegates: Vec<Option<GroupWithMemberDelegatePageData>>) -> imp
 fn Delegate(delegate: Option<GroupWithMemberDelegatePageData>) -> impl IntoView {
     if let Some(delegate) = delegate {
         Either::Left(view!{
-            <div>
-                <a href = {delegate.link}> {delegate.name} </a>: {delegate.weight}
-            </div>
-            <div>
-                <input type = "button" value = "Edit Weight" />
-                <input type = "button" value = "Remove Delegate" />
+            <div class = "bg-indigo-600 m-4 p-2 rounded-xl">
+                <div class = "text-lg m-2">
+                    <a href = {delegate.link}> {delegate.name} </a>: {delegate.weight}
+                </div>
+                <ControlStack>
+                    <ButtonControl value = "Edit Weight" on_click = |_|{} />
+                    <ButtonControl value = "Remove" on_click = |_|{} />
+                </ControlStack>
             </div>
         })
     } else {
         Either::Right(view!{
-            <div> "Delegate not found." </div>
+            <div class = "bg-indigo-600 m-4 p-2 rounded-xl">
+                <div> "Delegate not found." </div>
+            </div>
         })
     }
 }

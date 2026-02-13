@@ -45,6 +45,10 @@ impl PublicUrl {
     }
 
     pub fn hydrate_form(&self) -> &'static str {
-        self.url.to_string().leak()
+        let mut url = self.url.to_string();
+        if let Some('/') = url.chars().last() {
+            url.pop();
+        }
+        url.leak()
     }
 }

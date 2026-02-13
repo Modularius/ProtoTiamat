@@ -4,12 +4,11 @@ use leptos::prelude::*;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use clap::Parser;
-        use communitee::{App, ClientSideData, DefaultData, ServerSideData, shell, Server, PublicUrl};
+        use communitee::{App, ClientSideData, DefaultData, ServerSideData, shell, Server, PublicUrl, RandomGeneration};
         use std::net::SocketAddr;
         use std::sync::{Arc, Mutex};
         use tracing::info;
         use tracing_subscriber::{EnvFilter, Layer, layer::SubscriberExt};
-        use url::Url;
 
         #[derive(Parser)]
         #[clap(author, version, about)]
@@ -61,7 +60,7 @@ cfg_if! {
             let args = Cli::parse();
 
             let server_side_data = ServerSideData {
-                server: Arc::new(Mutex::new(Server::new_random()))
+                server: Arc::new(Mutex::new(Server::new_random(Default::default())))
                 //entitee: Arc::new(Mutex::new(None)),
                 //unitee: UniteeNode::default()
             };

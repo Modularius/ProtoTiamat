@@ -4,7 +4,7 @@ mod libertee;
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 
-pub use libertee::{GroupData, LoginAuth, Session, UserData};
+pub use libertee::{GroupData, LoginAuth, Session, UserData, RandomGeneration};
 pub use public_url::PublicUrl;
 
 cfg_if! {

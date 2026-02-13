@@ -5,7 +5,7 @@ use chrono::Utc;
 use crate::{
     Uuid, Uuidlike, structs::{
         GroupData, LoginAuth, Session, User, UserData,
-        libertee::{Group, Post, user::Friendship},
+        libertee::{Group, Post, RandomGeneration, user::Friendship},
     }
 };
 
@@ -34,8 +34,8 @@ impl Server {
         self.groups.get_mut(uuid)
     }
 
-    pub(crate) fn get_session(&self, auth: &Uuid) -> Option<&Session> {
-        self.sessions.get(auth)
+    pub(crate) fn get_session(&self, uuid: &Uuid) -> Option<&Session> {
+        self.sessions.get(uuid)
     }
 
     pub(crate) fn create_new_session(&mut self, auth: &LoginAuth) -> Option<&Session> {
@@ -48,8 +48,12 @@ impl Server {
         }
         self.sessions.get(&session_id)
     }
+}
 
-    pub fn new_random() -> Self {
+impl RandomGeneration for Server {
+    type Parameter = ();
+
+    fn new_random(_: Self::Parameter) -> Self {
         let mut users = (0..rand::random_range(14..19))
             .map(|i| {
                 (
@@ -88,9 +92,9 @@ impl Server {
 
             user.feed.posts = (0..rand::random_range(6..11))
                 .map(|id| {
-                    let mut post = Post::new_random(id.to_string(), user_id.clone());
+                    let mut post = Post::new_random((id.to_string(), user_id.clone()));
                     post.replies = (0..rand::random_range(0..2))
-                        .map(|rid|Post::new_random((rid + id*10000).to_string(), user_id.clone()))
+                        .map(|rid|Post::new_random(((rid + id*10000).to_string(), user_id.clone())))
                         .collect::<Vec<_>>();
                     post
                 })
@@ -100,10 +104,9 @@ impl Server {
                 let group = groups.get_mut(group_id).unwrap();
                 group.add_member(user_id.clone());
                 for _ in 0..4 {
-                    group.feed.posts.push(Post::new_random(
-                        group.feed.posts.len().to_string(),
-                        user_id.clone(),
-                    ))
+                    group.feed.posts.push(
+                        Post::new_random((group.feed.posts.len().to_string(), user_id.clone()))
+                    )
                 }
             }
         }

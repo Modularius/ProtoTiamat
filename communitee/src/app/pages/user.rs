@@ -2,8 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     Uuid,
-    app::components::{AdColumns, MainColumn},
-    app::generic_components::{ResourceView, SessionView},
+    app::{components::{AdColumns, MainColumn}, generic_components::{ButtonControl, ControlStack, ResourceView, SessionView}},
 };
 use leptos::{Params, either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
@@ -136,25 +135,33 @@ pub fn UserPageWithData(user_page_data: UserPageData) -> impl IntoView {
     view! {
         <h2> "Communitee User: " {user_page_data.name} </h2>
         <h3> "Joined Communitee on: " {user_page_data.datetime_joined} </h3>
-        <h3> "Has " {user_page_data.friends.len()} " friend(s)." </h3>
-        <For
-            each = move ||user_page_data.friends.clone().into_iter().enumerate()
-            key = |(i,_)|*i
-            children = |(_,friend)| view!{
-                <div>
-                    <a href = {friend.link_to_user}> {friend.name} </a>
-                </div>
-            }
-        />
-        <h3> "Is subscribed to " {user_page_data.groups_in.len()} " group(s)." </h3>
-        <For
-            each = move ||user_page_data.groups_in.clone().into_iter().enumerate()
-            key = |(i,_)|*i
-            children = |(_,group)| view!{
-                <div>
-                    <a href = {group.link_to_group}> {group.name} </a>
-                </div>
-            }
-        />
+        <div class = "bg-indigo-700 m-4 p-2 rounded-2xl">
+            <h3> "Has " {user_page_data.friends.len()} " friend(s)." </h3>
+            <For
+                each = move ||user_page_data.friends.clone().into_iter().enumerate()
+                key = |(i,_)|*i
+                children = |(_,friend)| view!{
+                    <ControlStack>
+                        <a href = {friend.link_to_user}> {friend.name} </a>
+                        <ButtonControl value = "Block User" on_click = |_|{} />
+                        <ButtonControl value = "Add/Remove Friend" on_click = |_|{} />
+                    </ControlStack>
+                }
+            />
+        </div>
+
+        <div class = "bg-indigo-700 m-4 p-2 rounded-2xl">
+            <h3> "Is subscribed to " {user_page_data.groups_in.len()} " group(s)." </h3>
+            <For
+                each = move ||user_page_data.groups_in.clone().into_iter().enumerate()
+                key = |(i,_)|*i
+                children = |(_,group)| view!{
+                    <ControlStack>
+                        <a href = {group.link_to_group}> {group.name} </a>
+                        <ButtonControl value = "Join Group" on_click = |_|{} />
+                    </ControlStack>
+                }
+            />
+        </div>
     }
 }
