@@ -1,6 +1,10 @@
 use crate::{
-    app::components::{AdColumns, MainColumn},
-    app::generic_components::{ResourceView, SessionView},
+    app::{
+        components::{AdColumns, MainColumn},
+        generic_components::{
+            RoundedBox, ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, SessionView
+        }
+    },
     structs::{GroupData, Session},
 };
 use leptos::prelude::*;
@@ -82,16 +86,18 @@ pub fn GroupslistPageWithData(groupslist_page_data: GroupslistPageData) -> impl 
             //<AccessBar user_data = user_data.clone()/>
             <AdColumns>
                 <h2> "Groups you are currently subscribed to or following: "</h2>
-                    <div> "You have membership of " {groupslist_page_data.groups.len()} " group(s)" </div>
+                <div> "You have membership of " {groupslist_page_data.groups.len()} " group(s)" </div>
+                <RoundedBox>
                     <For
                         each = move ||groupslist_page_data.groups.clone().into_iter().enumerate()
                         key = |(i,_)|*i
                         children = |(_,group)| view!{
-                            <div>
-                                <a href = format!("/group/{}", group.id)> {group.name} </a>
-                            </div>
+                            <LabelledControlStack label = {group.name} href = {Some(format!("/group/{}", group.id))} class = "w-1/2">
+                                <ButtonControl value = "Unsubscribe" on_click = ButtonFunction::closure(|_|{}) />
+                            </LabelledControlStack>
                         }
                     />
+                </RoundedBox>
             </AdColumns>
         </MainColumn>
     }

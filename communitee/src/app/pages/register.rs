@@ -1,4 +1,4 @@
-use crate::app::components::{LoginBox, MainColumn};
+use crate::app::{components::{MainColumn, RegisterBox}, generic_components::RoundedBox};
 use leptos::prelude::*;
 
 #[component]
@@ -7,7 +7,9 @@ pub fn RegisterPage() -> impl IntoView {
         <MainColumn>
             <h2>"Welcome To Communitee."</h2>
             <h3>"Please login to continue, or "<a href = "/register">"register"</a>" an account."</h3>
-            <LoginBox />
+            <RoundedBox>
+                <RegisterBox />
+            </RoundedBox>
         </MainColumn>
     }
 }

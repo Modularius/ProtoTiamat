@@ -1,11 +1,11 @@
 use crate::{
-    Uuid,
-    app::{TopLevelContext, components::{
-        AccessBar, AdColumns, Feed, MainColumn, NewPostBox, PostBox, PostData
-    }, generic_components::{ResourceView, SessionView}},
+    app::{
+        components::{AdColumns, Feed, MainColumn, NewPostBox, PostBox, PostData},
+        generic_components::{ResourceView, RoundedBox, SessionView}
+    },
     structs::Session,
 };
-use leptos::{either::Either, prelude::*};
+use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -78,11 +78,11 @@ fn HomePageWithData(home_page_data: HomePageData) -> impl IntoView {
             <h1 class = "text-3xl m-6"> "Hi there " {home_page_data.user_name} "!" </h1>
             //<AccessBar user_data = user_data.clone()/>
             <AdColumns>
-                <div class = "bg-indigo-700 m-4 p-2 rounded-2xl">
+                <RoundedBox>
                     <h2 class = "text-xl m-2"> "Submit a post:" </h2>
                     <NewPostBox user_id = home_page_data.user_id group_id = None />
-                </div>
-                <div class = "bg-indigo-700 m-4 p-2 rounded-2xl">
+                </RoundedBox>
+                <RoundedBox>
                     <h2 class = "text-lg m-2"> "Current feed (as of " {home_page_data.datetime_feed_generated} "): "</h2>
                     <For
                         each = move ||home_page_data.posts.clone().into_iter().enumerate()
@@ -91,7 +91,7 @@ fn HomePageWithData(home_page_data: HomePageData) -> impl IntoView {
                             <PostBox post = post.clone()/>
                         }
                     />
-                </div>
+                </RoundedBox>
             </AdColumns>
         </MainColumn>
     }

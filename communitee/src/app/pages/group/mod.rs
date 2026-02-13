@@ -1,6 +1,6 @@
 use crate::{
     Uuid,
-    app::{components::{AdColumns, MainColumn, NewPostBox, PostBox, PostData}, generic_components::{ButtonControl, ControlStack, ResourceView, SessionView}},
+    app::{components::{AdColumns, MainColumn, NewPostBox, PostBox, PostData}, generic_components::{ButtonControl, ButtonFunction, ControlStack, ErrorBox, LabelledControlStack, ResourceView, RoundedBox, SessionView}},
     server_functions::format_datetime,
     structs::Session,
 };
@@ -161,18 +161,18 @@ fn GroupPageWithData(group_page_data: GroupPageData) -> impl IntoView {
                             <DelegatePanel delegates = member.delegates.clone()/>
                             <h2 class = "text-lg m-2"> "Submit a post." </h2>
                             <NewPostBox user_id = group_page_data.user_id group_id = Some(group_page_data.group_id) />
-                            <div class = "bg-indigo-700 m-4 p-2 rounded-2xl">
+                            <RoundedBox>
                                 <h2 class = "text-lg m-2"> "Current Group Feed" </h2>
                                 <For
                                     each = move ||member.feed.clone().into_iter().enumerate()
                                     key = |(i,_)|*i
                                     children = |(_,post)| view!{ <PostBox post/> }
                                 />
-                            </div>
+                            </RoundedBox>
                         })
                     } else {
                         Either::Right(view!{
-                            <input type = "button" value = "Join this group?" />
+                            <ButtonControl value = "Join this group" on_click = ButtonFunction::closure(|_|{}) />
                         })
                     }
                 }
@@ -184,18 +184,18 @@ fn GroupPageWithData(group_page_data: GroupPageData) -> impl IntoView {
 #[component]
 fn DelegatePanel(delegates: Vec<Option<GroupWithMemberDelegatePageData>>) -> impl IntoView {
     view!{
-        <div class = "bg-indigo-700 m-4 p-2 rounded-2xl">
+        <RoundedBox>
             <h3 class = "text-lg m-2"> "You have " {delegates.len()} " delegates(s) in this group." </h3>
             <ControlStack>
-                <ButtonControl value = "Add New Delegate" on_click = |_|{} />
-                <ButtonControl value = "Help on Delegates" on_click = |_|{} />
+                <ButtonControl value = "Add New Delegate" on_click = ButtonFunction::closure(|_|{}) />
+                <ButtonControl value = "Help on Delegates" on_click = ButtonFunction::Link("/help/delegates") />
             </ControlStack>
             <For
                 each=move||delegates.clone().into_iter().enumerate()
                 key=|(i,_)|*i
                 children=|(_,delegate)| Delegate(DelegateProps{ delegate })
             />
-        </div>
+        </RoundedBox>
     }
 }
 
@@ -203,21 +203,18 @@ fn DelegatePanel(delegates: Vec<Option<GroupWithMemberDelegatePageData>>) -> imp
 fn Delegate(delegate: Option<GroupWithMemberDelegatePageData>) -> impl IntoView {
     if let Some(delegate) = delegate {
         Either::Left(view!{
-            <div class = "bg-indigo-600 m-4 p-2 rounded-xl">
-                <div class = "text-lg m-2">
-                    <a href = {delegate.link}> {delegate.name} </a>: {delegate.weight}
-                </div>
+            <LabelledControlStack label = {format!("{}: {}", delegate.name, delegate.weight)} href = {Some(delegate.link)} class = "w-1/3">
                 <ControlStack>
-                    <ButtonControl value = "Edit Weight" on_click = |_|{} />
-                    <ButtonControl value = "Remove" on_click = |_|{} />
+                    <ButtonControl value = "Edit Weight" on_click = ButtonFunction::closure(|_|{}) />
+                    <ButtonControl value = "Remove" on_click = ButtonFunction::closure(|_|{}) />
                 </ControlStack>
-            </div>
+            </LabelledControlStack>
         })
     } else {
         Either::Right(view!{
-            <div class = "bg-indigo-600 m-4 p-2 rounded-xl">
+            <ErrorBox>
                 <div> "Delegate not found." </div>
-            </div>
+            </ErrorBox>
         })
     }
 }

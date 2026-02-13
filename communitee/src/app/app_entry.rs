@@ -46,8 +46,8 @@ pub fn App() -> impl IntoView {
     });
 
     view! {
-        <TopBar/>
         <Router /* base = client_side_data.public_url.router_base_form() */ /*base=cfg_if! { if #[cfg(feature = "hydrate")] { public_path } else { "" } }*/>
+            <TopBar/>
             <Routes fallback = NotFound>
                 <Route path = path!("/") view = HomePage />
                 <Route path = path!("/register") view = RegisterPage />
@@ -62,8 +62,8 @@ pub fn App() -> impl IntoView {
                 </ParentRoute>
                 <Route path = path!("/help") view = HomePage />
             </Routes>
+            <FootBar />
         </Router>
-        <FootBar />
     }
 }
 

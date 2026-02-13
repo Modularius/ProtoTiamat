@@ -1,7 +1,7 @@
 use leptos::{ev::MouseEvent, prelude::*};
 use serde::{Deserialize, Serialize};
 
-use crate::{Uuid, app::generic_components::{ButtonControl, Control, ControlStack, LabelledInput, LabelledTextArea, SubmitControl}};
+use crate::{Uuid, app::generic_components::{ButtonControl, ButtonFunction, Control, ControlStack, LabelledInput, LabelledTextArea, SubmitControl}};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::{ServerSideData, structs::Post};
@@ -59,7 +59,7 @@ pub fn NewPostBox(user_id: Uuid, group_id: Option<Uuid>) -> impl IntoView {
                     </ControlStack>
                     <ControlStack>
                         <SubmitControl value = "Submit" />
-                        <ButtonControl value = "Clear" on_click = |_ev|{} />
+                        <ButtonControl value = "Clear" on_click = ButtonFunction::Closure(Box::new(|_ev|{})) />
                     </ControlStack>
                 </div>
             </div>

@@ -1,7 +1,6 @@
 use crate::{
     Uuid,
-    app::components::{AdColumns, MainColumn},
-    app::generic_components::{ResourceView, SessionView},
+    app::{components::{AdColumns, MainColumn}, generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, SessionView, SharpBox}},
     structs::Session,
 };
 use leptos::prelude::*;
@@ -13,6 +12,7 @@ cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct FriendData {
+    id: Uuid,
     name: String,
     link: String,
 }
@@ -21,6 +21,7 @@ struct FriendData {
 impl FriendData {
     fn from(friend: &User) -> Self  {
         Self {
+            id: friend.data.id.clone(),
             name: friend.data.name.clone(),
             link: format!("/user/{}", friend.data.id),
         }
@@ -86,15 +87,25 @@ pub fn FriendlistPage() -> impl IntoView {
 #[component]
 pub fn FriendlistPageWithData(friendslist_page_data: FriendslistPageData) -> impl IntoView {
     view! {
-        <h2> {format!("You have {} friend(s)", friendslist_page_data.friends.len())} </h2>
-        <For
-            each = move ||friendslist_page_data.friends.clone().into_iter().enumerate()
-            key = |(i,_)|*i
-            children = move |(_,friend)| view!{
-                <div>
-                    <a href = {friend.link}> {friend.name} </a>
-                </div>
-            }
-        />
+        <MainColumn>
+            <h1 class = "text-3xl m-6"> "Hi there " {friendslist_page_data.user_name} "!" </h1>
+            //<AccessBar user_data = user_data.clone()/>
+            <AdColumns>
+                <h2> {format!("You have {} friend(s)", friendslist_page_data.friends.len())} </h2>
+                <SharpBox>
+                    <For
+                        each = move ||friendslist_page_data.friends.clone().into_iter().enumerate()
+                        key = |(i,_)|*i
+                        children = move |(_,friend)| view!{
+                            <LabelledControlStack label = {friend.name} href = {Some(friend.link)} class = "w-1/2">
+                                <ButtonControl value = "Delegate" on_click = ButtonFunction::closure(|_|{}) />
+                                <ButtonControl value = "Unfriend" on_click = ButtonFunction::closure(|_|{}) />
+                                <ButtonControl value = "Block" on_click = ButtonFunction::closure(|_|{}) />
+                            </LabelledControlStack>
+                        }
+                    />
+                </SharpBox>
+            </AdColumns>
+        </MainColumn>
     }
 }

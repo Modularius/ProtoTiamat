@@ -2,7 +2,7 @@ use leptos::prelude::*;
 use leptos_router::components::A;
 use serde::{Deserialize, Serialize};
 
-use crate::app::generic_components::{ControlStack, ButtonControl, CloseButton};
+use crate::app::generic_components::{ButtonControl, ButtonFunction, CloseButton, ControlStack};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::{ServerSideData, server_functions::format_datetime, structs::{Post, User}};
@@ -126,10 +126,10 @@ pub fn PostBox(post: PostData) -> impl IntoView {
                 </PostReplies>
 
                 <ControlStack>
-                    <ButtonControl value = "Promote" on_click = |_ev|{} />
-                    <ButtonControl value = "Reply" on_click = |_ev|{} />
-                    <ButtonControl value = "Message" on_click = |_ev|{} />
-                    <ButtonControl value = "Block" on_click = |_ev|{} />
+                    <ButtonControl value = "Promote" on_click = ButtonFunction::closure(|_ev|{}) />
+                    <ButtonControl value = "Reply" on_click = ButtonFunction::closure(|_ev|{}) />
+                    <ButtonControl value = "Message" on_click = ButtonFunction::closure(|_ev|{}) />
+                    <ButtonControl value = "Block" on_click = ButtonFunction::closure(|_ev|{}) />
                 </ControlStack>
             </PostContainer>
         }

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     Uuid,
-    app::{components::{AdColumns, MainColumn}, generic_components::{ButtonControl, ControlStack, ResourceView, SessionView}},
+    app::{components::{AdColumns, MainColumn}, generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, RoundedBox, SessionView}},
 };
 use leptos::{Params, either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
@@ -10,7 +10,6 @@ use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::{ServerSideData, server_functions::format_datetime};
-    use chrono::Utc;
 } }
 
 #[derive(Clone, Params, PartialEq)]
@@ -135,33 +134,31 @@ pub fn UserPageWithData(user_page_data: UserPageData) -> impl IntoView {
     view! {
         <h2> "Communitee User: " {user_page_data.name} </h2>
         <h3> "Joined Communitee on: " {user_page_data.datetime_joined} </h3>
-        <div class = "bg-indigo-700 m-4 p-2 rounded-2xl">
+        <RoundedBox>
             <h3> "Has " {user_page_data.friends.len()} " friend(s)." </h3>
             <For
                 each = move ||user_page_data.friends.clone().into_iter().enumerate()
                 key = |(i,_)|*i
                 children = |(_,friend)| view!{
-                    <ControlStack>
-                        <a href = {friend.link_to_user}> {friend.name} </a>
-                        <ButtonControl value = "Block User" on_click = |_|{} />
-                        <ButtonControl value = "Add/Remove Friend" on_click = |_|{} />
-                    </ControlStack>
+                    <LabelledControlStack label = {friend.name} href = {Some(friend.link_to_user)} class = "w-1/2">
+                        <ButtonControl value = "Block User" on_click = ButtonFunction::closure(|_|{}) />
+                        <ButtonControl value = "Add/Remove Friend" on_click = ButtonFunction::closure(|_|{}) />
+                    </LabelledControlStack>
                 }
             />
-        </div>
+        </RoundedBox>
 
-        <div class = "bg-indigo-700 m-4 p-2 rounded-2xl">
+        <RoundedBox>
             <h3> "Is subscribed to " {user_page_data.groups_in.len()} " group(s)." </h3>
             <For
                 each = move ||user_page_data.groups_in.clone().into_iter().enumerate()
                 key = |(i,_)|*i
                 children = |(_,group)| view!{
-                    <ControlStack>
-                        <a href = {group.link_to_group}> {group.name} </a>
-                        <ButtonControl value = "Join Group" on_click = |_|{} />
-                    </ControlStack>
+                    <LabelledControlStack label = {group.name} href = {Some(group.link_to_group)} class = "w-1/2">
+                        <ButtonControl value = "Join Group" on_click = ButtonFunction::closure(|_|{}) />
+                    </LabelledControlStack>
                 }
             />
-        </div>
+        </RoundedBox>
     }
 }

@@ -51,3 +51,20 @@ pub async fn perform_login(
     //nav(&new_path, Default::default());
     //Ok(())
 }
+
+#[server]
+pub async fn register(
+    auth: LoginAuth,
+    new_path: String,
+) -> Result<Option<Session>, ServerFnError> {
+    let server_side_data = use_context::<ServerSideData>()
+        .expect("ServerSideData should be provided, this should never fail.");
+
+    let mut server = server_side_data.server.lock()?;
+    let session = server.create_new_session(&auth).cloned();
+    Ok(session)
+    //Ok(server.get_session(&auth).cloned())
+    //let nav = use_navigate();
+    //nav(&new_path, Default::default());
+    //Ok(())
+}
