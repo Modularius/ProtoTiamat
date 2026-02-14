@@ -43,7 +43,7 @@ fn BigBar(children: Children) -> impl IntoView {
 #[component]
 fn ToolBar(children: Children) -> impl IntoView {
     view!{
-        <div class = "bg-green-700 text-green-100 flex flex-col md:flex-row items-center p-1 gap-x-1 gap-y-1 justify-stretch md:justify-even">
+        <div class = "bg-green-700 text-green-100 text-sm md:text-lg flex flex-row items-center p-1 gap-x-1 gap-y-1 justify-stretch md:justify-even">
             {children()}
         </div>
     }
