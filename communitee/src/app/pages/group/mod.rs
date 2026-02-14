@@ -2,7 +2,7 @@ use crate::{
     Uuid,
     app::{components::{AdColumns, MainColumn, NewPostBox, PostBox, PostData}, generic_components::{ButtonControl, ButtonFunction, ControlStack, ErrorBox, LabelledControlStack, ResourceView, RoundedBox, SessionView}},
     server_functions::format_datetime,
-    structs::Session,
+    structs::{GroupUuid, Session},
 };
 use leptos::{either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
@@ -38,14 +38,13 @@ impl GroupWithMemberPageData {
     fn new(server: &Server, group: &Group, member: &Member) -> Self {
         Self {
             datetime_joined: format_datetime(&member.joined),
-            feed: group.feed
+            feed: group.create_feed(&member.id, None, 10)
                 .posts
-                .iter()
-                .take(10)
+                .into_iter()
                 .flat_map(|post| {
                     server
                         .get_user(&post.data.author)
-                        .map(|author_user| PostData::new(post, author_user))
+                        .map(|author_user| PostData::new(&post, author_user))
                 })
                 .collect(),
             delegates: member
@@ -77,7 +76,7 @@ impl GroupWithMemberDelegatePageData {
     fn new(user_data: &UserData, weight: f64) -> Self {
         Self {
             name: user_data.name.clone(),
-            link: format!("/user/{}", user_data.id),
+            link: format!("/user/{}", user_data.id.0),
             weight,
         }
     }
@@ -86,7 +85,7 @@ impl GroupWithMemberDelegatePageData {
 #[server]
 pub async fn get_group_page_data(
     session: Session,
-    group_id: Uuid,
+    group_id: GroupUuid,
 ) -> Result<GroupPageData, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
@@ -95,9 +94,9 @@ pub async fn get_group_page_data(
     let group = server.get_group(&group_id);
 
     let data = GroupPageData {
-        user_id: session.user_data.id,
+        user_id: session.user_data.id.to_string(),
         user_name: session.user_data.name,
-        group_id: group_id.clone(),
+        group_id: group_id.to_string(),
         group_name: group
             .map(|group| group.data.name.clone())
             .unwrap_or("No Group".into()),

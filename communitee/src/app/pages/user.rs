@@ -46,7 +46,7 @@ async fn get_user_page_data(user_id: Option<Uuid>) -> Result<Option<UserPageData
     let server = server_side_data.server.lock()?;
 
     let user_page_data = user_id
-        .and_then(|user_id| server.get_user(&user_id))
+        .and_then(|user_id| server.get_user(&user_id.into()))
         .map(|user| {
             let properties = user.data.properties.clone();
             let groups_in = user
@@ -61,7 +61,7 @@ async fn get_user_page_data(user_id: Option<Uuid>) -> Result<Option<UserPageData
                             .get(&user.data.id)
                             .map(|member| GroupInData {
                                 name: group.data.name.clone(),
-                                link_to_group: format!("/group/{}", group.data.id),
+                                link_to_group: format!("/group/{}", group.data.id.into()),
                                 datetime_joined: format_datetime(&member.joined),
                             })
                     })

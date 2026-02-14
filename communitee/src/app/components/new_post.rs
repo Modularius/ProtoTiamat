@@ -1,10 +1,15 @@
-use leptos::{ev::MouseEvent, prelude::*};
+use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{Uuid, app::generic_components::{ButtonControl, ButtonFunction, Control, ControlStack, LabelledInput, LabelledTextArea, SubmitControl}};
+use crate::{
+    Uuid,
+    app::generic_components::{
+        ButtonControl, ButtonFunction, ControlStack, LabelledInput, LabelledTextArea, SubmitControl
+    }
+};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
-    use crate::{ServerSideData, structs::Post};
+    use crate::ServerSideData;
 } }
 
 #[server]
@@ -19,7 +24,7 @@ pub async fn submit_post(data: SubmitPostData) -> Result<Option<Uuid>, ServerFnE
     let post_id = if let Some(group_id) = data.group_id {
         if let Some(group) = server.get_group_mut(&group_id) {
             user_id.map(|user_id|
-                group.feed
+                group.store
                     .add_post(user_id, data.subject, data.contents)
             )
         } else {
@@ -27,7 +32,7 @@ pub async fn submit_post(data: SubmitPostData) -> Result<Option<Uuid>, ServerFnE
         }
     } else {
         server.get_user_mut(&data.user_id)
-            .map(|user| user.feed
+            .map(|user| user.store
                 .add_post(data.user_id, data.subject, data.contents)
             )
     };

@@ -92,7 +92,7 @@ pub fn GroupslistPageWithData(groupslist_page_data: GroupslistPageData) -> impl 
                         each = move ||groupslist_page_data.groups.clone().into_iter().enumerate()
                         key = |(i,_)|*i
                         children = |(_,group)| view!{
-                            <LabelledControlStack label = {group.name} href = {Some(format!("/group/{}", group.id))} class = "w-1/2">
+                            <LabelledControlStack label = {group.name} href = {Some(format!("/group/{}", group.id.to_string()))} class = "w-1/2">
                                 <ButtonControl value = "Unsubscribe" on_click = ButtonFunction::closure(|_|{}) />
                             </LabelledControlStack>
                         }

@@ -21,9 +21,9 @@ struct FriendData {
 impl FriendData {
     fn from(friend: &User) -> Self  {
         Self {
-            id: friend.data.id.clone(),
+            id: friend.data.id.to_string(),
             name: friend.data.name.clone(),
-            link: format!("/user/{}", friend.data.id),
+            link: format!("/user/{}", friend.data.id.to_string()),
         }
     }
 }

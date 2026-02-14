@@ -33,15 +33,15 @@ pub async fn get_home_page_data(
     let data = server
         .get_user(&session.user)
         .map(|user| HomePageData {
-            user_id: user.data.id.clone(),
+            user_id: user.data.id.to_string(),
             user_name: session.user_data.name.clone(),
             datetime_feed_generated: format_datetime(&Utc::now()),
             posts: user
-                .feed
+                .store
                 .posts
                 .iter()
                 .take(max_posts)
-                .flat_map(|post| {
+                .flat_map(|(_, post)| {
                     server
                         .get_user(&post.data.author)
                         .map(|author_user| PostData::new(post, author_user))

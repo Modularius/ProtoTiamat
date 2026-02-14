@@ -75,7 +75,7 @@ pub fn TopBar() -> impl IntoView {
 #[component]
 fn UserBar(session: Session) -> impl IntoView {
     view! {
-        <LabelledControlStack label = {session.user_data.name} href = {Some(format!("/user/{}", session.user_data.id))} class = "w-1/3">
+        <LabelledControlStack label = {session.user_data.name} href = {Some(format!("/user/{}", session.user_data.id.to_string()))} class = "w-1/3">
             <ButtonControl value = "Settings" on_click = ButtonFunction::closure(|_ev|{}) />
             <ButtonControl value = "Logout" on_click = ButtonFunction::closure(|_ev|{})/>
         </LabelledControlStack>

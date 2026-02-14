@@ -5,42 +5,42 @@ use chrono::Utc;
 use crate::{
     Uuid, Uuidlike, structs::{
         GroupData, LoginAuth, Session, User, UserData,
-        libertee::{Group, Post, RandomGeneration, user::Friendship},
+        libertee::{Group, GroupUuid, Post, PostUuid, RandomGeneration, SessionUuid, UserUuid, user::Friendship},
     }
 };
 
 #[derive(Default, Clone, Debug)]
 pub struct Server {
-    users: HashMap<Uuid, User>,
-    groups: HashMap<Uuid, Group>,
-    sessions: HashMap<Uuid, Session>,
-    credentials: HashMap<LoginAuth, Uuid>,
+    users: HashMap<UserUuid, User>,
+    groups: HashMap<GroupUuid, Group>,
+    sessions: HashMap<SessionUuid, Session>,
+    credentials: HashMap<LoginAuth, UserUuid>,
 }
 
 impl Server {
-    pub(crate) fn get_user(&self, uuid: &Uuid) -> Option<&User> {
+    pub(crate) fn get_user(&self, uuid: &UserUuid) -> Option<&User> {
         self.users.get(uuid)
     }
 
-    pub(crate) fn get_user_mut(&mut self, uuid: &Uuid) -> Option<&mut User> {
+    pub(crate) fn get_user_mut(&mut self, uuid: &UserUuid) -> Option<&mut User> {
         self.users.get_mut(uuid)
     }
 
-    pub(crate) fn get_group(&self, uuid: &Uuid) -> Option<&Group> {
+    pub(crate) fn get_group(&self, uuid: &GroupUuid) -> Option<&Group> {
         self.groups.get(uuid)
     }
 
-    pub(crate) fn get_group_mut(&mut self, uuid: &Uuid) -> Option<&mut Group> {
+    pub(crate) fn get_group_mut(&mut self, uuid: &GroupUuid) -> Option<&mut Group> {
         self.groups.get_mut(uuid)
     }
 
-    pub(crate) fn get_session(&self, uuid: &Uuid) -> Option<&Session> {
+    pub(crate) fn get_session(&self, uuid: &SessionUuid) -> Option<&Session> {
         self.sessions.get(uuid)
     }
 
     pub(crate) fn create_new_session(&mut self, auth: &LoginAuth) -> Option<&Session> {
         // Fixme: should guard against clashes with existing Uuids
-        let session_id = Uuid::generate_random(16);
+        let session_id = SessionUuid(Uuid::generate_random(16));
         if let Some(user_id) = self.credentials.get(auth) {
             if let Some(user) = self.get_user(user_id) {
                 self.sessions.insert(session_id.clone(), Session::new(session_id.clone(), user_id.clone(), user.data.clone()));
@@ -56,19 +56,15 @@ impl RandomGeneration for Server {
     fn new_random(_: Self::Parameter) -> Self {
         let mut users = (0..rand::random_range(14..19))
             .map(|i| {
-                (
-                    i.to_string(),
-                    User::new(UserData::new_random(i.to_string())),
-                )
+                let id = UserUuid(i.to_string());
+                (id.clone(), User::new(UserData::new_random(id)))
             })
             .collect::<HashMap<_, _>>();
 
         let mut groups = (0..rand::random_range(5..8))
             .map(|i| {
-                (
-                    i.to_string(),
-                    Group::new(GroupData::new_random(i.to_string())),
-                )
+                let id = GroupUuid(i.to_string());
+                (id.clone(), Group::new(GroupData::new_random(id)))
             })
             .collect::<HashMap<_, _>>();
 
@@ -90,13 +86,13 @@ impl RandomGeneration for Server {
                 .map(|(id, _)| id.clone())
                 .collect();
 
-            user.feed.posts = (0..rand::random_range(6..11))
+            user.store.posts = (0..rand::random_range(6..11))
                 .map(|id| {
-                    let mut post = Post::new_random((id.to_string(), user_id.clone()));
+                    let mut post = Post::new_random((PostUuid(id.to_string()), user_id.clone()));
                     post.replies = (0..rand::random_range(0..2))
-                        .map(|rid|Post::new_random(((rid + id*10000).to_string(), user_id.clone())))
+                        .map(|rid|Post::new_random((PostUuid((rid + id*10000).to_string()), user_id.clone())))
                         .collect::<Vec<_>>();
-                    post
+                    (post.data.id.clone(), post)
                 })
                 .collect();
 
@@ -104,16 +100,15 @@ impl RandomGeneration for Server {
                 let group = groups.get_mut(group_id).unwrap();
                 group.add_member(user_id.clone());
                 for _ in 0..4 {
-                    group.feed.posts.push(
-                        Post::new_random((group.feed.posts.len().to_string(), user_id.clone()))
-                    )
+                    let post = Post::new_random((PostUuid(group.store.posts.len().to_string()), user_id.clone()));
+                    group.store.add_post(post.data.author, post.data.title, post.data.content);
                 }
             }
         }
 
         let credentials = [(
             LoginAuth::default(),
-            "0".into(),
+            UserUuid("0".into()),
         )]
         .into_iter()
         .collect::<HashMap<_, _>>();

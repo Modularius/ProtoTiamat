@@ -1,3 +1,4 @@
+mod feed;
 mod group;
 mod post;
 mod session;
@@ -6,9 +7,9 @@ mod user;
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 
-pub use group::GroupData;
-pub use session::Session;
-pub use user::UserData;
+pub use group::{GroupUuid, GroupData};
+pub use session::{SessionUuid, Session};
+pub use user::{UserUuid, UserData};
 
 pub trait RandomGeneration {
     type Parameter;
@@ -25,9 +26,12 @@ pub struct LoginAuth {
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         mod server;
+        mod store;
         pub use server::Server;
         pub use group::{Group, Member};
         pub use user::User;
-        pub use post::{Feed, Post};
+        pub use post::{Post, PostUuid};
+        pub use feed::Feed;
+        pub(crate) use store::Store;
     }
 }
