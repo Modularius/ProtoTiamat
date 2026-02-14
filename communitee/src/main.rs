@@ -4,7 +4,8 @@ use leptos::prelude::*;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use clap::Parser;
-        use communitee::{App, ClientSideData, DefaultData, ServerSideData, shell, Server, PublicUrl, RandomGeneration};
+        use communitee::{App, ClientSideData, DefaultData, ServerSideData, shell, Server, PublicUrl};
+        use libertee::RandomGeneration;
         use std::net::SocketAddr;
         use std::sync::{Arc, Mutex};
         use tracing::info;
