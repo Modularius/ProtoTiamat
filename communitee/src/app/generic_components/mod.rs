@@ -11,7 +11,8 @@ pub use button::{ButtonControl, ButtonFunction, SubmitControl, CloseButton};
 pub use inert_containers::{RoundedBox, SharpBox, ErrorBox};
 use leptos::prelude::*;
 
-use crate::{app::TopLevelContext, structs::Session};
+use crate::app::TopLevelContext;
+use libertee::Session;
 
 #[component]
 pub fn ResourceView<F, R, V>(

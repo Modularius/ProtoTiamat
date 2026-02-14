@@ -1,11 +1,15 @@
 use crate::{
-    Uuid,
-    app::{components::{AdColumns, MainColumn, NewPostBox, PostBox, PostData}, generic_components::{ButtonControl, ButtonFunction, ControlStack, ErrorBox, LabelledControlStack, ResourceView, RoundedBox, SessionView}},
+    app::{
+        components::{AdColumns, MainColumn, NewPostBox, PostBox, PostData},
+        generic_components::{ButtonControl, ButtonFunction, ControlStack, ErrorBox, LabelledControlStack, ResourceView, RoundedBox, SessionView}
+    },
     server_functions::format_datetime,
-    structs::{GroupUuid, Session},
 };
 use leptos::{either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
+#[cfg(feature = "ssr")]
+use libertee::UserData;
+use libertee::{GroupUuid, Session, UserUuid};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Params, PartialEq)]
@@ -14,14 +18,14 @@ struct GroupParams {
 }
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
-    use crate::{Server, ServerSideData, structs::{Group, UserData, Member}};
+    use crate::{Server, ServerSideData, structs::{Group, Member}};
 } }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GroupPageData {
-    user_id: String,
+    user_id: UserUuid,
     user_name: String,
-    group_id: String,
+    group_id: GroupUuid,
     group_name: String,
     member: Option<GroupWithMemberPageData>,
 }
@@ -94,16 +98,19 @@ pub async fn get_group_page_data(
     let group = server.get_group(&group_id);
 
     let data = GroupPageData {
-        user_id: session.user_data.id.to_string(),
+        user_id: session.user_data.id.clone(),
         user_name: session.user_data.name,
-        group_id: group_id.to_string(),
+        group_id: group_id.clone(),
         group_name: group
             .map(|group| group.data.name.clone())
             .unwrap_or("No Group".into()),
         member: group.and_then(|group| {
-            group.data
-                .members
-                .get(&session.user)
+            let member_id = group.get_member_id_from_user_id(&session.user);
+            member_id
+                .and_then(|member_id|group.data
+                    .members
+                    .get(&member_id)
+                )
                 .map(|member|GroupWithMemberPageData::new(&server, group, member))
         }),
     };
@@ -121,7 +128,7 @@ pub fn GroupPage() -> impl IntoView {
                     params
                         .get()
                         .ok()
-                        .and_then(move |p| p.group_id.clone())
+                        .and_then(|params| params.group_id.map(|group_id|GroupUuid(group_id)))
                         .unwrap_or_default()
                 };
                 let group_page_data = {

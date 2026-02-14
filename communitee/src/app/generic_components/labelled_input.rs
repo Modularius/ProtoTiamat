@@ -1,9 +1,8 @@
-use leptos::{ev::{Event, MouseEvent, Targeted}, html::{ElementType, Select}, prelude::*, tachys::html::property::IntoProperty};
-
-use serde::{Deserialize, Serialize};
-use strum::{Display, EnumIter, EnumString, IntoEnumIterator};
-use crate::app::generic_components::Control;
+use leptos::prelude::*;
 use std::{hash::Hash, str::FromStr, fmt::Debug};
+use strum::IntoEnumIterator;
+use crate::app::generic_components::Control;
+
 #[component]
 pub fn LabelledInput(
     name: &'static str,

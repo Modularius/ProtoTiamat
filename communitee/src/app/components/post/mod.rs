@@ -24,7 +24,7 @@ impl PostData {
     pub fn new(post: &Post, author_user: &User) -> Self {
         Self {
             author: author_user.data.name.clone(),
-            author_link: format!("/user/{}", author_user.data.id),
+            author_link: format!("/user/{}", author_user.data.id.to_string()),
             datetime_posted: format_datetime(&post.data.posted_at),
             title: post.data.title.clone(),
             contents: post.data.content.clone(),

@@ -6,37 +6,14 @@ mod server_functions;
 mod structs;
 
 use cfg_if::cfg_if;
-use chrono::{DateTime, Utc};
 
 pub use app::{App, shell, SubmitPost};
-pub use structs::{ClientSideData, DefaultData, PublicUrl, RandomGeneration};
-
-/// Used by instances of the website to refer to server-side sessions.
-pub type Uuid = String;
-/// The timestamp type with timezone.
-pub type Timestamp = DateTime<Utc>;
-pub type Real = f64;
+pub use structs::{ClientSideData, DefaultData, PublicUrl};
+//use libertee::{Real, Timestamp, RandomGeneration};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         pub use structs::{ServerSideData, Server};
-        use rand::seq::IteratorRandom;
-        
-        pub trait Uuidlike {
-            fn generate_random(size: usize) -> Self;
-        }
-
-        impl Uuidlike for Uuid {
-            fn generate_random(size: usize) -> Self {
-                let alphabet = "abcdefghijklmnopqrstuvwxyz".chars().collect::<Vec<_>>();
-                (0..size).map(|_|
-                    alphabet.iter()
-                        .choose(&mut rand::rng())
-                        .to_owned()
-                        .unwrap()
-                    ).collect::<Uuid>()
-            }
-        }
     }
 }
 

@@ -1,5 +1,5 @@
 [workspace]
-members = ["communitee"]
+members = ["communitee", "libertee"]
 resolver = "2"
 
 [workspace.package]
@@ -34,6 +34,7 @@ leptos_dom = { version = "0.8", default-features = false }
 leptos_reactive = "0.6.15"
 leptos_router = { version = "0.8.4", default-features = false }
 leptos-use = { version = "0.16.2", features = ["use_interval"] }
+libertee = { path = "./libertee" }
 miette = "7.6.0"
 ndarray = "0.16.1"
 num = "0.4.3"

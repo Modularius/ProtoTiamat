@@ -1,10 +1,10 @@
 use crate::{
-    Uuid,
     app::{components::{AdColumns, MainColumn}, generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, SessionView, SharpBox}},
-    structs::Session,
 };
 use leptos::prelude::*;
+use libertee::UserUuid;
 use serde::{Deserialize, Serialize};
+use libertee::{Session};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::{ServerSideData, structs::User};
@@ -12,7 +12,7 @@ cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct FriendData {
-    id: Uuid,
+    id: UserUuid,
     name: String,
     link: String,
 }
@@ -21,7 +21,7 @@ struct FriendData {
 impl FriendData {
     fn from(friend: &User) -> Self  {
         Self {
-            id: friend.data.id.to_string(),
+            id: friend.data.id.clone(),
             name: friend.data.name.clone(),
             link: format!("/user/{}", friend.data.id.to_string()),
         }

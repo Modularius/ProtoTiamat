@@ -2,10 +2,7 @@ use cfg_if::cfg_if;
 use chrono::SubsecRound;
 use leptos::prelude::*;
 
-use crate::{
-    Timestamp,
-    structs::{LoginAuth, Session},
-};
+use libertee::{LoginAuth, Session, Timestamp};
 
 
 cfg_if! {

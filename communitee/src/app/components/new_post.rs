@@ -1,11 +1,9 @@
 use leptos::prelude::*;
+use libertee::{GroupUuid, PostUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    Uuid,
-    app::generic_components::{
-        ButtonControl, ButtonFunction, ControlStack, LabelledInput, LabelledTextArea, SubmitControl
-    }
+use crate::app::generic_components::{
+    ButtonControl, ButtonFunction, ControlStack, LabelledInput, LabelledTextArea, SubmitControl
 };
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -13,7 +11,7 @@ cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
 } }
 
 #[server]
-pub async fn submit_post(data: SubmitPostData) -> Result<Option<Uuid>, ServerFnError> {
+pub async fn submit_post(data: SubmitPostData) -> Result<Option<PostUuid>, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
     let mut server = server_side_data.server.lock()?;
@@ -41,19 +39,19 @@ pub async fn submit_post(data: SubmitPostData) -> Result<Option<Uuid>, ServerFnE
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SubmitPostData {
-    user_id: String,
-    group_id: Option<String>,
+    user_id: UserUuid,
+    group_id: Option<GroupUuid>,
     subject: String,
     contents: String
 }
 
 #[component]
-pub fn NewPostBox(user_id: Uuid, group_id: Option<Uuid>) -> impl IntoView {
+pub fn NewPostBox(user_id: UserUuid, group_id: Option<GroupUuid>) -> impl IntoView {
     let submit_post = ServerAction::<SubmitPost>::new();
     view! {
         <ActionForm action = submit_post>
-            <input name = "data[user_id]" hidden = true value = {user_id} />
-            <input name = "data[group_id]" hidden = true value = {group_id} />
+            <input name = "data[user_id]" hidden = true value = {user_id.to_string()} />
+            <input name = "data[group_id]" hidden = true value = {group_id.map(|group_id|group_id.to_string())} />
             <div class = "post new-post">
                 <div class = "post-inner new-post-inner">
                     <ControlStack>

@@ -1,7 +1,8 @@
 use leptos::prelude::*;
 use leptos_router::components::A;
+use libertee::Session;
 
-use crate::{app::{components::LoginBox, generic_components::{ButtonControl, ButtonFunction, ControlStack, LabelledControlStack, SessionView}}, structs::Session};
+use crate::app::{components::LoginBox, generic_components::{ButtonControl, ButtonFunction, ControlStack, LabelledControlStack, SessionView}};
 
 #[component]
 fn CommuniteeTitle() -> impl IntoView {
@@ -57,7 +58,7 @@ pub fn TopBar() -> impl IntoView {
             <RightBar>
                 <SessionView
                     fallback = ||LoginBar()
-                    action = |session|UserBar(UserBarProps { session: session.clone() })
+                    action = |session: &Session|UserBar(UserBarProps { session: session.clone() })
                 />
             </RightBar>
         </BigBar>

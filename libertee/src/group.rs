@@ -3,7 +3,7 @@ use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, ops::Deref};
 
-use crate::{RandomGeneration, Real, Timestamp, Uuid, structs::libertee::UserUuid};
+use crate::{RandomGeneration, Real, Timestamp, Uuid, UserUuid};
 
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -26,6 +26,7 @@ pub struct GroupData {
     pub id: GroupUuid,
     pub name: String,
     pub members: HashMap<MemberUuid, Member>,
+    pub member_by_user_id: HashMap<UserUuid, MemberUuid>,
     pub adjacent_groups: Vec<(GroupUuid, Real)>,
 }
 
@@ -66,22 +67,35 @@ impl Member {
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use crate::structs::libertee::{Feed, Store, Post, PostUuid};
+        use crate::{Feed, Store, Post, PostUuid};
         use rand::seq::IndexedRandom;
         use std::ops::Bound::{Excluded, Unbounded};
 
         #[derive(Clone, Debug)]
         pub struct Group {
-            pub(crate) data: GroupData,
-            pub(crate) store: Store,
+            pub data: GroupData,
+            pub store: Store,
         }
 
         impl Group {
-            pub(crate) fn new(data: GroupData) -> Self {
+            pub fn new(data: GroupData) -> Self {
                 Self {
                     data,
                     store: Default::default(),
                 }
+            }
+
+            pub fn get_member_id_from_user_id(&self, user_id: &UserUuid) -> Option<&MemberUuid> {
+                self.data.member_by_user_id.get(user_id)
+            }
+
+
+            pub(crate) fn add_member(&mut self, user_id: UserUuid) {
+                let member_id = MemberUuid(format!("{}", self.data.members.len()));
+                self.data
+                    .members
+                    .insert(member_id.clone(), Member::new(member_id.clone(), user_id.clone()));
+                self.data.member_by_user_id.insert(user_id, member_id);
             }
 
             fn evaluate_post_for(&self, target_member: &MemberUuid, post: &Post) -> Option<Post> {
@@ -91,7 +105,7 @@ cfg_if! {
                 Some(post.clone())
             }
 
-            pub(crate) fn create_feed(&self, target_member: &MemberUuid, last_post: Option<PostUuid>, max_size: usize) -> Feed {
+            pub fn create_feed(&self, target_member: &MemberUuid, last_post: Option<PostUuid>, max_size: usize) -> Feed {
                 let posts = self.store
                     .posts
                     .range((last_post.map(Excluded).unwrap_or(Unbounded), Unbounded))

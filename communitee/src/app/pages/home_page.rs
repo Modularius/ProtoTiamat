@@ -1,12 +1,10 @@
-use crate::{
-    app::{
-        components::{AdColumns, Feed, MainColumn, NewPostBox, PostBox, PostData},
-        generic_components::{ResourceView, RoundedBox, SessionView}
-    },
-    structs::Session,
+use crate::app::{
+    components::{AdColumns, Feed, MainColumn, NewPostBox, PostBox, PostData},
+    generic_components::{ResourceView, RoundedBox, SessionView}
 };
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
+use libertee::{Session, UserUuid};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::{ServerSideData, server_functions::format_datetime};
@@ -15,7 +13,7 @@ cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct HomePageData {
-    user_id: String,
+    user_id: UserUuid,
     user_name: String,
     datetime_feed_generated: String,
     posts: Vec<PostData>,
@@ -33,7 +31,7 @@ pub async fn get_home_page_data(
     let data = server
         .get_user(&session.user)
         .map(|user| HomePageData {
-            user_id: user.data.id.to_string(),
+            user_id: user.data.id.clone(),
             user_name: session.user_data.name.clone(),
             datetime_feed_generated: format_datetime(&Utc::now()),
             posts: user

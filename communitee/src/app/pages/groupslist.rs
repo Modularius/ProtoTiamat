@@ -4,11 +4,11 @@ use crate::{
         generic_components::{
             RoundedBox, ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, SessionView
         }
-    },
-    structs::{GroupData, Session},
+    }
 };
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
+use libertee::{GroupData, Session};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::ServerSideData;

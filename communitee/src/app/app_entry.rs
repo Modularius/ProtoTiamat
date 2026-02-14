@@ -1,21 +1,20 @@
 use crate::{
     app::{
         components::{FootBar, TopBar},
-        generic_components::SessionView,
         pages::{
             FriendlistPage, GroupPage, GroupslistPage, HomePage, LoginPage, RegisterPage, UserPage,
         },
     },
     server_functions::require_login,
-    structs::{ClientSideData, Session},
+    structs::ClientSideData,
 };
-use cfg_if::cfg_if;
 use leptos::prelude::*;
 use leptos_meta::provide_meta_context;
 use leptos_router::{
     components::{Outlet, ParentRoute, Route, Router, Routes},
     path,
 };
+use libertee::Session;
 
 /// This struct enable a degree of type-checking for the [use_context]/[use_context] functions.
 /// Any component making use of the following fields should call `use_context::<TopLevelContext>()`

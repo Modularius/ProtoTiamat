@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 
-use crate::{
-    Uuid,
-    app::{components::{AdColumns, MainColumn}, generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, RoundedBox, SessionView}},
+use crate::app::{
+    components::{AdColumns, MainColumn},
+    generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, RoundedBox, SessionView}
 };
 use leptos::{Params, either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
 use serde::{Deserialize, Serialize};
+use libertee::{Session, UserUuid};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::{ServerSideData, server_functions::format_datetime};
@@ -40,7 +41,7 @@ pub struct FriendOfData {
 }
 
 #[server]
-async fn get_user_page_data(user_id: Option<Uuid>) -> Result<Option<UserPageData>, ServerFnError> {
+async fn get_user_page_data(user_id: Option<UserUuid>) -> Result<Option<UserPageData>, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
     let server = server_side_data.server.lock()?;
@@ -55,13 +56,16 @@ async fn get_user_page_data(user_id: Option<Uuid>) -> Result<Option<UserPageData
                 .iter()
                 .flat_map(|group_id| {
                     server.get_group(group_id).and_then(|group| {
-                        group
-                            .data
-                            .members
-                            .get(&user.data.id)
+                        let member_id = group.get_member_id_from_user_id(&user.data.id);
+                        member_id
+                            .and_then(|member_id|  group
+                                .data
+                                .members
+                                .get(member_id)
+                            )
                             .map(|member| GroupInData {
                                 name: group.data.name.clone(),
-                                link_to_group: format!("/group/{}", group.data.id.into()),
+                                link_to_group: format!("/group/{}", group.data.id.to_string()),
                                 datetime_joined: format_datetime(&member.joined),
                             })
                     })
@@ -74,7 +78,7 @@ async fn get_user_page_data(user_id: Option<Uuid>) -> Result<Option<UserPageData
                 .flat_map(|friendship| {
                     server.get_user(&friendship.user_id).map(|friend| FriendOfData {
                         name: friend.data.name.clone(),
-                        link_to_user: format!("/user/{}", friend.data.id),
+                        link_to_user: format!("/user/{}", friend.data.id.to_string()),
                         datetime_of_friendship: format_datetime(&friendship.datetime_of_friendship),
                     })
                 })
@@ -100,7 +104,7 @@ pub fn UserPage() -> impl IntoView {
                 let params = use_params::<UserParams>();
                 let user_id = move || params.get()
                     .ok()
-                    .and_then(|params|params.user_id);
+                    .and_then(|params|params.user_id.map(UserUuid));
 
                 let user_page_data = Resource::new_blocking(
                     user_id,
