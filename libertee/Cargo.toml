@@ -12,6 +12,7 @@ cfg-if.workspace = true
 chrono = { workspace = true, optional = false }
 clap = { workspace = true, optional = true }
 console_error_panic_hook.workspace = true
+elastic.workspace = true
 miette.workspace = true
 rand = { workspace = true, optional = true }
 serde = { workspace = true, optional = false }
