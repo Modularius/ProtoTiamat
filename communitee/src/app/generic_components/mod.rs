@@ -1,14 +1,14 @@
 mod button;
-mod inert_containers;
 mod control_stack;
 mod error_box;
+mod inert_containers;
 mod labelled_input;
 
-pub use error_box::error_box;
-pub use labelled_input::{LabelledInput, LabelledTextArea, LabelledSelect};
+pub use button::{ButtonControl, ButtonFunction, CloseButton, SubmitControl};
 pub use control_stack::{Control, ControlStack, LabelledControlStack};
-pub use button::{ButtonControl, ButtonFunction, SubmitControl, CloseButton};
-pub use inert_containers::{RoundedBox, SharpBox, ErrorBox};
+pub use error_box::error_box;
+pub use inert_containers::{ErrorBox, RoundedBox, SharpBox};
+pub use labelled_input::{LabelledInput, LabelledSelect, LabelledTextArea};
 use leptos::prelude::*;
 
 use crate::app::TopLevelContext;

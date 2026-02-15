@@ -3,7 +3,7 @@ use libertee::{GroupUuid, PostUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 
 use crate::app::generic_components::{
-    ButtonControl, ButtonFunction, ControlStack, LabelledInput, LabelledTextArea, SubmitControl
+    ButtonControl, ButtonFunction, ControlStack, LabelledInput, LabelledTextArea, SubmitControl,
 };
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -15,24 +15,21 @@ pub async fn submit_post(data: SubmitPostData) -> Result<Option<PostUuid>, Serve
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
     let mut server = server_side_data.server.lock()?;
-    
+
     let user_id = server
         .get_user(&data.user_id)
-        .map(|user|user.data.id.clone());
+        .map(|user| user.data.id.clone());
     let post_id = if let Some(group_id) = data.group_id {
         if let Some(group) = server.get_group_mut(&group_id) {
-            user_id.map(|user_id|
-                group.store
-                    .add_post(user_id, data.subject, data.contents)
-            )
+            user_id.map(|user_id| group.store.add_post(user_id, data.subject, data.contents))
         } else {
             None
         }
     } else {
-        server.get_user_mut(&data.user_id)
-            .map(|user| user.store
+        server.get_user_mut(&data.user_id).map(|user| {
+            user.store
                 .add_post(data.user_id, data.subject, data.contents)
-            )
+        })
     };
     Ok(post_id)
 }
@@ -42,7 +39,7 @@ pub struct SubmitPostData {
     user_id: UserUuid,
     group_id: Option<GroupUuid>,
     subject: String,
-    contents: String
+    contents: String,
 }
 
 #[component]

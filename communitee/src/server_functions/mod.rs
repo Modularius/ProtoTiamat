@@ -4,7 +4,6 @@ use leptos::prelude::*;
 
 use libertee::{LoginAuth, Session, Timestamp};
 
-
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use crate::ServerSideData;
@@ -50,10 +49,7 @@ pub async fn perform_login(
 }
 
 #[server]
-pub async fn register(
-    auth: LoginAuth,
-    new_path: String,
-) -> Result<Option<Session>, ServerFnError> {
+pub async fn register(auth: LoginAuth, new_path: String) -> Result<Option<Session>, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
 

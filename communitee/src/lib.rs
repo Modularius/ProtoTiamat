@@ -7,7 +7,7 @@ mod structs;
 
 use cfg_if::cfg_if;
 
-pub use app::{App, shell, SubmitPost};
+pub use app::{App, SubmitPost, shell};
 pub use structs::{ClientSideData, DefaultData, PublicUrl};
 //use libertee::{Real, Timestamp, RandomGeneration};
 

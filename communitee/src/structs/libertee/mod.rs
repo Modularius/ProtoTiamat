@@ -7,9 +7,9 @@ mod user;
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 
-pub use group::{GroupUuid, GroupData};
-pub use session::{SessionUuid, Session};
-pub use user::{UserUuid, UserData};
+pub use group::{GroupData, GroupUuid};
+pub use session::{Session, SessionUuid};
+pub use user::{UserData, UserUuid};
 
 pub trait RandomGeneration {
     type Parameter;

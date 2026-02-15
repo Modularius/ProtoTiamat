@@ -2,7 +2,12 @@ use leptos::{either::Either, prelude::*};
 use leptos_router::components::A;
 
 #[component]
-pub fn LabelledControlStack(label: String, href: Option<String>, class: &'static str, children: Children) -> impl IntoView {
+pub fn LabelledControlStack(
+    label: String,
+    href: Option<String>,
+    class: &'static str,
+    children: Children,
+) -> impl IntoView {
     view! {
         <div class = "text-purple-100 flex flex-shrink">
             <div class = {format!("flex flex-shrink items-center justify-left p-1 pl-4 m-1 {class}")}>

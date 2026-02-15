@@ -1,4 +1,9 @@
-use crate::{app::generic_components::{Control, ControlStack, LabelledInput, LabelledSelect, SubmitControl}, server_functions::{PerformLogin, Register}};
+use crate::{
+    app::generic_components::{
+        Control, ControlStack, LabelledInput, LabelledSelect, SubmitControl,
+    },
+    server_functions::{PerformLogin, Register},
+};
 use leptos::{attr::Default, prelude::*};
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString, IntoEnumIterator};
@@ -19,7 +24,20 @@ pub fn LoginBox() -> impl IntoView {
     }
 }
 
-#[derive(Default, Clone, Debug, EnumString, Display, EnumIter, PartialEq, Eq, Hash, Copy, Serialize, Deserialize)]
+#[derive(
+    Default,
+    Clone,
+    Debug,
+    EnumString,
+    Display,
+    EnumIter,
+    PartialEq,
+    Eq,
+    Hash,
+    Copy,
+    Serialize,
+    Deserialize,
+)]
 pub enum ProofOfIdentity {
     #[default]
     #[strum(to_string = "Approval of Existing Member(s)")]
@@ -27,7 +45,7 @@ pub enum ProofOfIdentity {
     #[strum(to_string = "Birth Certificate")]
     BirthCertificate,
     #[strum(to_string = "Driving Licence")]
-    DrivingLicence
+    DrivingLicence,
 }
 
 #[component]

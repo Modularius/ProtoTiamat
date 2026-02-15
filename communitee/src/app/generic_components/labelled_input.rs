@@ -1,7 +1,7 @@
-use leptos::prelude::*;
-use std::{hash::Hash, str::FromStr, fmt::Debug};
-use strum::IntoEnumIterator;
 use crate::app::generic_components::Control;
+use leptos::prelude::*;
+use std::{fmt::Debug, hash::Hash, str::FromStr};
+use strum::IntoEnumIterator;
 
 #[component]
 pub fn LabelledInput(
@@ -21,17 +21,15 @@ pub fn LabelledInput(
 }
 
 #[component]
-pub fn LabelledSelect<T>(
-    name: &'static str,
-    label: &'static str,
-    sig: RwSignal<T>
-) -> impl IntoView where 
- T: Clone + ToString + IntoEnumIterator + PartialEq + Eq + Hash + Send + 'static,
- <T as IntoEnumIterator>::Iterator : Send,
- <RwSignal<T> as Update>::Value: FromStr,
- <<RwSignal<T> as Update>::Value as FromStr>::Err : Debug,
- <RwSignal<T> as With>::Value: Clone + PartialEq<T>,
- RwSignal<T>: Update + With {
+pub fn LabelledSelect<T>(name: &'static str, label: &'static str, sig: RwSignal<T>) -> impl IntoView
+where
+    T: Clone + ToString + IntoEnumIterator + PartialEq + Eq + Hash + Send + 'static,
+    <T as IntoEnumIterator>::Iterator: Send,
+    <RwSignal<T> as Update>::Value: FromStr,
+    <<RwSignal<T> as Update>::Value as FromStr>::Err: Debug,
+    <RwSignal<T> as With>::Value: Clone + PartialEq<T>,
+    RwSignal<T>: Update + With,
+{
     view! {
         <Control>
             <div class = "text-left justify-between">

@@ -1,8 +1,8 @@
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
-use crate::{Timestamp, Uuid, GroupUuid, RandomGeneration};
+use crate::{GroupUuid, RandomGeneration, Timestamp, Uuid};
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct UserUuid(pub Uuid);

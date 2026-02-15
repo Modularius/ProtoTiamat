@@ -8,5 +8,5 @@ use crate::{RandomGeneration, Real, Timestamp, Uuid, structs::Post};
 
 #[derive(Default, Clone, Debug)]
 pub struct Feed {
-    pub(crate) posts: Vec<Post>
+    pub(crate) posts: Vec<Post>,
 }

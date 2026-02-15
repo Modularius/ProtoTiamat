@@ -2,11 +2,16 @@ use leptos::prelude::*;
 use leptos_router::components::A;
 use libertee::Session;
 
-use crate::app::{components::LoginBox, generic_components::{ButtonControl, ButtonFunction, ControlStack, LabelledControlStack, SessionView}};
+use crate::app::{
+    components::LoginBox,
+    generic_components::{
+        ButtonControl, ButtonFunction, ControlStack, LabelledControlStack, SessionView,
+    },
+};
 
 #[component]
 fn CommuniteeTitle() -> impl IntoView {
-    view!{
+    view! {
         <div class = "text-4xl text-nowrap text-purple-100 text-center text-shadow-2xl w-1/2">
             <A href = "/"> "Communitee" </A>
         </div>
@@ -15,7 +20,7 @@ fn CommuniteeTitle() -> impl IntoView {
 
 #[component]
 fn SanctimoneousMissionStatement() -> impl IntoView {
-    view!{
+    view! {
         <div class = "text-lg  text-nowrap text-purple-100 text-center text-shadow-xl  w-1/4 hidden md:block">
             "The internet we were promised"
         </div>
@@ -24,7 +29,7 @@ fn SanctimoneousMissionStatement() -> impl IntoView {
 
 #[component]
 fn RightBar(children: Children) -> impl IntoView {
-    view!{
+    view! {
         <div class = "text-purple-100 w-1/2 md:w-1/4">
             {children()}
         </div>
@@ -33,7 +38,7 @@ fn RightBar(children: Children) -> impl IntoView {
 
 #[component]
 fn BigBar(children: Children) -> impl IntoView {
-    view!{
+    view! {
         <div class = "bg-indigo-700 flex flex-col md:flex-row items-center justify-even">
             {children()}
         </div>
@@ -42,7 +47,7 @@ fn BigBar(children: Children) -> impl IntoView {
 
 #[component]
 fn ToolBar(children: Children) -> impl IntoView {
-    view!{
+    view! {
         <div class = "bg-green-700 text-green-100 text-sm md:text-lg flex flex-row items-center p-1 gap-x-1 gap-y-1 justify-stretch md:justify-even">
             {children()}
         </div>

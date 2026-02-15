@@ -2,12 +2,14 @@ use std::collections::HashMap;
 
 use crate::app::{
     components::{AdColumns, MainColumn},
-    generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, RoundedBox, SessionView}
+    generic_components::{
+        ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, RoundedBox, SessionView,
+    },
 };
 use leptos::{Params, either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
-use serde::{Deserialize, Serialize};
 use libertee::{Session, UserUuid};
+use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::{ServerSideData, server_functions::format_datetime};
@@ -41,7 +43,9 @@ pub struct FriendOfData {
 }
 
 #[server]
-async fn get_user_page_data(user_id: Option<UserUuid>) -> Result<Option<UserPageData>, ServerFnError> {
+async fn get_user_page_data(
+    user_id: Option<UserUuid>,
+) -> Result<Option<UserPageData>, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
     let server = server_side_data.server.lock()?;
@@ -58,11 +62,7 @@ async fn get_user_page_data(user_id: Option<UserUuid>) -> Result<Option<UserPage
                     server.get_group(group_id).and_then(|group| {
                         let member_id = group.get_member_id_from_user_id(&user.data.id);
                         member_id
-                            .and_then(|member_id|  group
-                                .data
-                                .members
-                                .get(member_id)
-                            )
+                            .and_then(|member_id| group.data.members.get(member_id))
                             .map(|member| GroupInData {
                                 name: group.data.name.clone(),
                                 link_to_group: format!("/group/{}", group.data.id.to_string()),
@@ -76,11 +76,15 @@ async fn get_user_page_data(user_id: Option<UserUuid>) -> Result<Option<UserPage
                 .friends
                 .iter()
                 .flat_map(|friendship| {
-                    server.get_user(&friendship.user_id).map(|friend| FriendOfData {
-                        name: friend.data.name.clone(),
-                        link_to_user: format!("/user/{}", friend.data.id.to_string()),
-                        datetime_of_friendship: format_datetime(&friendship.datetime_of_friendship),
-                    })
+                    server
+                        .get_user(&friendship.user_id)
+                        .map(|friend| FriendOfData {
+                            name: friend.data.name.clone(),
+                            link_to_user: format!("/user/{}", friend.data.id.to_string()),
+                            datetime_of_friendship: format_datetime(
+                                &friendship.datetime_of_friendship,
+                            ),
+                        })
                 })
                 .collect();
 

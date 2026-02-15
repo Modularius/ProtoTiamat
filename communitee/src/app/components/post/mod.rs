@@ -28,14 +28,18 @@ impl PostData {
             datetime_posted: format_datetime(&post.data.posted_at),
             title: post.data.title.clone(),
             contents: post.data.content.clone(),
-            replies: post.replies.iter().map(|reply|Self::new(reply, author_user)).collect::<Vec<_>>(),
+            replies: post
+                .replies
+                .iter()
+                .map(|reply| Self::new(reply, author_user))
+                .collect::<Vec<_>>(),
         }
     }
 }
 
 #[component]
 fn PostContainer(children: Children) -> impl IntoView {
-    view!{
+    view! {
         <div class = "flex flex-col
             bg-indigo-300 hover:bg-indigo-200
             w-11/12 md:w-4/5
@@ -49,7 +53,7 @@ fn PostContainer(children: Children) -> impl IntoView {
 
 #[component]
 fn PostHeader(children: Children) -> impl IntoView {
-    view!{
+    view! {
         <div class = "flex flex-row justify-even w-full p-1 m-1">
         {children()}
         </div>
@@ -58,7 +62,7 @@ fn PostHeader(children: Children) -> impl IntoView {
 
 #[component]
 fn PostTextField(children: Children) -> impl IntoView {
-    view!{
+    view! {
         <div class = "bg-indigo-400 p-1 m-1 text-left">
             {children()}
         </div>
@@ -67,7 +71,7 @@ fn PostTextField(children: Children) -> impl IntoView {
 
 #[component]
 fn PostMain(children: Children) -> impl IntoView {
-    view!{
+    view! {
         <div class = "flex flex-col p-1 m-1">
             {children()}
         </div>
@@ -76,7 +80,7 @@ fn PostMain(children: Children) -> impl IntoView {
 
 #[component]
 fn PostReplies(children: Children) -> impl IntoView {
-    view!{
+    view! {
         <div class = "flex flex-col align-center p-1 m-1 bg-indigo-500 closable-container">
             {children()}
         </div>

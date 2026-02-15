@@ -1,4 +1,7 @@
-use crate::app::{components::{MainColumn, RegisterBox}, generic_components::RoundedBox};
+use crate::app::{
+    components::{MainColumn, RegisterBox},
+    generic_components::RoundedBox,
+};
 use leptos::prelude::*;
 
 #[component]

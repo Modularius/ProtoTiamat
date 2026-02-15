@@ -1,10 +1,10 @@
 use crate::app::{
     components::{AdColumns, Feed, MainColumn, NewPostBox, PostBox, PostData},
-    generic_components::{ResourceView, RoundedBox, SessionView}
+    generic_components::{ResourceView, RoundedBox, SessionView},
 };
 use leptos::prelude::*;
-use serde::{Deserialize, Serialize};
 use libertee::{Session, UserUuid};
+use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::{ServerSideData, server_functions::format_datetime};
@@ -27,25 +27,23 @@ pub async fn get_home_page_data(
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
     let server = server_side_data.server.lock()?;
-    
-    let data = server
-        .get_user(&session.user)
-        .map(|user| HomePageData {
-            user_id: user.data.id.clone(),
-            user_name: session.user_data.name.clone(),
-            datetime_feed_generated: format_datetime(&Utc::now()),
-            posts: user
-                .store
-                .posts
-                .iter()
-                .take(max_posts)
-                .flat_map(|(_, post)| {
-                    server
-                        .get_user(&post.data.author)
-                        .map(|author_user| PostData::new(post, author_user))
-                })
-                .collect(),
-        });
+
+    let data = server.get_user(&session.user).map(|user| HomePageData {
+        user_id: user.data.id.clone(),
+        user_name: session.user_data.name.clone(),
+        datetime_feed_generated: format_datetime(&Utc::now()),
+        posts: user
+            .store
+            .posts
+            .iter()
+            .take(max_posts)
+            .flat_map(|(_, post)| {
+                server
+                    .get_user(&post.data.author)
+                    .map(|author_user| PostData::new(post, author_user))
+            })
+            .collect(),
+    });
     Ok(data)
 }
 

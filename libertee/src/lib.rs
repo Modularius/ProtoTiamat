@@ -7,10 +7,10 @@ use cfg_if::cfg_if;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-pub use group::{GroupUuid, GroupData};
-pub use session::{SessionUuid, Session};
-pub use user::{UserUuid, UserData};
+pub use group::{GroupData, GroupUuid};
 pub use post::PostUuid;
+pub use session::{Session, SessionUuid};
+pub use user::{UserData, UserUuid};
 
 /// Used by instances of the website to refer to server-side sessions.
 type Uuid = String;

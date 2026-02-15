@@ -3,10 +3,14 @@ use std::collections::HashMap;
 use chrono::Utc;
 
 use crate::{
-    Uuid, Uuidlike, structs::{
+    Uuid, Uuidlike,
+    structs::{
         GroupData, LoginAuth, Session, User, UserData,
-        libertee::{Group, GroupUuid, Post, PostUuid, RandomGeneration, SessionUuid, UserUuid, user::Friendship},
-    }
+        libertee::{
+            Group, GroupUuid, Post, PostUuid, RandomGeneration, SessionUuid, UserUuid,
+            user::Friendship,
+        },
+    },
 };
 
 #[derive(Default, Clone, Debug)]
@@ -43,7 +47,10 @@ impl Server {
         let session_id = SessionUuid(Uuid::generate_random(16));
         if let Some(user_id) = self.credentials.get(auth) {
             if let Some(user) = self.get_user(user_id) {
-                self.sessions.insert(session_id.clone(), Session::new(session_id.clone(), user_id.clone(), user.data.clone()));
+                self.sessions.insert(
+                    session_id.clone(),
+                    Session::new(session_id.clone(), user_id.clone(), user.data.clone()),
+                );
             }
         }
         self.sessions.get(&session_id)
@@ -90,7 +97,12 @@ impl RandomGeneration for Server {
                 .map(|id| {
                     let mut post = Post::new_random((PostUuid(id.to_string()), user_id.clone()));
                     post.replies = (0..rand::random_range(0..2))
-                        .map(|rid|Post::new_random((PostUuid((rid + id*10000).to_string()), user_id.clone())))
+                        .map(|rid| {
+                            Post::new_random((
+                                PostUuid((rid + id * 10000).to_string()),
+                                user_id.clone(),
+                            ))
+                        })
                         .collect::<Vec<_>>();
                     (post.data.id.clone(), post)
                 })
@@ -100,23 +112,25 @@ impl RandomGeneration for Server {
                 let group = groups.get_mut(group_id).unwrap();
                 group.add_member(user_id.clone());
                 for _ in 0..4 {
-                    let post = Post::new_random((PostUuid(group.store.posts.len().to_string()), user_id.clone()));
-                    group.store.add_post(post.data.author, post.data.title, post.data.content);
+                    let post = Post::new_random((
+                        PostUuid(group.store.posts.len().to_string()),
+                        user_id.clone(),
+                    ));
+                    group
+                        .store
+                        .add_post(post.data.author, post.data.title, post.data.content);
                 }
             }
         }
 
-        let credentials = [(
-            LoginAuth::default(),
-            UserUuid("0".into()),
-        )]
-        .into_iter()
-        .collect::<HashMap<_, _>>();
+        let credentials = [(LoginAuth::default(), UserUuid("0".into()))]
+            .into_iter()
+            .collect::<HashMap<_, _>>();
         Self {
             users,
             groups,
             sessions: Default::default(),
-            credentials
+            credentials,
         }
     }
 }

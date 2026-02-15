@@ -1,7 +1,10 @@
 use chrono::{TimeDelta, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::{Timestamp, Uuid, structs::libertee::{UserData, UserUuid}};
+use crate::{
+    Timestamp, Uuid,
+    structs::libertee::{UserData, UserUuid},
+};
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SessionUuid(pub Uuid);

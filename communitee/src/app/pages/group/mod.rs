@@ -1,7 +1,10 @@
 use crate::{
     app::{
         components::{AdColumns, MainColumn, NewPostBox, PostBox, PostData},
-        generic_components::{ButtonControl, ButtonFunction, ControlStack, ErrorBox, LabelledControlStack, ResourceView, RoundedBox, SessionView}
+        generic_components::{
+            ButtonControl, ButtonFunction, ControlStack, ErrorBox, LabelledControlStack,
+            ResourceView, RoundedBox, SessionView,
+        },
     },
     server_functions::format_datetime,
 };
@@ -42,7 +45,8 @@ impl GroupWithMemberPageData {
     fn new(server: &Server, group: &Group, member: &Member) -> Self {
         Self {
             datetime_joined: format_datetime(&member.joined),
-            feed: group.create_feed(&member.id, None, 10)
+            feed: group
+                .create_feed(&member.id, None, 10)
                 .posts
                 .into_iter()
                 .flat_map(|post| {
@@ -55,13 +59,14 @@ impl GroupWithMemberPageData {
                 .delegates
                 .iter()
                 .map(|(delegate_id, &weight)| {
-                    group.data
+                    group
+                        .data
                         .members
                         .get(delegate_id)
-                        .and_then(|delegate|server.get_user(&delegate.user))
-                        .map(|delegate|GroupWithMemberDelegatePageData
-                            ::new(&delegate.data, weight)
-                        )
+                        .and_then(|delegate| server.get_user(&delegate.user))
+                        .map(|delegate| {
+                            GroupWithMemberDelegatePageData::new(&delegate.data, weight)
+                        })
                 })
                 .collect(),
         }
@@ -107,11 +112,8 @@ pub async fn get_group_page_data(
         member: group.and_then(|group| {
             let member_id = group.get_member_id_from_user_id(&session.user);
             member_id
-                .and_then(|member_id|group.data
-                    .members
-                    .get(&member_id)
-                )
-                .map(|member|GroupWithMemberPageData::new(&server, group, member))
+                .and_then(|member_id| group.data.members.get(&member_id))
+                .map(|member| GroupWithMemberPageData::new(&server, group, member))
         }),
     };
     Ok(data)
@@ -189,7 +191,7 @@ fn GroupPageWithData(group_page_data: GroupPageData) -> impl IntoView {
 
 #[component]
 fn DelegatePanel(delegates: Vec<Option<GroupWithMemberDelegatePageData>>) -> impl IntoView {
-    view!{
+    view! {
         <RoundedBox>
             <h3 class = "text-lg m-2"> "You have " {delegates.len()} " delegates(s) in this group." </h3>
             <ControlStack>
@@ -208,7 +210,7 @@ fn DelegatePanel(delegates: Vec<Option<GroupWithMemberDelegatePageData>>) -> imp
 #[component]
 fn Delegate(delegate: Option<GroupWithMemberDelegatePageData>) -> impl IntoView {
     if let Some(delegate) = delegate {
-        Either::Left(view!{
+        Either::Left(view! {
             <LabelledControlStack label = {format!("{}: {}", delegate.name, delegate.weight)} href = {Some(delegate.link)} class = "w-1/3">
                 <ControlStack>
                     <ButtonControl value = "Edit Weight" on_click = ButtonFunction::closure(|_|{}) />
@@ -217,7 +219,7 @@ fn Delegate(delegate: Option<GroupWithMemberDelegatePageData>) -> impl IntoView 
             </LabelledControlStack>
         })
     } else {
-        Either::Right(view!{
+        Either::Right(view! {
             <ErrorBox>
                 <div> "Delegate not found." </div>
             </ErrorBox>

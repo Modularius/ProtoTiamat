@@ -6,14 +6,16 @@ use url::Url;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PublicUrl {
-    url: Url
+    url: Url,
 }
 
 impl FromStr for PublicUrl {
     type Err = <Url as FromStr>::Err;
 
     fn from_str(string: &str) -> Result<Self, Self::Err> {
-        Ok(Self{ url: Url::from_str(string)? })
+        Ok(Self {
+            url: Url::from_str(string)?,
+        })
     }
 }
 

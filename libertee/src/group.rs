@@ -3,8 +3,7 @@ use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, ops::Deref};
 
-use crate::{RandomGeneration, Real, Timestamp, Uuid, UserUuid};
-
+use crate::{RandomGeneration, Real, Timestamp, UserUuid, Uuid};
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct GroupUuid(pub Uuid);
@@ -29,7 +28,6 @@ pub struct GroupData {
     pub member_by_user_id: HashMap<UserUuid, MemberUuid>,
     pub adjacent_groups: Vec<(GroupUuid, Real)>,
 }
-
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MemberUuid(Uuid);
@@ -100,7 +98,7 @@ cfg_if! {
 
             fn evaluate_post_for(&self, target_member: &MemberUuid, post: &Post) -> Option<Post> {
                 if let Some(_member) = self.data.members.get(target_member) {
-                    
+
                 }
                 Some(post.clone())
             }

@@ -1,10 +1,13 @@
-use crate::{
-    app::{components::{AdColumns, MainColumn}, generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, SessionView, SharpBox}},
+use crate::app::{
+    components::{AdColumns, MainColumn},
+    generic_components::{
+        ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, SessionView, SharpBox,
+    },
 };
 use leptos::prelude::*;
+use libertee::Session;
 use libertee::UserUuid;
 use serde::{Deserialize, Serialize};
-use libertee::{Session};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::{ServerSideData, structs::User};
@@ -19,7 +22,7 @@ struct FriendData {
 
 #[cfg(feature = "ssr")]
 impl FriendData {
-    fn from(friend: &User) -> Self  {
+    fn from(friend: &User) -> Self {
         Self {
             id: friend.data.id.clone(),
             name: friend.data.name.clone(),
@@ -45,20 +48,23 @@ async fn get_friendslist_page_data(
 
     let data = FriendslistPageData {
         user_name: session.user_data.name.clone(),
-        friends: server.get_user(&session.user)
-            .map(|user| user.data
-                .friends
-                .iter()
-                .take(max_friends)
-                .flat_map(|friendship| {
-                    server.get_user(&friendship.user_id)
-                        .map(|friend| FriendData::from(friend))
-                })
-                .collect()
-            )
+        friends: server
+            .get_user(&session.user)
+            .map(|user| {
+                user.data
+                    .friends
+                    .iter()
+                    .take(max_friends)
+                    .flat_map(|friendship| {
+                        server
+                            .get_user(&friendship.user_id)
+                            .map(|friend| FriendData::from(friend))
+                    })
+                    .collect()
+            })
             .unwrap_or_default(),
     };
-    
+
     Ok(data)
 }
 

@@ -1,14 +1,12 @@
-use crate::{
-    app::{
-        components::{AdColumns, MainColumn},
-        generic_components::{
-            RoundedBox, ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, SessionView
-        }
-    }
+use crate::app::{
+    components::{AdColumns, MainColumn},
+    generic_components::{
+        ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, RoundedBox, SessionView,
+    },
 };
 use leptos::prelude::*;
-use serde::{Deserialize, Serialize};
 use libertee::{GroupData, Session};
+use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::ServerSideData;

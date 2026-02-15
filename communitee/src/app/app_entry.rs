@@ -41,7 +41,7 @@ pub fn App() -> impl IntoView {
 
     provide_context(TopLevelContext {
         client_side_data,
-        session: Resource::new_blocking(|| (), move |_| require_login())
+        session: Resource::new_blocking(|| (), move |_| require_login()),
     });
 
     view! {

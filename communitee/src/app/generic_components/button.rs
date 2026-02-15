@@ -5,20 +5,17 @@ use crate::app::generic_components::Control;
 
 pub enum ButtonFunction {
     Link(&'static str),
-    Closure(Box<dyn FnMut(MouseEvent) + Send + 'static>)
+    Closure(Box<dyn FnMut(MouseEvent) + Send + 'static>),
 }
 
 impl ButtonFunction {
-    pub fn closure<F: FnMut(MouseEvent) + Send + 'static>(f : F) -> Self {
+    pub fn closure<F: FnMut(MouseEvent) + Send + 'static>(f: F) -> Self {
         Self::Closure(Box::new(f))
     }
 }
 
 #[component]
-pub fn ButtonControl(
-    value: &'static str,
-    on_click: ButtonFunction
-) -> impl IntoView {
+pub fn ButtonControl(value: &'static str, on_click: ButtonFunction) -> impl IntoView {
     match on_click {
         ButtonFunction::Link(href) => Either::Left(view! {
             <Control>
@@ -36,9 +33,7 @@ pub fn ButtonControl(
 }
 
 #[component]
-pub fn SubmitControl(
-    value: &'static str
-) -> impl IntoView {
+pub fn SubmitControl(value: &'static str) -> impl IntoView {
     view! {
         <Control>
             <input class = "flex-grow" type = "submit" value = {value} />
@@ -48,7 +43,7 @@ pub fn SubmitControl(
 
 #[component]
 pub fn CloseButton() -> impl IntoView {
-    view!{
+    view! {
         <div class = "w-full rounded-sm h-4 bg-indigo-100 hover:bg-blue-100" on:click:target = |ev| {
             if let Some(el) = ev.target().parent_element() {
                 match el.class_list().toggle("closed") {

@@ -1,10 +1,13 @@
-use std::{borrow::Borrow, ops::{Deref, Range}};
+use std::{
+    borrow::Borrow,
+    ops::{Deref, Range},
+};
 
 use cfg_if::cfg_if;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
-use crate::{RandomGeneration, Real, Timestamp, Uuid, UserUuid};
+use crate::{RandomGeneration, Real, Timestamp, UserUuid, Uuid};
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct PostUuid(pub Uuid);
@@ -33,12 +36,12 @@ pub struct PostData {
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use rand::seq::IndexedRandom;
-        
+
         #[derive(Default, Clone, Debug)]
         pub struct Feed {
             pub posts: Vec<Post>
         }
-        
+
         fn generate_random_text(num_words: Range<usize>, word_length: Range<usize>) -> String {
             let alphabet = "abcdefghijklmnopqrstuvwxyz".chars().collect::<Vec<_>>();
             (0..rand::random_range(num_words)).map(|_|
