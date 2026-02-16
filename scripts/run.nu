@@ -1,0 +1,1 @@
+cargo leptos watch -p communitee -- --initial-user-name Fred --initial-user-username FredieFuckah --initial-user-password Bozos

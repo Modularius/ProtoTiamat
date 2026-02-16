@@ -40,6 +40,7 @@ pub async fn perform_login(
         .expect("ServerSideData should be provided, this should never fail.");
 
     let mut server = server_side_data.server.lock()?;
+    
     let session = server.create_new_session(&auth).cloned();
     Ok(session)
     //Ok(server.get_session(&auth).cloned())

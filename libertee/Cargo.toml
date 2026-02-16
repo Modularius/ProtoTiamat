@@ -12,10 +12,11 @@ cfg-if.workspace = true
 chrono = { workspace = true, optional = false }
 clap = { workspace = true, optional = true }
 console_error_panic_hook.workspace = true
-elastic.workspace = true
+elasticsearch = { workspace = true, optional = true }
 miette.workspace = true
 rand = { workspace = true, optional = true }
 serde = { workspace = true, optional = false }
+serde_json = { workspace = true, optional = false }
 strum = { workspace = true, optional = false }
 thiserror = { workspace = true, optional = false }
 tokio = { workspace = true, optional = true }
@@ -28,6 +29,7 @@ uuid = { workspace = true, optional = true }
 hydrate = []
 ssr = [
   "miette/fancy",
+  "dep:elasticsearch",
   "dep:uuid",
   "dep:rand",
   "dep:clap",

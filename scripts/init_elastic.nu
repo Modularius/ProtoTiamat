@@ -34,5 +34,3 @@ with-env {
 }
 
 podman-compose -f "Containers/elastic-search.yml" -p $COMPOSE_PROJECT_NAME up -d
-
-cargo leptos watch -p communitee

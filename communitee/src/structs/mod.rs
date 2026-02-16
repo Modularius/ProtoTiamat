@@ -8,7 +8,7 @@ pub use public_url::PublicUrl;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use clap::Args;
+        use clap::{Args};
         use std::sync::{Arc, Mutex};
         pub use libertee::{User, Server, Post, Feed, Member, Group};
 
@@ -17,6 +17,19 @@ cfg_if! {
         pub struct ServerSideData {
             pub server: Arc<Mutex<Server>>,
         }
+
+        /// Contains the settings defined in the CLI used as default values in the UI's inputs.
+        #[derive(Default, Clone, Debug, Serialize, Deserialize, Args)]
+        pub struct InitialUserData {
+            #[clap(long)]
+            pub initial_user_name: String,
+
+            #[clap(long)]
+            pub initial_user_username: String,
+            
+            #[clap(long)]
+            pub initial_user_password: String
+        }
     }
 }
 
@@ -24,6 +37,7 @@ cfg_if! {
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "ssr", derive(Args))]
 pub struct DefaultData {}
+
 
 /// Encapsulates all run-time settings which are available to the client.
 #[derive(Clone, Debug, Serialize, Deserialize)]

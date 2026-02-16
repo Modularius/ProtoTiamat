@@ -1,10 +1,11 @@
 #![allow(unused_crate_dependencies)]
 use cfg_if::cfg_if;
 use leptos::prelude::*;
+use libertee::LoginAuth;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use clap::Parser;
-        use communitee::{App, ClientSideData, DefaultData, ServerSideData, shell, Server, PublicUrl};
+        use communitee::{App, ClientSideData, DefaultData, InitialUserData, ServerSideData, shell, Server, PublicUrl};
         use libertee::RandomGeneration;
         use std::net::SocketAddr;
         use std::sync::{Arc, Mutex};
@@ -28,6 +29,9 @@ cfg_if! {
 
             #[clap(flatten)]
             default_data: DefaultData,
+
+            #[clap(flatten)]
+            initial_user: Option<InitialUserData>,
 
             /// Origin of the host from which the app is served (without the trailing slash).
             #[clap(long, default_value = "http://localhost:3000/")]
@@ -60,10 +64,18 @@ cfg_if! {
 
             let args = Cli::parse();
 
+            let mut server = Server::new_random(Default::default());
+            if let Some(initial_user) = args.initial_user {
+                let auth = LoginAuth {
+                    username: initial_user.initial_user_username,
+                    password: initial_user.initial_user_password
+                };
+                server.create_new_user(&auth, initial_user.initial_user_name, None);
+                server.create_new_session(&auth);
+            }
+
             let server_side_data = ServerSideData {
-                server: Arc::new(Mutex::new(Server::new_random(Default::default())))
-                //entitee: Arc::new(Mutex::new(None)),
-                //unitee: UniteeNode::default()
+                server: Arc::new(Mutex::new(server))
             };
 
             let client_side_data = ClientSideData {

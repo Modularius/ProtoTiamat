@@ -1,14 +1,16 @@
 use std::collections::HashMap;
 
 use chrono::Utc;
+use elasticsearch::{Elasticsearch, IndexParts, cat::CatIndicesParts, http::{request::JsonBody, transport::Transport}};
+use serde_json::json;
 
 use crate::{
-    Group, GroupData, GroupUuid, LoginAuth, Post, PostUuid, RandomGeneration, Session, SessionUuid,
-    User, UserData, UserUuid, Uuid, Uuidlike, user::Friendship,
+    Group, GroupData, GroupUuid, LoginAuth, Post, PostUuid, RandomGeneration, Session, SessionUuid, Timestamp, User, UserData, UserUuid, Uuid, Uuidlike, user::Friendship
 };
 
 #[derive(Default, Clone, Debug)]
 pub struct Server {
+    client: elasticsearch::Elasticsearch,
     users: HashMap<UserUuid, User>,
     groups: HashMap<GroupUuid, Group>,
     sessions: HashMap<SessionUuid, Session>,
@@ -36,6 +38,20 @@ impl Server {
         self.sessions.get(uuid)
     }
 
+    pub fn create_new_user(&mut self, auth: &LoginAuth, name: String, datetime: Option<Timestamp>) -> Option<&mut User> {
+        let user_id = UserUuid(Uuid::generate_random(16));
+        self.users.insert(user_id.clone(), User::new(
+            UserData{
+                    id: user_id.clone(),
+                    name,
+                    datetime_joined: datetime.unwrap_or(Utc::now()),
+                    ..Default::default()
+                }
+        ));
+        self.credentials.insert(auth.clone(), user_id.clone());
+        self.users.get_mut(&user_id)
+    }
+
     pub fn create_new_session(&mut self, auth: &LoginAuth) -> Option<&Session> {
         // Fixme: should guard against clashes with existing Uuids
         let session_id = SessionUuid(Uuid::generate_random(16));
@@ -48,6 +64,18 @@ impl Server {
             }
         }
         self.sessions.get(&session_id)
+    }
+
+    async fn save(&self) {
+        let response = self.client
+            .index(IndexParts::Index("sessions"))
+            .body(json!({
+                "id": 1
+            }))
+            .send()
+            .await
+            .unwrap();
+        
     }
 }
 
@@ -121,6 +149,7 @@ impl RandomGeneration for Server {
             .into_iter()
             .collect::<HashMap<_, _>>();
         Self {
+            client: Elasticsearch::new(Transport::single_node("localhost:9200").unwrap()),
             users,
             groups,
             sessions: Default::default(),

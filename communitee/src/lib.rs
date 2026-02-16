@@ -13,7 +13,7 @@ pub use structs::{ClientSideData, DefaultData, PublicUrl};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        pub use structs::{ServerSideData, Server};
+        pub use structs::{ServerSideData, InitialUserData, Server};
     }
 }
 
