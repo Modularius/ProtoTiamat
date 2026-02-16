@@ -69,6 +69,15 @@ pub fn HomePage() -> impl IntoView {
 
 #[component]
 fn HomePageWithData(home_page_data: HomePageData) -> impl IntoView {
+    let posts = RwSignal::new(home_page_data
+        .posts
+        .into_iter()
+        .map(RwSignal::new)
+        .collect::<Vec<_>>()
+    );
+    let datetime_feed_generated = RwSignal::new(home_page_data
+        .datetime_feed_generated
+    );
     view! {
         <MainColumn>
             <h1 class = "text-3xl m-6"> "Hi there " {home_page_data.user_name} "!" </h1>
@@ -76,15 +85,20 @@ fn HomePageWithData(home_page_data: HomePageData) -> impl IntoView {
             <AdColumns>
                 <RoundedBox>
                     <h2 class = "text-xl m-2"> "Submit a post:" </h2>
-                    <NewPostBox user_id = home_page_data.user_id group_id = None />
+                    <NewPostBox
+                        user_id = home_page_data.user_id
+                        group_id = None
+                        posts
+                        datetime_feed_generated
+                    />
                 </RoundedBox>
                 <RoundedBox>
-                    <h2 class = "text-lg m-2"> "Current feed (as of " {home_page_data.datetime_feed_generated} "): "</h2>
+                    <h2 class = "text-lg m-2"> "Current feed (as of " {move || datetime_feed_generated.get()} "): "</h2>
                     <For
-                        each = move ||home_page_data.posts.clone().into_iter().enumerate()
+                        each = move ||posts.get().into_iter().enumerate()
                         key = |(i,_)|*i
                         children = |(_,post)| view!{
-                            <PostBox post = post.clone()/>
+                            <PostBox post = post.get()/>
                         }
                     />
                 </RoundedBox>
