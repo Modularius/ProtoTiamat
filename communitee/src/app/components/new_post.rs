@@ -20,24 +20,27 @@ pub async fn submit_post(data: SubmitPostData) -> Result<Option<PostData>, Serve
         .get_user(&data.user_id)
         .map(|user| user.data.id.clone());
     let post = if let Some(group_id) = data.group_id {
-        if let Some(group) = server.get_group_mut(&group_id) {
-            user_id.and_then(|user_id| {
-                let post_id = group.store.add_post(user_id, data.subject, data.contents);
-                server.get_user(&user_id)
-                    .and_then(|user|
-                        group.store.get_post_mut(post_id).map(|post|PostData::new(post, user))
-                    )
-            })
-        } else {
-            None
-        }
+        let post = Option::zip(server.get_group_mut(&group_id),user_id)
+            .and_then(|(group, user_id)| {
+                let id = group.store.add_post(user_id.clone(), data.subject, data.contents);
+                group.store.get_post_mut(id)
+            });
+        let post_author = post.map(|post|post.data.author.clone());
+        let user = post_author.and_then(|post_author|server.get_user(&post_author));
+        Option::zip(post,user).map(|(post, user)|PostData::new(post, user))
     } else {
         server.get_user_mut(&data.user_id)
             .and_then(|user| {
-            let post_id = user.store
-                .add_post(data.user_id, data.subject, data.contents);
-            user.store.get_post_mut(post_id).map(|post|PostData::new(&post, user))
-        })
+                let store = &mut user.store;
+                let post_id = user.store
+                    .add_post(data.user_id, data.subject, data.contents);
+                if let Some(post) = user.store.get_post_mut(post_id) {
+                    Some(PostData::new(&post, user))
+                } else {
+                    None
+                }
+            }
+        )
     };
     Ok(post)
 }
@@ -51,15 +54,8 @@ pub struct SubmitPostData {
 }
 
 #[component]
-pub fn NewPostBox(user_id: UserUuid, group_id: Option<GroupUuid>, posts: RwSignal<Vec<RwSignal<PostData>>>, datetime_feed_generated: RwSignal<String>) -> impl IntoView {
+pub fn NewPostBox(user_id: UserUuid, group_id: Option<GroupUuid>) -> impl IntoView {
     let submit_post = ServerAction::<SubmitPost>::new();
-    Effect::new(move |_| {
-        if let Some(Ok(Some(post))) = submit_post.value().get() {
-            post.data.author
-            let posts = posts.get().insert(0, RwSignal::new());
-            posts.set()
-        }
-    });
     view! {
         <ActionForm action = submit_post>
             <input name = "data[user_id]" hidden = true value = {user_id.to_string()} />

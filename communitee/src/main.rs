@@ -7,7 +7,7 @@ cfg_if! {
     if #[cfg(feature = "ssr")] {
         use clap::Parser;
         use communitee::{App, ClientSideData, DefaultData, InitialUserData, ServerSideData, shell, Server, PublicUrl};
-        use libertee::RandomGeneration;
+        use libertee::{RandomGeneration, SessionStorage};
         use std::net::SocketAddr;
         use std::sync::{Arc, Mutex};
         use tracing::info;
@@ -82,6 +82,7 @@ cfg_if! {
                 server: Arc::new(Mutex::new(server))
             };
 
+            let session_storage = SessionStorage::default();
             let secret_key = Key::generate();
 
             let client_side_data = ClientSideData {
@@ -110,7 +111,7 @@ cfg_if! {
                 actix_web::App::new()
                     .wrap(IdentityMiddleware::default())
                     .wrap(SessionMiddleware::new(
-                        redis_store.clone(),
+                        session_storage.clone(),
                         secret_key.clone(),
                     ))
                     .service(Files::new("/pkg", format!("{site_root}/pkg")))

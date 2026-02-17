@@ -1,12 +1,12 @@
 use leptos::prelude::*;
 use leptos_router::components::A;
+#[cfg(feature = "ssr")]
 use serde::{Deserialize, Serialize};
 
 use crate::app::generic_components::{ButtonControl, ButtonFunction, CloseButton, ControlStack};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
-    use crate::{ServerSideData, server_functions::format_datetime, structs::{Post, User}};
-    use chrono::Utc;
+    use crate::{server_functions::format_datetime, structs::{Post, User}};
 } }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

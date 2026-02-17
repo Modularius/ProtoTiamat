@@ -12,6 +12,7 @@ actix-files = { workspace = true, optional = true }
 actix-identity = { workspace = true, optional = true }
 actix-session = { workspace = true, optional = true }
 actix-web = { workspace = true, optional = true }
+anyhow = { workspace = true, optional = true }
 cfg-if.workspace = true
 chrono = { workspace = true, optional = false }
 clap = { workspace = true, optional = true }
@@ -55,6 +56,7 @@ ssr = [
   "dep:actix-session",
   "dep:actix-web",
   "dep:actix-files",
+  "dep:anyhow",
   "dep:leptos_actix",
   "dep:rand",
   "dep:reqwest",
