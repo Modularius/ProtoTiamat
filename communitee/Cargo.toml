@@ -9,6 +9,8 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 actix-files = { workspace = true, optional = true }
+actix-identity = { workspace = true, optional = true }
+actix-session = { workspace = true, optional = true }
 actix-web = { workspace = true, optional = true }
 cfg-if.workspace = true
 chrono = { workspace = true, optional = false }
@@ -49,6 +51,8 @@ ssr = [
   "tokio/rt-multi-thread",
   "tokio/signal",
   "dep:uuid",
+  "dep:actix-identity",
+  "dep:actix-session",
   "dep:actix-web",
   "dep:actix-files",
   "dep:leptos_actix",

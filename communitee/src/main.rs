@@ -1,4 +1,5 @@
 #![allow(unused_crate_dependencies)]
+use actix_session::storage::SessionStore;
 use cfg_if::cfg_if;
 use leptos::prelude::*;
 use libertee::LoginAuth;
@@ -11,6 +12,9 @@ cfg_if! {
         use std::sync::{Arc, Mutex};
         use tracing::info;
         use tracing_subscriber::{EnvFilter, Layer, layer::SubscriberExt};
+        use actix_identity::IdentityMiddleware;
+        use actix_session::SessionMiddleware;
+        use actix_web::cookie::Key;
 
         #[derive(Parser)]
         #[clap(author, version, about)]
@@ -37,7 +41,7 @@ cfg_if! {
             #[clap(long, default_value = "http://localhost:3000/")]
             public_url: PublicUrl,
         }
-
+        
         #[actix_web::main]
         async fn main() -> miette::Result<()> {
             use actix_files::Files;
@@ -78,6 +82,8 @@ cfg_if! {
                 server: Arc::new(Mutex::new(server))
             };
 
+            let secret_key = Key::generate();
+
             let client_side_data = ClientSideData {
                 default_data: args.default_data,
                 public_url: args.public_url
@@ -102,7 +108,11 @@ cfg_if! {
 
                 info!("listening on http://{}", &addr);
                 actix_web::App::new()
-                    //.route("/api/{tail:.*}", leptos_actix::handle_server_fns())
+                    .wrap(IdentityMiddleware::default())
+                    .wrap(SessionMiddleware::new(
+                        redis_store.clone(),
+                        secret_key.clone(),
+                    ))
                     .service(Files::new("/pkg", format!("{site_root}/pkg")))
                     .leptos_routes_with_context(routes, {
                         let server_side_data = server_side_data.clone();

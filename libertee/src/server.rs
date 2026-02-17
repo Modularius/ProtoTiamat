@@ -59,7 +59,7 @@ impl Server {
             if let Some(user) = self.get_user(user_id) {
                 self.sessions.insert(
                     session_id.clone(),
-                    Session::new(session_id.clone(), user_id.clone(), user.data.clone()),
+                    Session::new(session_id.clone(), user_id.clone(), Default::default(), user.data.clone()),
                 );
             }
         }

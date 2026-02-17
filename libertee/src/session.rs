@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use chrono::{TimeDelta, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -25,16 +27,26 @@ pub struct Session {
     pub user_data: UserData,
     started: Timestamp,
     ttl: TimeDelta,
+    state: HashMap<String,String>,
 }
 
 impl Session {
-    pub fn new(uuid: SessionUuid, user: UserUuid, user_data: UserData) -> Self {
+    pub fn new(uuid: SessionUuid, user: UserUuid, state: HashMap<String,String>, user_data: UserData) -> Self {
         Self {
             uuid,
             user,
             user_data,
             started: Utc::now(),
             ttl: TimeDelta::days(7),
+            state
         }
+    }
+
+    pub fn get_state(&self) -> HashMap<String,String> {
+        self.state.clone()
+    }
+
+    pub fn set_state(&mut self, state: HashMap<String,String>) {
+        self.state = state;
     }
 }
