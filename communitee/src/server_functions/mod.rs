@@ -1,12 +1,14 @@
 use cfg_if::cfg_if;
 use chrono::SubsecRound;
 use leptos::prelude::*;
-
-use libertee::{LoginAuth, Session, Timestamp};
+use libertee::{LoginAuth, Session, SessionUuid, Timestamp};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use crate::ServerSideData;
+        use actix_identity::Identity;
+        use actix_web::{HttpMessage, HttpRequest};
+        use leptos_actix::extract;
     }
 }
 
@@ -16,8 +18,33 @@ pub(crate) fn format_datetime(datetime: &Timestamp) -> String {
     format!("{}, {}", date.to_string(), time.to_string())
 }
 
+#[server]
+pub async fn get_session_from_identity() -> Result<Option<Session>, ServerFnError> {
+    let identity = match extract::<Identity>().await {
+        Ok(identity) => identity,
+        Err(ServerFnErrorErr::ServerError(err_str)) => {
+            if err_str == "There is no identity information attached to the current session" {
+                return Ok(None)
+            } else {
+                return Err(ServerFnError::ServerError(err_str));
+            }
+        },
+        Err(e) => Err(e)?,
+    };
+    match identity.id() {
+        Ok(id) => {
+            let server_mutex = use_context::<ServerSideData>()
+                .expect("ServerSideData should be provided, this should never fail.")
+                .server;
+            let server = server_mutex.lock()?;
+            Ok(server.get_session(&SessionUuid(id)).cloned())
+        },
+        Err(_) => {Ok(None)},
+    }
+}
+
 pub async fn require_login() -> Result<Option<Session>, ServerFnError> {
-    if let Some(session) = perform_login(LoginAuth::default(), "".into()).await? {
+    if let Some(session) = perform_login(LoginAuth::default()).await? {
         Ok(Some(session))
     } else {
         #[cfg(feature = "hydrate")]
@@ -33,8 +60,7 @@ pub async fn require_login() -> Result<Option<Session>, ServerFnError> {
 
 #[server]
 pub async fn perform_login(
-    auth: LoginAuth,
-    new_path: String,
+    auth: LoginAuth
 ) -> Result<Option<Session>, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
@@ -42,6 +68,10 @@ pub async fn perform_login(
     let mut server = server_side_data.server.lock()?;
     
     let session = server.create_new_session(&auth).cloned();
+    if let Some(session) = &session {
+        let request = extract::<HttpRequest>().await.expect("Request should exist.");
+        Identity::login(&request.extensions(), session.uuid.to_string())?;
+    }
     Ok(session)
     //Ok(server.get_session(&auth).cloned())
     //let nav = use_navigate();

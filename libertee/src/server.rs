@@ -41,7 +41,7 @@ impl Server {
     pub fn create_new_user(&mut self, auth: &LoginAuth, name: String, datetime: Option<Timestamp>) -> Option<&mut User> {
         let user_id = UserUuid(Uuid::generate_random(16));
         self.users.insert(user_id.clone(), User::new(
-            UserData{
+            UserData {
                     id: user_id.clone(),
                     name,
                     datetime_joined: datetime.unwrap_or(Utc::now()),
@@ -77,6 +77,16 @@ impl Server {
             .unwrap();
         
     }
+
+    pub fn add_post_to_group(&mut self, group_id: &GroupUuid, user_id: &UserUuid, subject: String, contents: String) -> Option<PostUuid> {
+        //let member_id = self.get_group(&group_id).and_then(|group|group.get_member_id_from_user_id(user_id));
+        let group = self.get_group_mut(&group_id);
+        group.map(|group| {
+            let id = group.store.add_post(user_id.clone(), subject, contents);
+            //group.store.get_post_mut(id);
+            id
+        })
+    }
 }
 
 impl RandomGeneration for Server {
@@ -99,7 +109,7 @@ impl RandomGeneration for Server {
 
         let user_ids = users.keys().cloned().collect::<Vec<_>>();
         for (user_id, user) in users.iter_mut() {
-            user.data.friends = user_ids
+            user.data.friends = Some(user_ids
                 .iter()
                 .filter(|_| rand::random_bool(0.5))
                 .filter(|&id| id != user_id)
@@ -107,13 +117,13 @@ impl RandomGeneration for Server {
                     user_id: id.clone(),
                     datetime_of_friendship: Utc::now(),
                 })
-                .collect();
+                .collect());
 
-            user.data.groups = groups
+            user.data.groups = Some(groups
                 .iter()
                 .filter(|_| rand::random_bool(0.5))
                 .map(|(id, _)| id.clone())
-                .collect();
+                .collect());
 
             user.store.posts = (0..rand::random_range(6..11))
                 .map(|id| {
@@ -130,7 +140,7 @@ impl RandomGeneration for Server {
                 })
                 .collect();
 
-            for group_id in user.data.groups.iter() {
+            for group_id in user.data.groups.iter().flatten() {
                 let group = groups.get_mut(group_id).unwrap();
                 group.add_member(user_id.clone());
                 for _ in 0..4 {

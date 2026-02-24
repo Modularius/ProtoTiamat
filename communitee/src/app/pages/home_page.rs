@@ -50,7 +50,7 @@ pub async fn get_home_page_data(
 #[component]
 pub fn HomePage() -> impl IntoView {
     view! {
-        <SessionView action = |session| {
+        <SessionView action = |session: Session| {
             let session = session.clone();
             let home_page_data = Resource::new_blocking(
                 move ||session.clone(),

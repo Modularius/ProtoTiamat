@@ -43,6 +43,7 @@ pub async fn get_groupslist_page_data(
                 .data
                 .groups
                 .iter()
+                .flatten()
                 .take(max_groups)
                 .flat_map(|group_id| server.get_group(group_id).map(|group| group.data.clone()))
                 .collect(),
@@ -55,7 +56,7 @@ pub async fn get_groupslist_page_data(
 pub fn GroupslistPage() -> impl IntoView {
     || {
         view! {
-            <SessionView action = |session: &Session| {
+            <SessionView action = |session: Session| {
                 let session = session.clone();
                 let groupslist_page_data = {
                     let session = session.clone();

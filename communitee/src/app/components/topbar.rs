@@ -63,7 +63,7 @@ pub fn TopBar() -> impl IntoView {
             <RightBar>
                 <SessionView
                     fallback = ||LoginBar()
-                    action = |session: &Session|UserBar(UserBarProps { session: session.clone() })
+                    action = |session: Session|UserBar(UserBarProps { session })
                 />
             </RightBar>
         </BigBar>

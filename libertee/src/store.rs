@@ -41,7 +41,11 @@ impl Store {
         self.posts.remove(&id);
     }
 
-    pub fn get_post_mut(&mut self, id: PostUuid) -> Option<&mut Post> {
-        self.posts.get_mut(&id)
+    pub fn get_post(&self, id: &PostUuid) -> Option<&Post> {
+        self.posts.get(id)
+    }
+
+    pub fn get_post_mut(&mut self, id: &PostUuid) -> Option<&mut Post> {
+        self.posts.get_mut(id)
     }
 }

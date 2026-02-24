@@ -10,7 +10,7 @@ struct Session {
 }
 
 #[derive(Default, Clone)]
-pub(crate) struct SessionStorage(Arc<Mutex<HashMap<String, Session>>>);
+pub struct SessionStorage(Arc<Mutex<HashMap<String, Session>>>);
 
 impl SessionStore for SessionStorage {
     fn load(

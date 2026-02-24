@@ -5,7 +5,7 @@ use crate::{
             FriendlistPage, GroupPage, GroupslistPage, HomePage, LoginPage, RegisterPage, UserPage,
         },
     },
-    server_functions::require_login,
+    server_functions::{get_session_from_identity, require_login},
     structs::ClientSideData,
 };
 use leptos::prelude::*;
@@ -41,7 +41,7 @@ pub fn App() -> impl IntoView {
 
     provide_context(TopLevelContext {
         client_side_data,
-        session: Resource::new_blocking(|| (), move |_| require_login()),
+        session: Resource::new_blocking(|| (), move |_| get_session_from_identity()),
     });
 
     view! {

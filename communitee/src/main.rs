@@ -6,8 +6,8 @@ use libertee::LoginAuth;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use clap::Parser;
-        use communitee::{App, ClientSideData, DefaultData, InitialUserData, ServerSideData, shell, Server, PublicUrl};
-        use libertee::{RandomGeneration, SessionStorage};
+        use communitee::{App, ClientSideData, DefaultData, InitialUserData, ServerSideData, SessionStorage, shell, Server, PublicUrl};
+        use libertee::RandomGeneration;
         use std::net::SocketAddr;
         use std::sync::{Arc, Mutex};
         use tracing::info;
@@ -109,11 +109,6 @@ cfg_if! {
 
                 info!("listening on http://{}", &addr);
                 actix_web::App::new()
-                    .wrap(IdentityMiddleware::default())
-                    .wrap(SessionMiddleware::new(
-                        session_storage.clone(),
-                        secret_key.clone(),
-                    ))
                     .service(Files::new("/pkg", format!("{site_root}/pkg")))
                     .leptos_routes_with_context(routes, {
                         let server_side_data = server_side_data.clone();
@@ -127,6 +122,11 @@ cfg_if! {
                         move ||shell(leptos_options.clone())
                     })
                     .app_data(actix_web::web::Data::new(leptos_options.to_owned()))
+                    .wrap(IdentityMiddleware::default())
+                    .wrap(SessionMiddleware::new(
+                        session_storage.clone(),
+                        secret_key.clone(),
+                    ))
             })
             .bind(&addr)
             .into_diagnostic()?

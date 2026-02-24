@@ -13,7 +13,7 @@ cfg_if! {
         use clap::{Args};
         use std::sync::{Arc, Mutex};
         pub use libertee::{User, Server, Post, Feed, Member, Group, SessionUuid};
-        pub(crate) use session_store::SessionStorage;
+        pub use session_store::SessionStorage;
 
         /// Encapsulates all run-time settings which are only available to the server.
         #[derive(Default, Clone)]

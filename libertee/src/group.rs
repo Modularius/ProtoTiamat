@@ -103,6 +103,10 @@ cfg_if! {
                 Some(post.clone())
             }
 
+            pub fn get_post(&self, post_id: &PostUuid) -> Option<&Post> {
+                self.store.get_post(post_id)
+            }
+
             pub fn create_feed(&self, target_member: &MemberUuid, last_post: Option<PostUuid>, max_size: usize) -> Feed {
                 let posts = self.store
                     .posts

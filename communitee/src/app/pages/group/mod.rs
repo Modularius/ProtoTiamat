@@ -123,7 +123,7 @@ pub async fn get_group_page_data(
 pub fn GroupPage() -> impl IntoView {
     || {
         view! {
-            <SessionView action = |session: &Session| {
+            <SessionView action = |session: Session| {
                 let session = session.clone();
                 let params = use_params::<GroupParams>();
                 let group_id = move || {

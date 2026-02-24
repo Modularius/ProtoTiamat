@@ -58,6 +58,7 @@ async fn get_user_page_data(
                 .data
                 .groups
                 .iter()
+                .flatten()
                 .flat_map(|group_id| {
                     server.get_group(group_id).and_then(|group| {
                         let member_id = group.get_member_id_from_user_id(&user.data.id);
@@ -75,6 +76,7 @@ async fn get_user_page_data(
                 .data
                 .friends
                 .iter()
+                .flatten()
                 .flat_map(|friendship| {
                     server
                         .get_user(&friendship.user_id)
@@ -91,7 +93,7 @@ async fn get_user_page_data(
             UserPageData {
                 name: user.data.name.clone(),
                 datetime_joined: format_datetime(&user.data.datetime_joined),
-                properties,
+                properties: properties.unwrap_or_default(),
                 groups_in,
                 friends,
             }
@@ -103,7 +105,7 @@ async fn get_user_page_data(
 pub fn UserPage() -> impl IntoView {
     {
         view! {
-            <SessionView action = |session| {
+            <SessionView action = |session: Session| {
                 let session = session.clone();
                 let params = use_params::<UserParams>();
                 let user_id = move || params.get()

@@ -45,7 +45,7 @@ async fn get_friendslist_page_data(
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
     let server = server_side_data.server.lock()?;
-
+println!("{session:?}");
     let data = FriendslistPageData {
         user_name: session.user_data.name.clone(),
         friends: server
@@ -54,6 +54,7 @@ async fn get_friendslist_page_data(
                 user.data
                     .friends
                     .iter()
+                    .flatten()
                     .take(max_friends)
                     .flat_map(|friendship| {
                         server
@@ -72,7 +73,7 @@ async fn get_friendslist_page_data(
 pub fn FriendlistPage() -> impl IntoView {
     || {
         view! {
-            <SessionView action = |session: &Session| {
+            <SessionView action = |session: Session| {
                 let session = session.clone();
                 let friendslist_page_data = Resource::new_blocking(
                     move ||session.clone(),

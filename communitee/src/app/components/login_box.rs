@@ -14,8 +14,8 @@ pub fn LoginBox() -> impl IntoView {
     view! {
         <ActionForm action = login>
             <ControlStack>
-                <LabelledInput name = "username" label = "Username" typ = "text" value = ""/>
-                <LabelledInput name = "password" label = "password" typ = "password" value = ""/>
+                <LabelledInput name = "auth[username]" label = "Username" typ = "text" value = ""/>
+                <LabelledInput name = "auth[password]" label = "password" typ = "password" value = ""/>
             </ControlStack>
             <ControlStack>
                 <SubmitControl value = "Login" />
