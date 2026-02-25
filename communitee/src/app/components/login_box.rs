@@ -1,6 +1,6 @@
 use crate::{
     app::generic_components::{
-        ControlStack, LabelledInput, LabelledSelect, LoggedInContext, SubmitControl
+        ControlStack, ErrorBox, LabelledInput, LabelledSelect, LoggedInContext, SubmitControl
     },
     server_functions::{PerformLogin, Register},
 };
@@ -9,17 +9,29 @@ use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString};
 
 #[component]
-#[tracing::instrument]
-pub fn LoginBox() -> impl IntoView {
+pub fn LoginBox(
+    #[prop(optional)]
+    redirect_to: Option<&'static str>
+) -> impl IntoView {
     let login = ServerAction::<PerformLogin>::new();
     Effect::new(move || {
         if let Some(Ok(session)) = login.value().get() {
-            let logged_in_contex = use_context::<LoggedInContext>().expect("");
+            let logged_in_contex = use_context::<LoggedInContext>()
+                .expect("LoginBox only should be used inside LoggedInGuard tags, this should never fail.");
             logged_in_contex.session_id.set(session.map(|s|s.uuid));
         }
     });
     view! {
         <ActionForm action = login>
+            {redirect_to.map(|redirect_to|view!{
+                <input type = "hidden" name = "redirect_to" value = {redirect_to}/>
+            })}
+            
+            <Show when = move ||login.value().get().map(Result::ok).flatten().flatten().is_none()>
+                <ErrorBox>
+                    "Login Failed."
+                </ErrorBox>
+            </Show>
             <ControlStack>
                 <LabelledInput name = "auth[username]" label = "Username" typ = "text" value = ""/>
                 <LabelledInput name = "auth[password]" label = "password" typ = "password" value = ""/>

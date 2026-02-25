@@ -1,6 +1,7 @@
 use cfg_if::cfg_if;
 use chrono::SubsecRound;
 use leptos::prelude::*;
+use leptos_router::hooks::use_navigate;
 use libertee::{LoginAuth, Session, SessionUuid, Timestamp};
 
 cfg_if! {
@@ -46,7 +47,7 @@ pub async fn get_session_from_identity() -> Result<Option<SessionUuid>, ServerFn
 }
 
 pub async fn require_login() -> Result<Option<Session>, ServerFnError> {
-    if let Some(session) = perform_login(LoginAuth::default()).await? {
+    if let Some(session) = perform_login(LoginAuth::default(), Default::default()).await? {
         Ok(Some(session))
     } else {
         #[cfg(feature = "hydrate")]
@@ -62,7 +63,8 @@ pub async fn require_login() -> Result<Option<Session>, ServerFnError> {
 
 #[server]
 pub async fn perform_login(
-    auth: LoginAuth
+    auth: LoginAuth,
+    redirect_to: Option<String>,
 ) -> Result<Option<Session>, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
@@ -74,11 +76,12 @@ pub async fn perform_login(
         let request = extract::<HttpRequest>().await.expect("Request should exist.");
         Identity::login(&request.extensions(), session.uuid.to_string())?;
     }
+    if let Some(redirect_to) = redirect_to {
+        if session.is_some() {
+            leptos_actix::redirect(&redirect_to);
+        }
+    }
     Ok(session)
-    //Ok(server.get_session(&auth).cloned())
-    //let nav = use_navigate();
-    //nav(&new_path, Default::default());
-    //Ok(())
 }
 
 #[server]
