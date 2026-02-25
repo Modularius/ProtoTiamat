@@ -11,10 +11,10 @@ pub use control_stack::{Control, ControlStack, LabelledControlStack};
 pub use error_box::error_box;
 pub use inert_containers::{ErrorBox, RoundedBox, SharpBox};
 pub use labelled_input::{LabelledInput, LabelledSelect, LabelledTextArea};
-use leptos::{either::Either, prelude::*, server_fn::ServerFn};
+use leptos::{either::Either, prelude::*};
 
-use crate::{app::{TopLevelContext, generic_components::inert_containers::ErrorBoxProps}, server_functions::get_session_from_identity};
-use libertee::{Session, UserData};
+use crate::app::TopLevelContext;
+use libertee::{Session, SessionUuid, UserData};
 
 #[component]
 pub fn ResourceView<F, R, V>(
@@ -31,7 +31,7 @@ where
         <Suspense fallback> {
             move || {
                 let action = action.clone();
-                resource.get().map(|resource| view!{
+                resource.get().map(|resource| view! {
                     <ErrorBoundary fallback = error_box>
                         {resource.map(|resource|action.clone()(resource))}
                     </ErrorBoundary>
@@ -42,15 +42,14 @@ where
     }
 }
 
-
 /// New-type wrapper for a function that returns a view with `From` and `Default` traits implemented
 /// to enable optional props in for example `<Show>` and `<Suspense>`.
 #[derive(Clone)]
-pub struct ViewSessionFn(Arc<dyn Fn(Session) -> AnyView + Send + Sync + 'static>);
+pub struct ViewSessionFn(Arc<dyn Fn(SessionUuid) -> AnyView + Send + Sync + 'static>);
 
 impl<F, C> From<F> for ViewSessionFn
 where
-    F: Fn(Session) -> C + Send + Sync + 'static,
+    F: Fn(SessionUuid) -> C + Send + Sync + 'static,
     C: RenderHtml + Send + 'static,
 {
     fn from(value: F) -> Self {
@@ -60,14 +59,14 @@ where
 
 impl ViewSessionFn {
     /// Execute the wrapped function
-    pub fn run(&self, x : Session) -> AnyView {
+    pub fn run(&self, x : SessionUuid) -> AnyView {
         (self.0)(x)
     }
 }
 
 #[derive(Clone)]
 pub struct LoggedInContext {
-    pub session: RwSignal<Option<Session>>,
+    pub session_id: RwSignal<Option<SessionUuid>>
 }
 
 #[component]
@@ -77,10 +76,10 @@ pub fn LoggedInGuard<C>(
 {
     let top_level_context = use_context::<TopLevelContext>()
         .expect("TopLevelContext should be provided, this should never fail.");
-    let session = top_level_context.session;
-    Suspend::new(async move { match session.await {
-        Ok(session) => {
-            provide_context(LoggedInContext { session: RwSignal::new(session) });
+    let session_id = top_level_context.session;
+    Suspend::new(async move { match session_id.await {
+        Ok(session_id) => {
+            provide_context(LoggedInContext { session_id: RwSignal::new(session_id) });
             Either::Left(children.into_inner()())
         },
         Err(e) => {
@@ -96,7 +95,7 @@ pub fn IsLoggedIn<C>(
 {
     let session = use_context::<LoggedInContext>()
         .expect("LoggedInContext should exist, this should never fail.")
-        .session;
+        .session_id;
     Show(ShowProps { children: children.clone(), when: move ||session.get().is_some(), fallback: Default::default() })
 }
 
@@ -107,7 +106,7 @@ pub fn NotLoggedIn<C>(
 {
     let session = use_context::<LoggedInContext>()
         .expect("LoggedInContext should exist, this should never fail.")
-        .session;
+        .session_id;
     Show(ShowProps { children: children.clone(), when: move ||session.get().is_none(), fallback: Default::default() })
 }
 
@@ -116,11 +115,11 @@ pub fn SessionView(
     #[prop(into)]
     action: ViewSessionFn
 ) -> impl IntoView {
-    let session = use_context::<LoggedInContext>()
+    let session_id = use_context::<LoggedInContext>()
         .expect("LoggedInContext should exist, this should never fail.")
-        .session;
+        .session_id;
         
-    move||action.run(session.get().expect("Session View"))
+    move||action.run(session_id.get().expect("Session View"))
 }
 
 /*#[component]

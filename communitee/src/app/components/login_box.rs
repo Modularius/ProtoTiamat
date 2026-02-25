@@ -1,20 +1,21 @@
 use crate::{
     app::generic_components::{
-        Control, ControlStack, LabelledInput, LabelledSelect, LoggedInContext, SubmitControl
+        ControlStack, LabelledInput, LabelledSelect, LoggedInContext, SubmitControl
     },
     server_functions::{PerformLogin, Register},
 };
-use leptos::{attr::Default, prelude::*};
+use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
-use strum::{Display, EnumIter, EnumString, IntoEnumIterator};
+use strum::{Display, EnumIter, EnumString};
 
 #[component]
+#[tracing::instrument]
 pub fn LoginBox() -> impl IntoView {
     let login = ServerAction::<PerformLogin>::new();
     Effect::new(move || {
         if let Some(Ok(session)) = login.value().get() {
             let logged_in_contex = use_context::<LoggedInContext>().expect("");
-            logged_in_contex.session.set(session);
+            logged_in_contex.session_id.set(session.map(|s|s.uuid));
         }
     });
     view! {

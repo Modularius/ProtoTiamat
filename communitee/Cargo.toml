@@ -41,10 +41,14 @@ wasm-bindgen = { workspace = true, optional = true }
 hydrate = [
   "dep:wasm-bindgen",
   "leptos/hydrate",
+  "leptos/tracing",
+  "leptos/trace-component-props",
   "libertee/hydrate"
 ]
 ssr = [
   "leptos/ssr",
+  "leptos/tracing",
+  "leptos/trace-component-props",
   "leptos_meta/ssr",
   "leptos-use/ssr",
   "libertee/ssr",

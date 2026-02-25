@@ -12,7 +12,7 @@ use leptos::{either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
 #[cfg(feature = "ssr")]
 use libertee::UserData;
-use libertee::{GroupUuid, Session, UserUuid};
+use libertee::{GroupUuid, Session, SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Params, PartialEq)]
@@ -93,7 +93,7 @@ impl GroupWithMemberDelegatePageData {
 
 #[server]
 pub async fn get_group_page_data(
-    session: Session,
+    session_id: SessionUuid,
     group_id: GroupUuid,
 ) -> Result<GroupPageData, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
@@ -102,9 +102,12 @@ pub async fn get_group_page_data(
 
     let group = server.get_group(&group_id);
 
+    let session = server.get_session(&session_id)
+        .ok_or_else(||ServerFnErrorErr::ServerError(format!("No Session found with id {}", session_id.to_string())))?;
+
     let data = GroupPageData {
         user_id: session.user_data.id.clone(),
-        user_name: session.user_data.name,
+        user_name: session.user_data.name.clone(),
         group_id: group_id.clone(),
         group_name: group
             .map(|group| group.data.name.clone())
@@ -123,8 +126,8 @@ pub async fn get_group_page_data(
 pub fn GroupPage() -> impl IntoView {
     || {
         view! {
-            <SessionView action = |session: Session| {
-                let session = session.clone();
+            <SessionView action = |session_id: SessionUuid| {
+                let session_id = session_id.clone();
                 let params = use_params::<GroupParams>();
                 let group_id = move || {
                     params
@@ -136,8 +139,8 @@ pub fn GroupPage() -> impl IntoView {
                 let group_page_data = {
                     let group_id = group_id.clone();
                     Resource::new_blocking(
-                        move || (session.clone(), group_id()),
-                        |(session,group_id)| get_group_page_data(session, group_id),
+                        move || (session_id.clone(), group_id()),
+                        |(session_id,group_id)| get_group_page_data(session_id, group_id),
                     )
                 };
                 view!{

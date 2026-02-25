@@ -2096,6 +2096,8 @@ dependencies = [
  "or_poisoned",
  "reactive_graph",
  "send_wrapper",
+ "serde",
+ "serde_json",
  "tachys",
  "tracing",
  "wasm-bindgen",

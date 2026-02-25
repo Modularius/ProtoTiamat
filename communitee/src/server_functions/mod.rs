@@ -19,7 +19,7 @@ pub(crate) fn format_datetime(datetime: &Timestamp) -> String {
 }
 
 #[server]
-pub async fn get_session_from_identity() -> Result<Option<Session>, ServerFnError> {
+pub async fn get_session_from_identity() -> Result<Option<SessionUuid>, ServerFnError> {
     let identity = match extract::<Identity>().await {
         Ok(identity) => identity,
         Err(ServerFnErrorErr::ServerError(err_str)) => {
@@ -37,7 +37,9 @@ pub async fn get_session_from_identity() -> Result<Option<Session>, ServerFnErro
                 .expect("ServerSideData should be provided, this should never fail.")
                 .server;
             let server = server_mutex.lock()?;
-            Ok(server.get_session(&SessionUuid(id)).cloned())
+            Ok(server.get_session(&SessionUuid(id))
+                .map(|session|session.uuid.clone())
+            )
         },
         Err(_) => {Ok(None)},
     }

@@ -14,7 +14,7 @@ use leptos_router::{
     components::{Outlet, ParentRoute, Route, Router, Routes},
     path,
 };
-use libertee::Session;
+use libertee::{Session, SessionUuid};
 
 /// This struct enable a degree of type-checking for the [use_context]/[use_context] functions.
 /// Any component making use of the following fields should call `use_context::<TopLevelContext>()`
@@ -22,7 +22,7 @@ use libertee::Session;
 #[derive(Clone)]
 pub struct TopLevelContext {
     pub client_side_data: ClientSideData,
-    pub session: Resource<Result<Option<Session>, ServerFnError>>,
+    pub session: Resource<Result<Option<SessionUuid>, ServerFnError>>,
 }
 
 /// An app router which renders the homepage and handles 404's

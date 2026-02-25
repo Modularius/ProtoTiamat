@@ -5,7 +5,7 @@ use crate::app::{
     },
 };
 use leptos::prelude::*;
-use libertee::Session;
+use libertee::{Session, SessionUuid};
 use libertee::UserUuid;
 use serde::{Deserialize, Serialize};
 
@@ -39,13 +39,16 @@ pub struct FriendslistPageData {
 
 #[server]
 async fn get_friendslist_page_data(
-    session: Session,
+    session_id: SessionUuid,
     max_friends: usize,
 ) -> Result<FriendslistPageData, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
     let server = server_side_data.server.lock()?;
-println!("{session:?}");
+
+    let session = server.get_session(&session_id)
+        .ok_or_else(||ServerFnErrorErr::ServerError(format!("No Session found with id {}", session_id.to_string())))?;
+
     let data = FriendslistPageData {
         user_name: session.user_data.name.clone(),
         friends: server
@@ -73,11 +76,10 @@ println!("{session:?}");
 pub fn FriendlistPage() -> impl IntoView {
     || {
         view! {
-            <SessionView action = |session: Session| {
-                let session = session.clone();
+            <SessionView action = |session_id: SessionUuid| {
                 let friendslist_page_data = Resource::new_blocking(
-                    move ||session.clone(),
-                    |session| get_friendslist_page_data(session, 10)
+                    move ||session_id.clone(),
+                    |session_id| get_friendslist_page_data(session_id, 10)
                 );
                 view!{
                     <ResourceView

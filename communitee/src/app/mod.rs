@@ -22,7 +22,6 @@ pub fn shell(leptos_options: LeptosOptions) -> impl IntoView {
             <head>
                 <meta charset="utf-8"/>
                 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-                <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
                 <AutoReload options=leptos_options.clone() />
                 <HydrationScripts options=leptos_options.clone() /*root = public_url.clone()*/ />
                 <HashedStylesheet options=leptos_options /*root = public_url*/ />

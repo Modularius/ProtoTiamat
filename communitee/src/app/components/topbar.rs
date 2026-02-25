@@ -56,21 +56,24 @@ fn ToolBar(children: Children) -> impl IntoView {
 
 #[component]
 pub fn TopBar() -> impl IntoView {
-    view! {
-        <BigBar>
-            <SanctimoneousMissionStatement/>
-            <CommuniteeTitle/>
-            <RightBar>
-                <LoggedInGuard>
-                    <IsLoggedIn>
-                        <UserBar />
-                    </IsLoggedIn>
-                    <NotLoggedIn>
-                        <LoginBar />
-                    </NotLoggedIn>
-                </LoggedInGuard>
-            </RightBar>
-        </BigBar>
+    || view! {
+        <LoggedInGuard>
+            <div></div>
+        </LoggedInGuard>
+        <LoggedInGuard>
+            <BigBar>
+                <SanctimoneousMissionStatement/>
+                <CommuniteeTitle/>
+                <RightBar>
+                <IsLoggedIn>
+                    <UserBar />
+                </IsLoggedIn>
+                <NotLoggedIn>
+                    <LoginBar />
+                </NotLoggedIn>
+                </RightBar>
+            </BigBar>
+        </LoggedInGuard>
         <ToolBar>
             <LoggedInGuard>
                 <IsLoggedIn>
@@ -94,17 +97,22 @@ pub fn TopBar() -> impl IntoView {
 
 #[component]
 fn UserBar() -> impl IntoView {
-    let session = use_context::<LoggedInContext>()
+    let session_id = use_context::<LoggedInContext>()
         .expect("LoggedInContext should exist, this should never fail.")
-        .session
-        .get()
-        .expect("`UserBar` must only be used in `IsLoggedIn` block, this should never fail.");
+        .session_id;
+    move || {
+        let label = session_id.get()
+            .expect("`UserBar` must only be used in `IsLoggedIn` block, this should never fail.")
+            .to_string();
 
-    view! {
-        <LabelledControlStack label = {session.user_data.name} href = {Some(format!("/user/{}", session.user_data.id.to_string()))} class = "w-1/3">
-            <ButtonControl value = "Settings" on_click = ButtonFunction::closure(|_ev|{}) />
-            <ButtonControl value = "Logout" on_click = ButtonFunction::closure(|_ev|{})/>
-        </LabelledControlStack>
+        //let label = "".to_string();//{session.user_data.name};
+        let href = Some("".to_string());//{Some(format!("/user/{}", session.user_data.id.to_string()))};
+        view! {
+            <LabelledControlStack label href class = "w-1/3">
+                <ButtonControl value = "Settings" on_click = ButtonFunction::closure(|_ev|{}) />
+                <ButtonControl value = "Logout" on_click = ButtonFunction::closure(|_ev|{})/>
+            </LabelledControlStack>
+        }
     }
 }
 

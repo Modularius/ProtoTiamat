@@ -1,9 +1,9 @@
 use crate::app::{
-    components::{AdColumns, Feed, MainColumn, NewPostBox, PostBox, PostData},
-    generic_components::{IsLoggedIn, LoggedInGuard, ResourceView, RoundedBox, SessionView, error_box},
+    components::{AdColumns, MainColumn, NewPostBox, PostBox, PostData},
+    generic_components::{IsLoggedIn, LoggedInContext, LoggedInGuard, RoundedBox, SessionView, error_box},
 };
-use leptos::{prelude::*, server_fn::ServerFn};
-use libertee::{Session, UserUuid};
+use leptos::prelude::*;
+use libertee::{SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -20,17 +20,21 @@ pub struct HomePageData {
 }
 
 #[server]
+#[tracing::instrument]
 pub async fn get_home_page_data(
-    session: Session,
+    session_id: SessionUuid,
     max_posts: usize,
 ) -> Result<Option<HomePageData>, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
     let server = server_side_data.server.lock()?;
+    
+    let session = server.get_session(&session_id)
+        .ok_or_else(||ServerFnErrorErr::ServerError(format!("No Session found with id {}", session_id.to_string())))?;
 
     let data = server.get_user(&session.user).map(|user| HomePageData {
         user_id: user.data.id.clone(),
-        user_name: session.user_data.name.clone(),
+        user_name: user.data.name.clone(),
         datetime_feed_generated: format_datetime(&Utc::now()),
         posts: user
             .store
@@ -52,6 +56,7 @@ struct HomePageContext {
 }
 
 #[component]
+#[tracing::instrument]
 pub fn HomePage() -> impl IntoView {
     let home_page_data = ServerAction::new();
     provide_context(HomePageContext { 
@@ -60,8 +65,31 @@ pub fn HomePage() -> impl IntoView {
     view! {
         <LoggedInGuard>
             <IsLoggedIn>
-                <SessionView action = move |session: Session| {
-                    home_page_data.dispatch( GetHomePageData{ session, max_posts: 10 } );
+                {
+                    Effect::new(move|| {
+                        let session_id = use_context::<LoggedInContext>()
+                            .expect("LoggedInContext should exist, this should never fail.")
+                            .session_id
+                            .get()
+                            .expect("This must only be used in `IsLoggedIn` block, this should never fail.");
+                            home_page_data.dispatch( GetHomePageData{ session_id, max_posts: 10 } );
+                    });
+                }
+                <Suspense> { move ||
+                    home_page_data.value().get().map(|home_page_data|
+                        view!{
+                            <ErrorBoundary fallback = error_box>
+                                {home_page_data.map(|home_page_data|
+                                    home_page_data.map(|home_page_data|
+                                        HomePageWithData(HomePageWithDataProps { home_page_data })
+                                    )
+                                )}
+                            </ErrorBoundary>
+                        }
+                    )
+                } </Suspense>
+                /* <SessionView action = move |session_id: SessionUuid| {
+                    home_page_data.dispatch( GetHomePageData{ session_id, max_posts: 10 } );
                     Suspend::new(async move {
                         home_page_data.value().get().map(|home_page_data|
                             view!{
@@ -76,6 +104,7 @@ pub fn HomePage() -> impl IntoView {
                         )
                     })
                 } />
+                 */
             </IsLoggedIn>
         </LoggedInGuard>
     }

@@ -5,7 +5,7 @@ use crate::app::{
     },
 };
 use leptos::prelude::*;
-use libertee::{GroupData, Session};
+use libertee::{GroupData, Session, SessionUuid};
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -29,12 +29,16 @@ impl Default for GroupslistPageData {
 
 #[server]
 pub async fn get_groupslist_page_data(
-    session: Session,
+    session_id: SessionUuid,
     max_groups: usize,
 ) -> Result<GroupslistPageData, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
     let server = server_side_data.server.lock()?;
+    
+    let session = server.get_session(&session_id)
+        .ok_or_else(||ServerFnErrorErr::ServerError(format!("No Session found with id {}", session_id.to_string())))?;
+
     let data = server
         .get_user(&session.user)
         .map(|user| GroupslistPageData {
@@ -56,13 +60,13 @@ pub async fn get_groupslist_page_data(
 pub fn GroupslistPage() -> impl IntoView {
     || {
         view! {
-            <SessionView action = |session: Session| {
-                let session = session.clone();
+            <SessionView action = |session_id: SessionUuid| {
+                let session_id = session_id.clone();
                 let groupslist_page_data = {
-                    let session = session.clone();
+                    let session_id = session_id.clone();
                     Resource::new_blocking(
-                        move || session.clone(),
-                        |session| get_groupslist_page_data(session, 5),
+                        move || session_id.clone(),
+                        |session_id| get_groupslist_page_data(session_id, 5),
                     )
                 };
                 view!{

@@ -8,7 +8,7 @@ use crate::app::{
 };
 use leptos::{Params, either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
-use libertee::{Session, UserUuid};
+use libertee::{Session, SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -22,6 +22,7 @@ struct UserParams {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct UserPageData {
+    pub user_name: String,
     pub name: String,
     pub datetime_joined: String,
     pub properties: HashMap<String, String>,
@@ -44,11 +45,15 @@ pub struct FriendOfData {
 
 #[server]
 async fn get_user_page_data(
+    session_id: SessionUuid,
     user_id: Option<UserUuid>,
 ) -> Result<Option<UserPageData>, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect("ServerSideData should be provided, this should never fail.");
     let server = server_side_data.server.lock()?;
+
+    let session = server.get_session(&session_id)
+        .ok_or_else(||ServerFnErrorErr::ServerError(format!("No Session found with id {}", session_id.to_string())))?;
 
     let user_page_data = user_id
         .and_then(|user_id| server.get_user(&user_id.into()))
@@ -91,6 +96,7 @@ async fn get_user_page_data(
                 .collect();
 
             UserPageData {
+                user_name: session.user_data.name.clone(),
                 name: user.data.name.clone(),
                 datetime_joined: format_datetime(&user.data.datetime_joined),
                 properties: properties.unwrap_or_default(),
@@ -105,34 +111,28 @@ async fn get_user_page_data(
 pub fn UserPage() -> impl IntoView {
     {
         view! {
-            <SessionView action = |session: Session| {
-                let session = session.clone();
+            <SessionView action = |session_id: SessionUuid| {
+                let session_id = session_id.clone();
                 let params = use_params::<UserParams>();
-                let user_id = move || params.get()
+                let user_id = params.get()
                     .ok()
                     .and_then(|params|params.user_id.map(UserUuid));
 
                 let user_page_data = Resource::new_blocking(
-                    user_id,
-                    |user_id| get_user_page_data(user_id.clone())
+                    move||(session_id.clone(), user_id.clone()),
+                    |(session_id, user_id)| get_user_page_data(session_id.clone(), user_id.clone())
                 );
                 view!{
-                    <MainColumn>
-                        <h1> "Hi there " {session.user_data.name.clone()} "!" </h1>
-                        //<AccessBar user_data = user_data.clone()/>
-                        <AdColumns>
-                            <div>
-                            <ResourceView resource = user_page_data action = move |user_page_data| {
-                                match user_page_data {
-                                    Some(user_page_data) => Either::Left(view!{
-                                        <UserPageWithData user_page_data />
-                                    }),
-                                    None => Either::Right(view!{}),
-                                }
-                            }/>
-                            </div>
-                        </AdColumns>
-                    </MainColumn>
+                    <div>
+                    <ResourceView resource = user_page_data action = move |user_page_data| {
+                        match user_page_data {
+                            Some(user_page_data) => Either::Left(view!{
+                                <UserPageWithData user_page_data />
+                            }),
+                            None => Either::Right(view!{}),
+                        }
+                    }/>
+                    </div>
                 }
             } />
         }
@@ -142,33 +142,39 @@ pub fn UserPage() -> impl IntoView {
 #[component]
 pub fn UserPageWithData(user_page_data: UserPageData) -> impl IntoView {
     view! {
-        <h2> "Communitee User: " {user_page_data.name} </h2>
-        <h3> "Joined Communitee on: " {user_page_data.datetime_joined} </h3>
-        <RoundedBox>
-            <h3> "Has " {user_page_data.friends.len()} " friend(s)." </h3>
-            <For
-                each = move ||user_page_data.friends.clone().into_iter().enumerate()
-                key = |(i,_)|*i
-                children = |(_,friend)| view!{
-                    <LabelledControlStack label = {friend.name} href = {Some(friend.link_to_user)} class = "w-1/2">
-                        <ButtonControl value = "Block User" on_click = ButtonFunction::closure(|_|{}) />
-                        <ButtonControl value = "Add/Remove Friend" on_click = ButtonFunction::closure(|_|{}) />
-                    </LabelledControlStack>
-                }
-            />
-        </RoundedBox>
+        <MainColumn>
+            <h1> "Hi there " {user_page_data.user_name} "!" </h1>
+            //<AccessBar user_data = user_data.clone()/>
+            <AdColumns>
+                <h2> "Communitee User: " {user_page_data.name} </h2>
+                <h3> "Joined Communitee on: " {user_page_data.datetime_joined} </h3>
+                <RoundedBox>
+                    <h3> "Has " {user_page_data.friends.len()} " friend(s)." </h3>
+                    <For
+                        each = move ||user_page_data.friends.clone().into_iter().enumerate()
+                        key = |(i,_)|*i
+                        children = |(_,friend)| view!{
+                            <LabelledControlStack label = {friend.name} href = {Some(friend.link_to_user)} class = "w-1/2">
+                                <ButtonControl value = "Block User" on_click = ButtonFunction::closure(|_|{}) />
+                                <ButtonControl value = "Add/Remove Friend" on_click = ButtonFunction::closure(|_|{}) />
+                            </LabelledControlStack>
+                        }
+                    />
+                </RoundedBox>
 
-        <RoundedBox>
-            <h3> "Is subscribed to " {user_page_data.groups_in.len()} " group(s)." </h3>
-            <For
-                each = move ||user_page_data.groups_in.clone().into_iter().enumerate()
-                key = |(i,_)|*i
-                children = |(_,group)| view!{
-                    <LabelledControlStack label = {group.name} href = {Some(group.link_to_group)} class = "w-1/2">
-                        <ButtonControl value = "Join Group" on_click = ButtonFunction::closure(|_|{}) />
-                    </LabelledControlStack>
-                }
-            />
-        </RoundedBox>
+                <RoundedBox>
+                    <h3> "Is subscribed to " {user_page_data.groups_in.len()} " group(s)." </h3>
+                    <For
+                        each = move ||user_page_data.groups_in.clone().into_iter().enumerate()
+                        key = |(i,_)|*i
+                        children = |(_,group)| view!{
+                            <LabelledControlStack label = {group.name} href = {Some(group.link_to_group)} class = "w-1/2">
+                                <ButtonControl value = "Join Group" on_click = ButtonFunction::closure(|_|{}) />
+                            </LabelledControlStack>
+                        }
+                    />
+                </RoundedBox>
+            </AdColumns>
+        </MainColumn>
     }
 }
