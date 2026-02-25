@@ -1,6 +1,6 @@
 use crate::app::{
     components::{AdColumns, Feed, MainColumn, NewPostBox, PostBox, PostData},
-    generic_components::{ResourceView, RoundedBox, SessionView},
+    generic_components::{IsLoggedIn, LoggedInGuard, ResourceView, RoundedBox, SessionView},
 };
 use leptos::prelude::*;
 use libertee::{Session, UserUuid};
@@ -50,20 +50,23 @@ pub async fn get_home_page_data(
 #[component]
 pub fn HomePage() -> impl IntoView {
     view! {
-        <SessionView action = |session: Session| {
-            let session = session.clone();
-            let home_page_data = Resource::new_blocking(
-                move ||session.clone(),
-                |session| get_home_page_data(session, 10)
-            );
-            view!{
-                <ResourceView
-                    resource = home_page_data
-                    action = |home_page_data| home_page_data
-                        .map(|home_page_data|HomePageWithData(HomePageWithDataProps{home_page_data}))
-                />
-            }
-        } />
+        <LoggedInGuard>
+            <IsLoggedIn>
+                <SessionView action = |session: Session| {
+                    let home_page_data = Resource::new_blocking(
+                        move ||session.clone(),
+                        |session| get_home_page_data(session, 10)
+                    );
+                    view!{
+                        <ResourceView
+                            resource = home_page_data
+                            action = |home_page_data| home_page_data
+                                .map(|home_page_data|HomePageWithData(HomePageWithDataProps{home_page_data}))
+                        />
+                    }
+                } />
+            </IsLoggedIn>
+        </LoggedInGuard>
     }
 }
 

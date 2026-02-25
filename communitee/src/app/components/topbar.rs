@@ -5,7 +5,7 @@ use libertee::Session;
 use crate::app::{
     components::LoginBox,
     generic_components::{
-        ButtonControl, ButtonFunction, ControlStack, LabelledControlStack, SessionView,
+        ButtonControl, ButtonFunction, ControlStack, IsLoggedIn, LabelledControlStack, LoggedInGuard, NotLoggedIn, SessionView
     },
 };
 
@@ -61,19 +61,35 @@ pub fn TopBar() -> impl IntoView {
             <SanctimoneousMissionStatement/>
             <CommuniteeTitle/>
             <RightBar>
-                <SessionView
-                    fallback = ||LoginBar()
-                    action = |session: Session|UserBar(UserBarProps { session })
-                />
+                <LoggedInGuard>
+                    <IsLoggedIn>
+                        <SessionView action = |session| view!{
+                            <UserBar session />
+                        } />
+                    </IsLoggedIn>
+                    <NotLoggedIn>
+                        <LoginBar />
+                    </NotLoggedIn>
+                </LoggedInGuard>
             </RightBar>
         </BigBar>
         <ToolBar>
-            <ButtonControl value = "Your Feed" on_click = ButtonFunction::Link("/") />
-            <ButtonControl value = "Your Friends" on_click = ButtonFunction::Link("/friends") />
-            <ButtonControl value = "Your Groups" on_click = ButtonFunction::Link("/groups") />
-            <ButtonControl value = "Your Posts" on_click = ButtonFunction::Link("/posts") />
-            <ButtonControl value = "Favourites" on_click = ButtonFunction::Link("/favourites") />
-            <ButtonControl value = "Help" on_click = ButtonFunction::Link("/help") />
+            <LoggedInGuard>
+                <IsLoggedIn>
+                    <ButtonControl value = "Your Feed" on_click = ButtonFunction::Link("/") />
+                    <ButtonControl value = "Your Friends" on_click = ButtonFunction::Link("/friends") />
+                    <ButtonControl value = "Your Groups" on_click = ButtonFunction::Link("/groups") />
+                    <ButtonControl value = "Your Posts" on_click = ButtonFunction::Link("/posts") />
+                    <ButtonControl value = "Favourites" on_click = ButtonFunction::Link("/favourites") />
+                    <ButtonControl value = "Help" on_click = ButtonFunction::Link("/help") />
+                </IsLoggedIn>
+                <NotLoggedIn>
+                    <ButtonControl value = "Home" on_click = ButtonFunction::Link("/") />
+                    <ButtonControl value = "Login" on_click = ButtonFunction::Link("/login") />
+                    <ButtonControl value = "Join Communitee" on_click = ButtonFunction::Link("/register") />
+                    <ButtonControl value = "What is Communitee" on_click = ButtonFunction::Link("/help") />
+                </NotLoggedIn>
+            </LoggedInGuard>
         </ToolBar>
     }
 }
