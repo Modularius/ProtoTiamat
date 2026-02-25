@@ -1,8 +1,8 @@
 use crate::app::{
     components::{AdColumns, Feed, MainColumn, NewPostBox, PostBox, PostData},
-    generic_components::{IsLoggedIn, LoggedInGuard, ResourceView, RoundedBox, SessionView},
+    generic_components::{IsLoggedIn, LoggedInGuard, ResourceView, RoundedBox, SessionView, error_box},
 };
-use leptos::prelude::*;
+use leptos::{prelude::*, server_fn::ServerFn};
 use libertee::{Session, UserUuid};
 use serde::{Deserialize, Serialize};
 
@@ -47,23 +47,34 @@ pub async fn get_home_page_data(
     Ok(data)
 }
 
+struct HomePageContext {
+    home_page_data: ServerAction<GetHomePageData>,
+}
+
 #[component]
 pub fn HomePage() -> impl IntoView {
+    let home_page_data = ServerAction::new();
+    provide_context(HomePageContext { 
+        home_page_data
+    });
     view! {
         <LoggedInGuard>
             <IsLoggedIn>
-                <SessionView action = |session: Session| {
-                    let home_page_data = Resource::new_blocking(
-                        move ||session.clone(),
-                        |session| get_home_page_data(session, 10)
-                    );
-                    view!{
-                        <ResourceView
-                            resource = home_page_data
-                            action = |home_page_data| home_page_data
-                                .map(|home_page_data|HomePageWithData(HomePageWithDataProps{home_page_data}))
-                        />
-                    }
+                <SessionView action = move |session: Session| {
+                    home_page_data.dispatch( GetHomePageData{ session, max_posts: 10 } );
+                    Suspend::new(async move {
+                        home_page_data.value().get().map(|home_page_data|
+                            view!{
+                                <ErrorBoundary fallback = error_box>
+                                    {home_page_data.map(|home_page_data|
+                                        home_page_data.map(|home_page_data|
+                                            HomePageWithData(HomePageWithDataProps { home_page_data })
+                                        )
+                                    )}
+                                </ErrorBoundary>
+                            }
+                        )
+                    })
                 } />
             </IsLoggedIn>
         </LoggedInGuard>

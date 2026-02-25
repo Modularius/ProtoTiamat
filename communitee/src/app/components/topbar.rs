@@ -5,7 +5,7 @@ use libertee::Session;
 use crate::app::{
     components::LoginBox,
     generic_components::{
-        ButtonControl, ButtonFunction, ControlStack, IsLoggedIn, LabelledControlStack, LoggedInGuard, NotLoggedIn, SessionView
+        ButtonControl, ButtonFunction, ControlStack, IsLoggedIn, LabelledControlStack, LoggedInContext, LoggedInGuard, NotLoggedIn, SessionView
     },
 };
 
@@ -63,9 +63,7 @@ pub fn TopBar() -> impl IntoView {
             <RightBar>
                 <LoggedInGuard>
                     <IsLoggedIn>
-                        <SessionView action = |session| view!{
-                            <UserBar session />
-                        } />
+                        <UserBar />
                     </IsLoggedIn>
                     <NotLoggedIn>
                         <LoginBar />
@@ -95,7 +93,13 @@ pub fn TopBar() -> impl IntoView {
 }
 
 #[component]
-fn UserBar(session: Session) -> impl IntoView {
+fn UserBar() -> impl IntoView {
+    let session = use_context::<LoggedInContext>()
+        .expect("LoggedInContext should exist, this should never fail.")
+        .session
+        .get()
+        .expect("`UserBar` must only be used in `IsLoggedIn` block, this should never fail.");
+
     view! {
         <LabelledControlStack label = {session.user_data.name} href = {Some(format!("/user/{}", session.user_data.id.to_string()))} class = "w-1/3">
             <ButtonControl value = "Settings" on_click = ButtonFunction::closure(|_ev|{}) />

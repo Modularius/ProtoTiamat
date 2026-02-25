@@ -11,7 +11,7 @@ pub use control_stack::{Control, ControlStack, LabelledControlStack};
 pub use error_box::error_box;
 pub use inert_containers::{ErrorBox, RoundedBox, SharpBox};
 pub use labelled_input::{LabelledInput, LabelledSelect, LabelledTextArea};
-use leptos::{either::Either, prelude::*};
+use leptos::{either::Either, prelude::*, server_fn::ServerFn};
 
 use crate::{app::{TopLevelContext, generic_components::inert_containers::ErrorBoxProps}, server_functions::get_session_from_identity};
 use libertee::{Session, UserData};
@@ -42,6 +42,7 @@ where
     }
 }
 
+
 /// New-type wrapper for a function that returns a view with `From` and `Default` traits implemented
 /// to enable optional props in for example `<Show>` and `<Suspense>`.
 #[derive(Clone)]
@@ -66,7 +67,7 @@ impl ViewSessionFn {
 
 #[derive(Clone)]
 pub struct LoggedInContext {
-    pub session: Signal<Option<Session>>,
+    pub session: RwSignal<Option<Session>>,
 }
 
 #[component]
@@ -79,7 +80,7 @@ pub fn LoggedInGuard<C>(
     let session = top_level_context.session;
     Suspend::new(async move { match session.await {
         Ok(session) => {
-            provide_context(LoggedInContext { session: Signal::stored(session) });
+            provide_context(LoggedInContext { session: RwSignal::new(session) });
             Either::Left(children.into_inner()())
         },
         Err(e) => {
@@ -96,7 +97,7 @@ pub fn IsLoggedIn<C>(
     let session = use_context::<LoggedInContext>()
         .expect("LoggedInContext should exist, this should never fail.")
         .session;
-    move ||Show(ShowProps { children: children.clone(), when: move ||session.get().is_some(), fallback: Default::default() })
+    Show(ShowProps { children: children.clone(), when: move ||session.get().is_some(), fallback: Default::default() })
 }
 
 #[component]
@@ -107,7 +108,7 @@ pub fn NotLoggedIn<C>(
     let session = use_context::<LoggedInContext>()
         .expect("LoggedInContext should exist, this should never fail.")
         .session;
-    move ||Show(ShowProps { children: children.clone(), when: move ||session.get().is_none(), fallback: Default::default() })
+    Show(ShowProps { children: children.clone(), when: move ||session.get().is_none(), fallback: Default::default() })
 }
 
 #[component]
@@ -117,10 +118,9 @@ pub fn SessionView(
 ) -> impl IntoView {
     let session = use_context::<LoggedInContext>()
         .expect("LoggedInContext should exist, this should never fail.")
-        .session
-        .get()
-        .expect("Session View");
-    action.run(session)
+        .session;
+        
+    move||action.run(session.get().expect("Session View"))
 }
 
 /*#[component]

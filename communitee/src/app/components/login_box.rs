@@ -1,6 +1,6 @@
 use crate::{
     app::generic_components::{
-        Control, ControlStack, LabelledInput, LabelledSelect, SubmitControl,
+        Control, ControlStack, LabelledInput, LabelledSelect, LoggedInContext, SubmitControl
     },
     server_functions::{PerformLogin, Register},
 };
@@ -11,6 +11,12 @@ use strum::{Display, EnumIter, EnumString, IntoEnumIterator};
 #[component]
 pub fn LoginBox() -> impl IntoView {
     let login = ServerAction::<PerformLogin>::new();
+    Effect::new(move || {
+        if let Some(Ok(session)) = login.value().get() {
+            let logged_in_contex = use_context::<LoggedInContext>().expect("");
+            logged_in_contex.session.set(session);
+        }
+    });
     view! {
         <ActionForm action = login>
             <ControlStack>
