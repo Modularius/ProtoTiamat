@@ -1,13 +1,17 @@
 use leptos::prelude::*;
 use leptos_router::components::A;
-use libertee::Session;
+use libertee::{Session, SessionUuid};
+use serde::{Deserialize, Serialize};
 
 use crate::app::{
-    components::LoginBox,
     generic_components::{
         ButtonControl, ButtonFunction, ControlStack, IsLoggedIn, LabelledControlStack, LoggedInContext, LoggedInGuard, NotLoggedIn, SessionView
     },
 };
+
+cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
+    use crate::ServerSideData;
+} }
 
 #[component]
 fn CommuniteeTitle() -> impl IntoView {
@@ -95,25 +99,61 @@ pub fn TopBar() -> impl IntoView {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct TopBarContext {
+    user_name: String,
+    user_page_href: String,
+}
+
+#[server]
+async fn get_top_bar_data(session_id: SessionUuid) -> Result<TopBarContext, ServerFnError> {
+    let server_side_data = use_context::<ServerSideData>()
+        .expect("ServerSideData should be provided, this should never fail.");
+    let server = server_side_data.server.lock()?;
+    
+    let session = server.get_session(&session_id)
+        .ok_or_else(||ServerFnErrorErr::ServerError(format!("No Session found with id {}", session_id.to_string())))?;
+
+    Ok(TopBarContext {
+        user_name: session.user_data.name.clone(),
+        user_page_href: format!("/user/{}", session.user_data.id.to_string())
+    })
+}
+
 #[component]
 fn UserBar() -> impl IntoView {
     let session_id = use_context::<LoggedInContext>()
         .expect("LoggedInContext should exist, this should never fail.")
         .session_id;
-    move || {
-        let label = session_id.get()
-            .expect("`UserBar` must only be used in `IsLoggedIn` block, this should never fail.")
-            .to_string();
 
-        //let label = "".to_string();//{session.user_data.name};
-        let href = Some("".to_string());//{Some(format!("/user/{}", session.user_data.id.to_string()))};
-        view! {
-            <LabelledControlStack label href class = "w-1/3">
-                <ButtonControl value = "Settings" on_click = ButtonFunction::closure(|_ev|{}) />
-                <ButtonControl value = "Logout" on_click = ButtonFunction::closure(|_ev|{})/>
-            </LabelledControlStack>
-        }
-    }
+    let user_bar_action = ServerAction::<GetTopBarData>::new();
+    
+    Effect::new(move || {
+        user_bar_action.dispatch(GetTopBarData { session_id: session_id.get()
+            .expect("`UserBar` must only be used in `IsLoggedIn` block, this should never fail.")
+        });
+    });
+
+    move ||Suspend::new(async move {
+        let user_bar_data = user_bar_action.value().get();
+        user_bar_data.map(|user_bar_data|
+            view! {
+                <ErrorBoundary fallback = |_|{}> {
+                    user_bar_data.map(|user_bar_data| {
+                        let label = user_bar_data.user_name;
+                        let href = Some(user_bar_data.user_page_href);
+                        view!{
+                            <LabelledControlStack label href class = "w-1/3">
+                                <ButtonControl value = "Settings" on_click = ButtonFunction::closure(|_ev|{}) />
+                                <ButtonControl value = "Logout" on_click = ButtonFunction::closure(|_ev|{})/>
+                            </LabelledControlStack>
+                        }
+                    })
+                }
+                </ErrorBoundary>
+            }
+        )
+    })
 }
 
 #[component]
