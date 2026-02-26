@@ -1,8 +1,8 @@
 use crate::{
-    app::generic_components::{
-        ControlStack, ErrorBox, LabelledInput, LabelledSelect, LoggedInContext, SubmitControl
-    },
-    server_functions::{PerformLogin, Register},
+    app::{TopLevelContext, generic_components::{
+        ControlStack, ErrorBox, LabelledInput, LabelledSelect, SubmitControl
+    }},
+    server_functions::{PerformLogin, PerformLogout, Register}, structs::ContextExt,
 };
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -15,10 +15,10 @@ pub fn LoginBox(
 ) -> impl IntoView {
     let login = ServerAction::<PerformLogin>::new();
     Effect::new(move || {
-        if let Some(Ok(session)) = login.value().get() {
-            let logged_in_contex = use_context::<LoggedInContext>()
-                .expect("LoginBox only should be used inside LoggedInGuard tags, this should never fail.");
-            logged_in_contex.session_id.set(session.map(|s|s.uuid));
+        if let Some(Ok(_session)) = login.value().get() {
+            let top_level_context = use_context::<TopLevelContext>()
+                .expect_context();
+            top_level_context.session.refetch();
         }
     });
     view! {
@@ -38,6 +38,37 @@ pub fn LoginBox(
             </ControlStack>
             <ControlStack>
                 <SubmitControl value = "Login" />
+            </ControlStack>
+        </ActionForm>
+    }
+}
+
+#[component]
+pub fn LogoutBox(
+    #[prop(optional)]
+    redirect_to: Option<&'static str>
+) -> impl IntoView {
+    let logout = ServerAction::<PerformLogout>::new();
+    Effect::new(move || {
+        if let Some(Ok(_session)) = logout.value().get() {
+            let top_level_context = use_context::<TopLevelContext>()
+                .expect_context();
+            top_level_context.session.refetch();
+        }
+    });
+    view! {
+        <ActionForm action = logout>
+            {redirect_to.map(|redirect_to|view!{
+                <input type = "hidden" name = "redirect_to" value = {redirect_to}/>
+            })}
+            
+            <Show when = move ||logout.value().get().map(Result::ok).flatten().flatten().is_none()>
+                <ErrorBox>
+                    "Logout Failed."
+                </ErrorBox>
+            </Show>
+            <ControlStack>
+                <SubmitControl value = "Logout" />
             </ControlStack>
         </ActionForm>
     }

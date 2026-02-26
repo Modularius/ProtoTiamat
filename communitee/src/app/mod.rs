@@ -3,7 +3,7 @@ mod components;
 mod generic_components;
 mod pages;
 
-use crate::structs::ClientSideData;
+use crate::structs::{ClientSideData, ContextExt};
 pub use app_entry::{App, TopLevelContext};
 pub use components::SubmitPost;
 use leptos::prelude::*;
@@ -11,7 +11,7 @@ use leptos_meta::{HashedStylesheet, Meta, MetaTags, Title, provide_meta_context}
 
 pub fn shell(leptos_options: LeptosOptions) -> impl IntoView {
     let public_url: String = use_context::<ClientSideData>()
-        .expect("ClientSideData should be provided, this should never fail.")
+        .expect_context()
         .public_url
         .header_form();
     provide_meta_context();
@@ -23,8 +23,8 @@ pub fn shell(leptos_options: LeptosOptions) -> impl IntoView {
                 <meta charset="utf-8"/>
                 <meta name="viewport" content="width=device-width, initial-scale=1"/>
                 <AutoReload options=leptos_options.clone() />
-                <HydrationScripts options=leptos_options.clone() /*root = public_url.clone()*/ />
-                <HashedStylesheet options=leptos_options /*root = public_url*/ />
+                <HydrationScripts options=leptos_options.clone() root = public_url.clone() />
+                <HashedStylesheet options=leptos_options root = public_url />
                 <MetaTags/>
                 // sets the document title
                 <Title text="Communitee" />

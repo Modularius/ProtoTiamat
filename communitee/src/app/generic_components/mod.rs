@@ -13,7 +13,7 @@ pub use inert_containers::{ErrorBox, RoundedBox, SharpBox};
 pub use labelled_input::{LabelledInput, LabelledSelect, LabelledTextArea};
 use leptos::{either::Either, prelude::*};
 
-use crate::app::TopLevelContext;
+use crate::{app::TopLevelContext, structs::ContextExt};
 use libertee::{Session, SessionUuid, UserData};
 
 #[component]
@@ -64,22 +64,18 @@ impl ViewSessionFn {
     }
 }
 
-#[derive(Clone)]
-pub struct LoggedInContext {
-    pub session_id: RwSignal<Option<SessionUuid>>
-}
-
 #[component]
 pub fn LoggedInGuard<C>(
     children: TypedChildrenFn<C>,
 ) -> impl IntoView where C : IntoView + 'static
 {
     let top_level_context = use_context::<TopLevelContext>()
-        .expect("TopLevelContext should be provided, this should never fail.");
+        .expect_context();
     let session_id = top_level_context.session;
+    
     Suspend::new(async move { match session_id.await {
         Ok(session_id) => {
-            provide_context(LoggedInContext { session_id: RwSignal::new(session_id) });
+            top_level_context.session_id.set(session_id);
             Either::Left(children.into_inner()())
         },
         Err(e) => {
@@ -91,10 +87,9 @@ pub fn LoggedInGuard<C>(
 #[component]
 pub fn IsLoggedIn<C>(
     children: TypedChildrenFn<C>,
-) -> impl IntoView where C : IntoView + 'static
-{
-    let session = use_context::<LoggedInContext>()
-        .expect("LoggedInContext should exist, this should never fail.")
+) -> impl IntoView where C : IntoView + 'static {
+    let session = use_context::<TopLevelContext>()
+        .expect_context()
         .session_id;
     Show(ShowProps { children: children.clone(), when: move ||session.get().is_some(), fallback: Default::default() })
 }
@@ -102,10 +97,9 @@ pub fn IsLoggedIn<C>(
 #[component]
 pub fn NotLoggedIn<C>(
     children: TypedChildrenFn<C>,
-) -> impl IntoView where C : IntoView + 'static
-{
-    let session = use_context::<LoggedInContext>()
-        .expect("LoggedInContext should exist, this should never fail.")
+) -> impl IntoView where C : IntoView + 'static {
+    let session = use_context::<TopLevelContext>()
+        .expect_context()
         .session_id;
     Show(ShowProps { children: children.clone(), when: move ||session.get().is_none(), fallback: Default::default() })
 }
@@ -115,11 +109,12 @@ pub fn SessionView(
     #[prop(into)]
     action: ViewSessionFn
 ) -> impl IntoView {
-    let session_id = use_context::<LoggedInContext>()
-        .expect("LoggedInContext should exist, this should never fail.")
+    let session_id = use_context::<TopLevelContext>()
+        .expect_context()
         .session_id;
-        
-    move||action.run(session_id.get().expect("Session View"))
+
+    const EXPECT : &'static str = "SessionView should only be used inside `IsLoggedIn` tags, this should never fail";        
+    move||action.run(session_id.get().expect(EXPECT))
 }
 
 /*#[component]

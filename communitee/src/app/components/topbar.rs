@@ -1,12 +1,12 @@
 use leptos::prelude::*;
 use leptos_router::components::A;
-use libertee::{Session, SessionUuid};
+use libertee::SessionUuid;
 use serde::{Deserialize, Serialize};
 
 use crate::app::{
-    generic_components::{
-        ButtonControl, ButtonFunction, ControlStack, IsLoggedIn, LabelledControlStack, LoggedInContext, LoggedInGuard, NotLoggedIn, SessionView
-    },
+    TopLevelContext, generic_components::{
+        ButtonControl, ButtonFunction, ControlStack, IsLoggedIn, LabelledControlStack, NotLoggedIn
+    }
 };
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -61,40 +61,33 @@ fn ToolBar(children: Children) -> impl IntoView {
 #[component]
 pub fn TopBar() -> impl IntoView {
     || view! {
-        <LoggedInGuard>
-            <div></div>
-        </LoggedInGuard>
-        <LoggedInGuard>
-            <BigBar>
-                <SanctimoneousMissionStatement/>
-                <CommuniteeTitle/>
-                <RightBar>
+        <BigBar>
+            <SanctimoneousMissionStatement/>
+            <CommuniteeTitle/>
+            <RightBar>
                 <IsLoggedIn>
                     <UserBar />
                 </IsLoggedIn>
                 <NotLoggedIn>
                     <LoginBar />
                 </NotLoggedIn>
-                </RightBar>
-            </BigBar>
-        </LoggedInGuard>
+            </RightBar>
+        </BigBar>
         <ToolBar>
-            <LoggedInGuard>
-                <IsLoggedIn>
-                    <ButtonControl value = "Your Feed" on_click = ButtonFunction::Link("/") />
-                    <ButtonControl value = "Your Friends" on_click = ButtonFunction::Link("/friends") />
-                    <ButtonControl value = "Your Groups" on_click = ButtonFunction::Link("/groups") />
-                    <ButtonControl value = "Your Posts" on_click = ButtonFunction::Link("/posts") />
-                    <ButtonControl value = "Favourites" on_click = ButtonFunction::Link("/favourites") />
-                    <ButtonControl value = "Help" on_click = ButtonFunction::Link("/help") />
-                </IsLoggedIn>
-                <NotLoggedIn>
-                    <ButtonControl value = "Home" on_click = ButtonFunction::Link("/") />
-                    <ButtonControl value = "Login" on_click = ButtonFunction::Link("/login") />
-                    <ButtonControl value = "Join Communitee" on_click = ButtonFunction::Link("/register") />
-                    <ButtonControl value = "What is Communitee" on_click = ButtonFunction::Link("/help") />
-                </NotLoggedIn>
-            </LoggedInGuard>
+            <IsLoggedIn>
+                <ButtonControl value = "Your Feed" on_click = ButtonFunction::Link("/") />
+                <ButtonControl value = "Your Friends" on_click = ButtonFunction::Link("/friends") />
+                <ButtonControl value = "Your Groups" on_click = ButtonFunction::Link("/groups") />
+                <ButtonControl value = "Your Posts" on_click = ButtonFunction::Link("/posts") />
+                <ButtonControl value = "Favourites" on_click = ButtonFunction::Link("/favourites") />
+                <ButtonControl value = "Help" on_click = ButtonFunction::Link("/help") />
+            </IsLoggedIn>
+            <NotLoggedIn>
+                <ButtonControl value = "Home" on_click = ButtonFunction::Link("/") />
+                <ButtonControl value = "Login" on_click = ButtonFunction::Link("/login") />
+                <ButtonControl value = "Join Communitee" on_click = ButtonFunction::Link("/register") />
+                <ButtonControl value = "What is Communitee" on_click = ButtonFunction::Link("/help") />
+            </NotLoggedIn>
         </ToolBar>
     }
 }
@@ -122,8 +115,8 @@ async fn get_top_bar_data(session_id: SessionUuid) -> Result<TopBarContext, Serv
 
 #[component]
 fn UserBar() -> impl IntoView {
-    let session_id = use_context::<LoggedInContext>()
-        .expect("LoggedInContext should exist, this should never fail.")
+    let session_id = use_context::<TopLevelContext>()
+        .expect("session_id should exist, this should never fail.")
         .session_id;
 
     let user_bar_action = ServerAction::<GetTopBarData>::new();

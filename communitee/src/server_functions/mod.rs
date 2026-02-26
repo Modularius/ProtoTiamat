@@ -4,6 +4,8 @@ use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
 use libertee::{LoginAuth, Session, SessionUuid, Timestamp};
 
+use crate::structs::ContextExt;
+
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use crate::ServerSideData;
@@ -35,7 +37,7 @@ pub async fn get_session_from_identity() -> Result<Option<SessionUuid>, ServerFn
     match identity.id() {
         Ok(id) => {
             let server_mutex = use_context::<ServerSideData>()
-                .expect("ServerSideData should be provided, this should never fail.")
+                .expect_context()
                 .server;
             let server = server_mutex.lock()?;
             Ok(server.get_session(&SessionUuid(id))
@@ -67,7 +69,7 @@ pub async fn perform_login(
     redirect_to: Option<String>,
 ) -> Result<Option<Session>, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
-        .expect("ServerSideData should be provided, this should never fail.");
+        .expect_context();
 
     let mut server = server_side_data.server.lock()?;
     
@@ -85,15 +87,34 @@ pub async fn perform_login(
 }
 
 #[server]
+pub async fn perform_logout(
+    redirect_to: Option<String>,
+) -> Result<Option<()>, ServerFnError> {
+    let result = match extract::<Identity>().await {
+        Ok(identity) => Some(identity.logout()),
+        Err(ServerFnErrorErr::ServerError(err_str)) => {
+            if err_str == "There is no identity information attached to the current session" {
+                None
+            } else {
+                return Err(ServerFnError::ServerError(err_str));
+            }
+        },
+        Err(e) => Err(e)?,
+    };
+
+    if let Some(redirect_to) = redirect_to {
+        leptos_actix::redirect(&redirect_to);
+    }
+
+    Ok(result)
+}
+
+#[server]
 pub async fn register(auth: LoginAuth, new_path: String) -> Result<Option<Session>, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
-        .expect("ServerSideData should be provided, this should never fail.");
+        .expect_context();
 
     let mut server = server_side_data.server.lock()?;
     let session = server.create_new_session(&auth).cloned();
     Ok(session)
-    //Ok(server.get_session(&auth).cloned())
-    //let nav = use_navigate();
-    //nav(&new_path, Default::default());
-    //Ok(())
 }

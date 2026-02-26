@@ -3,19 +3,18 @@ use libertee::{GroupUuid, PostUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString};
 
-use crate::app::{components::PostData, generic_components::{
+use crate::{app::{components::PostData, generic_components::{
     ButtonControl, ButtonFunction, ControlStack, LabelledInput, LabelledTextArea, SubmitControl,
-}};
+}}, structs::ContextExt};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::ServerSideData;
-    use libertee::Post;
 } }
 
 #[server]
 pub async fn submit_post(data: SubmitPostData) -> Result<Option<PostData>, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
-        .expect("ServerSideData should be provided, this should never fail.");
+        .expect_context();
     let mut server = server_side_data.server.lock()?;
 
     let post_data = {

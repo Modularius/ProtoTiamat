@@ -6,7 +6,7 @@ use crate::{
             ResourceView, RoundedBox, SessionView,
         },
     },
-    server_functions::format_datetime,
+    server_functions::format_datetime, structs::ContextExt,
 };
 use leptos::{either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
@@ -97,7 +97,7 @@ pub async fn get_group_page_data(
     group_id: GroupUuid,
 ) -> Result<GroupPageData, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
-        .expect("ServerSideData should be provided, this should never fail.");
+        .expect_context();
     let server = server_side_data.server.lock()?;
 
     let group = server.get_group(&group_id);

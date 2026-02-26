@@ -1,7 +1,6 @@
-use crate::app::{
-    components::{AdColumns, MainColumn, NewPostBox, PostBox, PostData},
-    generic_components::{IsLoggedIn, LoggedInContext, LoggedInGuard, RoundedBox, SessionView, error_box},
-};
+use crate::{app::{
+    TopLevelContext, components::{AdColumns, MainColumn, NewPostBox, PostBox, PostData}, generic_components::{IsLoggedIn, NotLoggedIn, RoundedBox, error_box}
+}, structs::ContextExt};
 use leptos::prelude::*;
 use libertee::{SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
@@ -26,7 +25,7 @@ pub async fn get_home_page_data(
     max_posts: usize,
 ) -> Result<Option<HomePageData>, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
-        .expect("ServerSideData should be provided, this should never fail.");
+        .expect_context();
     let server = server_side_data.server.lock()?;
     
     let session = server.get_session(&session_id)
@@ -51,44 +50,19 @@ pub async fn get_home_page_data(
     Ok(data)
 }
 
-struct HomePageContext {
-    home_page_data: ServerAction<GetHomePageData>,
-}
-
 #[component]
 #[tracing::instrument]
 pub fn HomePage() -> impl IntoView {
     let home_page_data = ServerAction::new();
-    provide_context(HomePageContext { 
-        home_page_data
-    });
     view! {
-        <LoggedInGuard>
+        <MainColumn>
             <IsLoggedIn>
-                {
-                    Effect::new(move|| {
-                        let session_id = use_context::<LoggedInContext>()
-                            .expect("LoggedInContext should exist, this should never fail.")
-                            .session_id
-                            .get()
-                            .expect("This must only be used in `IsLoggedIn` block, this should never fail.");
-                            home_page_data.dispatch( GetHomePageData{ session_id, max_posts: 10 } );
-                    });
-                }
-                <Suspense> { move ||
-                    home_page_data.value().get().map(|home_page_data|
-                        view!{
-                            <ErrorBoundary fallback = error_box>
-                                {home_page_data.map(|home_page_data|
-                                    home_page_data.map(|home_page_data|
-                                        HomePageWithData(HomePageWithDataProps { home_page_data })
-                                    )
-                                )}
-                            </ErrorBoundary>
-                        }
-                    )
-                } </Suspense>
-                /* <SessionView action = move |session_id: SessionUuid| {
+                {move || {
+                    let session_id = use_context::<TopLevelContext>()
+                        .expect_context()
+                        .session_id
+                        .get()
+                        .expect("This must only be used in `IsLoggedIn` block, this should never fail.");
                     home_page_data.dispatch( GetHomePageData{ session_id, max_posts: 10 } );
                     Suspend::new(async move {
                         home_page_data.value().get().map(|home_page_data|
@@ -103,10 +77,12 @@ pub fn HomePage() -> impl IntoView {
                             }
                         )
                     })
-                } />
-                 */
+                }}
             </IsLoggedIn>
-        </LoggedInGuard>
+            <NotLoggedIn>
+                <LandingPage />
+            </NotLoggedIn>
+        </MainColumn>
     }
 }
 
@@ -122,28 +98,48 @@ fn HomePageWithData(home_page_data: HomePageData) -> impl IntoView {
         .datetime_feed_generated
     );*/
     view! {
-        <MainColumn>
-            <h1 class = "text-3xl m-6"> "Hi there " {home_page_data.user_name.clone()} "!" </h1>
-            //<AccessBar user_data = user_data.clone()/>
-            <AdColumns>
-                <RoundedBox>
-                    <h2 class = "text-xl m-2"> "Submit a post:" </h2>
-                    <NewPostBox
-                        user_id = {home_page_data.user_id.clone()}
-                        group_id = None
-                    />
-                </RoundedBox>
-                <RoundedBox>
-                    <h2 class = "text-lg m-2"> "Current feed (as of " {home_page_data.datetime_feed_generated.clone()} "): "</h2>
-                    <For
-                        each = move ||home_page_data.posts.clone().into_iter().enumerate()
-                        key = |(i,_)|*i
-                        children = |(_,post)| view!{
-                            <PostBox post = post/>
-                        }
-                    />
-                </RoundedBox>
-            </AdColumns>
-        </MainColumn>
+        <h1 class = "text-3xl m-6"> "Hi there " {home_page_data.user_name.clone()} "!" </h1>
+        //<AccessBar user_data = user_data.clone()/>
+        <AdColumns>
+            <RoundedBox>
+                <h2 class = "text-xl m-2"> "Submit a post:" </h2>
+                <NewPostBox
+                    user_id = {home_page_data.user_id.clone()}
+                    group_id = None
+                />
+            </RoundedBox>
+            <RoundedBox>
+                <h2 class = "text-lg m-2"> "Current feed (as of " {home_page_data.datetime_feed_generated.clone()} "): "</h2>
+                <For
+                    each = move ||home_page_data.posts.clone().into_iter().enumerate()
+                    key = |(i,_)|*i
+                    children = |(_,post)| view!{
+                        <PostBox post = post/>
+                    }
+                />
+            </RoundedBox>
+        </AdColumns>
+    }
+}
+
+
+#[component]
+fn LandingPage() -> impl IntoView {
+    view! {
+        <h1 class = "text-3xl m-6"> "Hi there, welcome to Communitee." </h1>
+        <h2 class = "text-xl m-2"> "The social media platform exclusively controlled by its users." </h2>
+        <RoundedBox>
+            <h3 class = "text-lg m-2"> "Using Communitee guarantees:" </h3>
+            <ul class = "text-sm m-2">
+                <li> "Your content and data is *never* used to personalised your feed or the adverts you are shown." </li>
+                <li> "Your experience is curated by yourself and fellow users, and never by an opaque algorithm controlled by tech companies." </li>
+                <li> "You and your fellow users can anonymously vote for the content you like, and this vote exclusively determines which content is shown. There are no paid posts." </li>
+                <li> "All adverts are clearly marked as adverts, and are chosen by the users." </li>
+                <li> "Admins are democratically elected by the users they serve." </li>
+                <li> "Content is moderated by fellow users who are empowered by the democratic wishes of the users they serve." </li>
+                <li> "All users are verified in a safe and anonymous process, which guarantees identity without risking their private data." </li>
+                <li> "Data is distributed among many cooperating nodes, with multiple levels of encryption to ensure privacy." </li>
+            </ul>
+        </RoundedBox>
     }
 }

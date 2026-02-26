@@ -1,9 +1,9 @@
-use crate::app::{
+use crate::{app::{
     components::{AdColumns, MainColumn},
     generic_components::{
         ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, SessionView, SharpBox,
     },
-};
+}, structs::ContextExt};
 use leptos::prelude::*;
 use libertee::{Session, SessionUuid};
 use libertee::UserUuid;
@@ -43,7 +43,7 @@ async fn get_friendslist_page_data(
     max_friends: usize,
 ) -> Result<FriendslistPageData, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
-        .expect("ServerSideData should be provided, this should never fail.");
+        .expect_context();
     let server = server_side_data.server.lock()?;
 
     let session = server.get_session(&session_id)
