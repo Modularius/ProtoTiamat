@@ -38,6 +38,10 @@ impl Server {
         self.sessions.get(uuid)
     }
 
+    pub fn remove_session(&mut self, uuid: &SessionUuid) -> Option<Session> {
+        self.sessions.remove(uuid)
+    }
+
     pub fn create_new_user(&mut self, auth: &LoginAuth, name: String, datetime: Option<Timestamp>) -> Option<&mut User> {
         let user_id = UserUuid(Uuid::generate_random(16));
         self.users.insert(user_id.clone(), User::new(

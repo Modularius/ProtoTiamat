@@ -1,10 +1,10 @@
 use crate::{
-    app::{components::{FootBar, TopBar}, generic_components::LoggedInGuard, pages::{
+    app::{components::{FootBar, TopBar}, guards::SessionGuard, pages::{
             FriendlistPage, GroupPage, GroupslistPage, HomePage, LoginPage, RegisterPage, UserPage,
         }
     },
-    server_functions::{get_session_from_identity, require_login},
-    structs::{ClientSideData, Expect},
+    server_functions::{get_session_from_identity},
+    structs::{ClientSideData, ContextExt, Expect},
 };
 use leptos::prelude::*;
 use leptos_meta::provide_meta_context;
@@ -12,7 +12,7 @@ use leptos_router::{
     components::{Outlet, ParentRoute, Route, Router, Routes},
     path,
 };
-use libertee::{Session, SessionUuid, UserUuid};
+use libertee::{SessionUuid, UserUuid};
 
 /// This struct enable a degree of type-checking for the [use_context]/[use_context] functions.
 /// Any component making use of the following fields should call `use_context::<TopLevelContext>()`
@@ -23,6 +23,13 @@ pub struct TopLevelContext {
     pub session: Resource<Result<Option<SessionUuid>, ServerFnError>>,
     pub session_id: RwSignal<Option<SessionUuid>>,
     pub user_id: RwSignal<Option<UserUuid>>,
+}
+
+impl TopLevelContext {
+    pub fn session_id_expect(&self) -> SessionUuid {
+        self.session_id.get()
+            .expect("session_id should only be called inside <IsLoggedIn>, this should never fail.")
+    }
 }
 
 impl Expect for TopLevelContext {
@@ -37,7 +44,7 @@ pub fn App() -> impl IntoView {
 
     let client_side_data = SharedValue::new(|| {
         use_context::<ClientSideData>()
-            .expect("ClientSideData should be provided, this should never fail.")
+            .expect_context()
     })
     .into_inner();
 
@@ -51,25 +58,25 @@ pub fn App() -> impl IntoView {
     });
 
     view! {
-        <Router> //  base = public_path
-            <LoggedInGuard>
+        <Router> // base = public_path
+            <SessionGuard>
                 <TopBar/>
-                <Routes fallback = NotFound>
-                    <Route path = path!("/") view = HomePage />
-                    <Route path = path!("/register") view = RegisterPage />
-                    <Route path = path!("/login") view = LoginPage />
-                    <Route path = path!("/friends") view = FriendlistPage />
-                    <Route path = path!("/groups") view = GroupslistPage />
-                    <ParentRoute path = path!("/user") view = ||view!{<Outlet />}>
-                        <Route path = path!(":user_id") view = UserPage />
-                    </ParentRoute>
-                    <ParentRoute path = path!("/group") view = ||view!{<Outlet />}>
-                        <Route path = path!(":group_id") view = GroupPage />
-                    </ParentRoute>
-                    <Route path = path!("/help") view = HomePage />
+                    <Routes fallback = NotFound>
+                        <Route path = path!("/") view = HomePage />
+                        <Route path = path!("/register") view = RegisterPage />
+                        <Route path = path!("/login") view = LoginPage />
+                        <Route path = path!("/friends") view = FriendlistPage />
+                        <Route path = path!("/groups") view = GroupslistPage />
+                        <ParentRoute path = path!("/user") view = ||view!{<Outlet />}>
+                            <Route path = path!(":user_id") view = UserPage />
+                        </ParentRoute>
+                        <ParentRoute path = path!("/group") view = ||view!{<Outlet />}>
+                            <Route path = path!(":group_id") view = GroupPage />
+                        </ParentRoute>
+                        <Route path = path!("/help") view = HomePage />
                 </Routes>
                 <FootBar />
-            </LoggedInGuard>
+            </SessionGuard>
         </Router>
     }
 }

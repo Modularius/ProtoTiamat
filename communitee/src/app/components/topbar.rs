@@ -3,11 +3,12 @@ use leptos_router::components::A;
 use libertee::SessionUuid;
 use serde::{Deserialize, Serialize};
 
-use crate::app::{
+use crate::{app::{
     TopLevelContext, generic_components::{
-        ButtonControl, ButtonFunction, ControlStack, IsLoggedIn, LabelledControlStack, NotLoggedIn
-    }
-};
+        ButtonControl, ButtonFunction, ControlStack, LabelledControlStack,
+    },
+    guards::{IsLoggedIn, NotLoggedIn, PageGuard}
+}, structs::{ContextExt, Expect}};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::ServerSideData;
@@ -93,21 +94,25 @@ pub fn TopBar() -> impl IntoView {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct TopBarContext {
+struct UserBarDataContext {
     user_name: String,
     user_page_href: String,
 }
 
+impl Expect for UserBarDataContext {
+    const EXPECT: &'static str = "UserBarDataContext should be provided, this should never fail.";
+}
+
 #[server]
-async fn get_top_bar_data(session_id: SessionUuid) -> Result<TopBarContext, ServerFnError> {
+async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
-        .expect("ServerSideData should be provided, this should never fail.");
+        .expect_context();
     let server = server_side_data.server.lock()?;
     
     let session = server.get_session(&session_id)
         .ok_or_else(||ServerFnErrorErr::ServerError(format!("No Session found with id {}", session_id.to_string())))?;
 
-    Ok(TopBarContext {
+    Ok(UserBarDataContext {
         user_name: session.user_data.name.clone(),
         user_page_href: format!("/user/{}", session.user_data.id.to_string())
     })
@@ -115,8 +120,8 @@ async fn get_top_bar_data(session_id: SessionUuid) -> Result<TopBarContext, Serv
 
 #[component]
 fn UserBar() -> impl IntoView {
-    let session_id = use_context::<TopLevelContext>()
-        .expect("session_id should exist, this should never fail.")
+    /*let session_id = use_context::<TopLevelContext>()
+        .expect_context()
         .session_id;
 
     let user_bar_action = ServerAction::<GetTopBarData>::new();
@@ -125,8 +130,23 @@ fn UserBar() -> impl IntoView {
         user_bar_action.dispatch(GetTopBarData { session_id: session_id.get()
             .expect("`UserBar` must only be used in `IsLoggedIn` block, this should never fail.")
         });
-    });
-
+    });*/
+    view!{
+        <PageGuard with_parameters = |session_id|GetUserBarData{ session_id }>
+        {
+            let user_bar_data = use_context::<UserBarDataContext>().expect_context();
+            let label = user_bar_data.user_name;
+            let href = Some(user_bar_data.user_page_href);
+            view!{
+                <LabelledControlStack label href class = "w-1/3">
+                    <ButtonControl value = "Settings" on_click = ButtonFunction::closure(|_ev|{}) />
+                    <ButtonControl value = "Logout" on_click = ButtonFunction::closure(|_ev|{})/>
+                </LabelledControlStack>
+            }
+        }
+        </PageGuard>
+    }
+/*
     move ||Suspend::new(async move {
         let user_bar_data = user_bar_action.value().get();
         user_bar_data.map(|user_bar_data|
@@ -146,7 +166,7 @@ fn UserBar() -> impl IntoView {
                 </ErrorBoundary>
             }
         )
-    })
+    }) */
 }
 
 #[component]

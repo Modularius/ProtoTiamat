@@ -27,7 +27,7 @@ pub fn LoginBox(
                 <input type = "hidden" name = "redirect_to" value = {redirect_to}/>
             })}
             
-            <Show when = move ||login.value().get().map(Result::ok).flatten().flatten().is_none()>
+            <Show when = move ||login.value().get().is_some_and(|value|value.is_err())>
                 <ErrorBox>
                     "Login Failed."
                 </ErrorBox>
@@ -50,7 +50,7 @@ pub fn LogoutBox(
 ) -> impl IntoView {
     let logout = ServerAction::<PerformLogout>::new();
     Effect::new(move || {
-        if let Some(Ok(_session)) = logout.value().get() {
+        if let Some(Ok(true)) = logout.value().get() {
             let top_level_context = use_context::<TopLevelContext>()
                 .expect_context();
             top_level_context.session.refetch();
@@ -62,7 +62,7 @@ pub fn LogoutBox(
                 <input type = "hidden" name = "redirect_to" value = {redirect_to}/>
             })}
             
-            <Show when = move ||logout.value().get().map(Result::ok).flatten().flatten().is_none()>
+            <Show when = move ||logout.value().get().is_some_and(|value|value.is_err() || value.is_ok_and(|value|!value))>
                 <ErrorBox>
                     "Logout Failed."
                 </ErrorBox>

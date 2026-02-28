@@ -1,8 +1,8 @@
 use cfg_if::cfg_if;
 use chrono::SubsecRound;
 use leptos::prelude::*;
-use leptos_router::hooks::use_navigate;
 use libertee::{LoginAuth, Session, SessionUuid, Timestamp};
+use tracing::debug;
 
 use crate::structs::ContextExt;
 
@@ -22,6 +22,7 @@ pub(crate) fn format_datetime(datetime: &Timestamp) -> String {
 }
 
 #[server]
+#[tracing::instrument(level = "debug", err(level="warn"))]
 pub async fn get_session_from_identity() -> Result<Option<SessionUuid>, ServerFnError> {
     let identity = match extract::<Identity>().await {
         Ok(identity) => identity,
@@ -48,61 +49,70 @@ pub async fn get_session_from_identity() -> Result<Option<SessionUuid>, ServerFn
     }
 }
 
-pub async fn require_login() -> Result<Option<Session>, ServerFnError> {
-    if let Some(session) = perform_login(LoginAuth::default(), Default::default()).await? {
-        Ok(Some(session))
-    } else {
-        #[cfg(feature = "hydrate")]
-        {
-            use leptos_router::hooks::use_navigate;
-            let nav = use_navigate();
-            nav(&format!("/login"), Default::default());
-        }
-
-        Ok(None)
-    }
-}
-
 #[server]
+#[tracing::instrument(level = "debug", err(level="warn"))]
 pub async fn perform_login(
     auth: LoginAuth,
     redirect_to: Option<String>,
-) -> Result<Option<Session>, ServerFnError> {
+) -> Result<Session, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect_context();
 
     let mut server = server_side_data.server.lock()?;
     
-    let session = server.create_new_session(&auth).cloned();
-    if let Some(session) = &session {
-        let request = extract::<HttpRequest>().await.expect("Request should exist.");
-        Identity::login(&request.extensions(), session.uuid.to_string())?;
-    }
+    let session = server.create_new_session(&auth)
+        .cloned()
+        .ok_or_else(||ServerFnErrorErr::ServerError(
+            format!("Session creation failed with auth {auth:?}")
+        ))?;
+
+    let request = extract::<HttpRequest>().await
+        .expect("Request should exist.");
+    debug!("Beginning Login.");
+    Identity::login(&request.extensions(), session.uuid.to_string())?;
+    debug!("Login Successful.");
+
     if let Some(redirect_to) = redirect_to {
-        if session.is_some() {
-            leptos_actix::redirect(&redirect_to);
-        }
+        debug!("Redirecting.");
+        leptos_actix::redirect(&redirect_to);
     }
     Ok(session)
 }
 
 #[server]
+#[tracing::instrument(level = "debug", err(level="warn"))]
 pub async fn perform_logout(
     redirect_to: Option<String>,
-) -> Result<Option<()>, ServerFnError> {
+) -> Result<bool, ServerFnError> {
     let result = match extract::<Identity>().await {
-        Ok(identity) => Some(identity.logout()),
+        Ok(identity) => {
+            let id = identity.id()?;
+            debug!("Identity found with id {id}");
+
+            let server_side_data = use_context::<ServerSideData>()
+                .expect_context();
+            
+            identity.logout();
+            debug!("Identity logged out.");
+
+            let mut server = server_side_data.server.lock()?;
+            if let Some(session) = server.remove_session(&SessionUuid(id)) {
+                debug!("Successfully removed session {:?}.", session.uuid);
+            }
+            true
+        },
         Err(ServerFnErrorErr::ServerError(err_str)) => {
-            if err_str == "There is no identity information attached to the current session" {
-                None
-            } else {
+            debug!("{err_str}");
+            if err_str != "There is no identity information attached to the current session" {
                 return Err(ServerFnError::ServerError(err_str));
             }
+            false
         },
         Err(e) => Err(e)?,
     };
 
     if let Some(redirect_to) = redirect_to {
+        debug!("Redirecting.");
         leptos_actix::redirect(&redirect_to);
     }
 

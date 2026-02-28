@@ -1,3 +1,7 @@
+mod new_post;
+
+pub use new_post::{NewPostBox, SubmitPost};
+
 use leptos::prelude::*;
 use leptos_router::components::A;
 use serde::{Deserialize, Serialize};

@@ -65,46 +65,6 @@ impl ViewSessionFn {
 }
 
 #[component]
-pub fn LoggedInGuard<C>(
-    children: TypedChildrenFn<C>,
-) -> impl IntoView where C : IntoView + 'static
-{
-    let top_level_context = use_context::<TopLevelContext>()
-        .expect_context();
-    let session_id = top_level_context.session;
-    
-    Suspend::new(async move { match session_id.await {
-        Ok(session_id) => {
-            top_level_context.session_id.set(session_id);
-            Either::Left(children.into_inner()())
-        },
-        Err(e) => {
-            Either::Right(format!("{e:?}").into_any())
-        },
-    } })
-}
-
-#[component]
-pub fn IsLoggedIn<C>(
-    children: TypedChildrenFn<C>,
-) -> impl IntoView where C : IntoView + 'static {
-    let session = use_context::<TopLevelContext>()
-        .expect_context()
-        .session_id;
-    Show(ShowProps { children: children.clone(), when: move ||session.get().is_some(), fallback: Default::default() })
-}
-
-#[component]
-pub fn NotLoggedIn<C>(
-    children: TypedChildrenFn<C>,
-) -> impl IntoView where C : IntoView + 'static {
-    let session = use_context::<TopLevelContext>()
-        .expect_context()
-        .session_id;
-    Show(ShowProps { children: children.clone(), when: move ||session.get().is_none(), fallback: Default::default() })
-}
-
-#[component]
 pub fn SessionView(
     #[prop(into)]
     action: ViewSessionFn

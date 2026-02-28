@@ -1,6 +1,7 @@
 use crate::{app::{
-    TopLevelContext, components::{AdColumns, MainColumn, NewPostBox, PostBox, PostData}, generic_components::{IsLoggedIn, NotLoggedIn, RoundedBox, error_box}
-}, structs::ContextExt};
+    components::{AdColumns, MainColumn, NewPostBox, PostBox, PostData}, generic_components::RoundedBox,
+    guards::{IsLoggedIn, NotLoggedIn, PageGuard}
+}, structs::{ContextExt, Expect}};
 use leptos::prelude::*;
 use libertee::{SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
@@ -11,11 +12,15 @@ cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
 } }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct HomePageData {
+pub struct HomePageDataContext {
     user_id: UserUuid,
     user_name: String,
     datetime_feed_generated: String,
     posts: Vec<PostData>,
+}
+
+impl Expect for HomePageDataContext {
+    const EXPECT: &'static str = "HomePageDataContext should be provided, this should never fail.";
 }
 
 #[server]
@@ -23,7 +28,7 @@ pub struct HomePageData {
 pub async fn get_home_page_data(
     session_id: SessionUuid,
     max_posts: usize,
-) -> Result<Option<HomePageData>, ServerFnError> {
+) -> Result<HomePageDataContext, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect_context();
     let server = server_side_data.server.lock()?;
@@ -31,7 +36,10 @@ pub async fn get_home_page_data(
     let session = server.get_session(&session_id)
         .ok_or_else(||ServerFnErrorErr::ServerError(format!("No Session found with id {}", session_id.to_string())))?;
 
-    let data = server.get_user(&session.user).map(|user| HomePageData {
+    let user = server.get_user(&session.user)
+        .ok_or_else(||ServerFnErrorErr::ServerError(format!("No User found with id {}", session.user.to_string())))?;
+
+    let data = HomePageDataContext {
         user_id: user.data.id.clone(),
         user_name: user.data.name.clone(),
         datetime_feed_generated: format_datetime(&Utc::now()),
@@ -46,38 +54,39 @@ pub async fn get_home_page_data(
                     .map(|author_user| PostData::new(post, author_user))
             })
             .collect(),
-    });
+    };
     Ok(data)
 }
 
 #[component]
 #[tracing::instrument]
 pub fn HomePage() -> impl IntoView {
-    let home_page_data = ServerAction::new();
+    //let home_page_data: ServerAction<GetHomePageData> = ServerAction::new();
     view! {
         <MainColumn>
             <IsLoggedIn>
-                {move || {
-                    let session_id = use_context::<TopLevelContext>()
-                        .expect_context()
-                        .session_id
-                        .get()
-                        .expect("This must only be used in `IsLoggedIn` block, this should never fail.");
-                    home_page_data.dispatch( GetHomePageData{ session_id, max_posts: 10 } );
-                    Suspend::new(async move {
-                        home_page_data.value().get().map(|home_page_data|
-                            view!{
-                                <ErrorBoundary fallback = error_box>
-                                    {home_page_data.map(|home_page_data|
-                                        home_page_data.map(|home_page_data|
-                                            HomePageWithData(HomePageWithDataProps { home_page_data })
-                                        )
-                                    )}
-                                </ErrorBoundary>
-                            }
-                        )
-                    })
-                }}
+                <PageGuard with_parameters = |session_id|GetHomePageData{ session_id, max_posts: 10 }>
+                    <HomePageWithData />
+                </PageGuard>
+                // {move || {
+                //     let session_id = use_context::<TopLevelContext>()
+                //         .expect_context()
+                //         .session_id_expect();
+                //     home_page_data.dispatch( GetHomePageData{ session_id, max_posts: 10 } );
+                //     Suspend::new(async move {
+                //         home_page_data.value().get().map(|home_page_data|
+                //             view!{
+                //                 <ErrorBoundary fallback = error_box>
+                //                     {home_page_data.map(|home_page_data|
+                //                         home_page_data.map(|home_page_data|
+                //                             HomePageWithData(HomePageWithDataProps { home_page_data })
+                //                         )
+                //                     )}
+                //                 </ErrorBoundary>
+                //             }
+                //         )
+                //     })
+                // }}
             </IsLoggedIn>
             <NotLoggedIn>
                 <LandingPage />
@@ -87,19 +96,11 @@ pub fn HomePage() -> impl IntoView {
 }
 
 #[component]
-fn HomePageWithData(home_page_data: HomePageData) -> impl IntoView {
-    /*let posts = RwSignal::new(home_page_data
-        .posts
-        .into_iter()
-        .map(RwSignal::new)
-        .collect::<Vec<_>>()
-    );
-    let datetime_feed_generated = RwSignal::new(home_page_data
-        .datetime_feed_generated
-    );*/
+fn HomePageWithData() -> impl IntoView {
+    let home_page_data = use_context::<HomePageDataContext>()
+        .expect_context();
     view! {
         <h1 class = "text-3xl m-6"> "Hi there " {home_page_data.user_name.clone()} "!" </h1>
-        //<AccessBar user_data = user_data.clone()/>
         <AdColumns>
             <RoundedBox>
                 <h2 class = "text-xl m-2"> "Submit a post:" </h2>

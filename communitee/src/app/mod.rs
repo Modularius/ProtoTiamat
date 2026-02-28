@@ -1,4 +1,5 @@
 mod app_entry;
+mod guards;
 mod components;
 mod generic_components;
 mod pages;
