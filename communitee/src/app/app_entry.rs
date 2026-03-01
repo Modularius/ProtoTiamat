@@ -58,7 +58,7 @@ pub fn App() -> impl IntoView {
     });
 
     view! {
-        <Router> // base = public_path
+        <Router base = public_path>
             <SessionGuard>
                 <TopBar/>
                     <Routes fallback = NotFound>

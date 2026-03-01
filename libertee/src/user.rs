@@ -53,6 +53,18 @@ cfg_if! {
                     store: Default::default(),
                 }
             }
+
+            pub fn add_friendship(&mut self, friendship: Friendship) {
+                self.data.friends
+                    .get_or_insert_default()
+                    .push(friendship);
+            }
+
+            pub fn add_group(&mut self, group_id: GroupUuid) {
+                self.data.groups
+                    .get_or_insert_default()
+                    .push(group_id);
+            }
         }
 
         impl RandomGeneration for UserData {

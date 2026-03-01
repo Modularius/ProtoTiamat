@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use chrono::Utc;
 use elasticsearch::{Elasticsearch, IndexParts, cat::CatIndicesParts, http::{request::JsonBody, transport::Transport}};
 use serde_json::json;
+use itertools::Itertools;
+use tracing_subscriber::registry::Data;
 
 use crate::{
     Group, GroupData, GroupUuid, LoginAuth, Post, PostUuid, RandomGeneration, Session, SessionUuid, Timestamp, User, UserData, UserUuid, Uuid, Uuidlike, user::Friendship
@@ -91,6 +93,42 @@ impl Server {
             id
         })
     }
+
+    pub fn create_initial_user(&mut self, auth: &LoginAuth, name: String, datetime: Option<Timestamp>) -> Option<&mut User> {
+        let datetime = datetime.unwrap_or(Utc::now());
+        let friendships = self.users.keys().cloned().filter(|_| rand::random_bool(0.5)).collect_vec();
+        let groups = self.groups.keys().cloned().filter(|_| rand::random_bool(0.5)).collect_vec();
+
+        let user_id = self.create_new_user(auth, name, Some(datetime)).unwrap().data.id.clone();
+        for friend_id in friendships {
+            self.make_users_friends(&user_id, &friend_id, datetime);
+        }
+        for group_id in groups {
+            self.make_user_group_member(&user_id, &group_id);
+        }
+        
+        self.get_user_mut(&user_id)
+    }
+
+    pub fn make_users_friends(&mut self, user_id1: &UserUuid, user_id2: &UserUuid, datetime: Timestamp) {
+        if let Some(user_1) = self.get_user_mut(user_id1) {
+            user_1.add_friendship(Friendship { user_id: user_id2.clone(), datetime_of_friendship: datetime });
+        }
+
+        if let Some(user_2) = self.get_user_mut(user_id2) {
+            user_2.add_friendship(Friendship { user_id: user_id1.clone(), datetime_of_friendship: datetime });
+        }
+    }
+
+    pub fn make_user_group_member(&mut self, user_id: &UserUuid, group_id: &GroupUuid) {
+        // FIXME some prior check for group and user existance
+        if let Some(user) = self.get_user_mut(user_id) {
+            user.add_group(group_id.clone());
+        }
+        if let Some(group) = self.get_group_mut(group_id) {
+            group.add_member(user_id.clone());
+        }
+    }
 }
 
 impl RandomGeneration for Server {
@@ -111,24 +149,7 @@ impl RandomGeneration for Server {
             })
             .collect::<HashMap<_, _>>();
 
-        let user_ids = users.keys().cloned().collect::<Vec<_>>();
         for (user_id, user) in users.iter_mut() {
-            user.data.friends = Some(user_ids
-                .iter()
-                .filter(|_| rand::random_bool(0.5))
-                .filter(|&id| id != user_id)
-                .map(|id| Friendship {
-                    user_id: id.clone(),
-                    datetime_of_friendship: Utc::now(),
-                })
-                .collect());
-
-            user.data.groups = Some(groups
-                .iter()
-                .filter(|_| rand::random_bool(0.5))
-                .map(|(id, _)| id.clone())
-                .collect());
-
             user.store.posts = (0..rand::random_range(6..11))
                 .map(|id| {
                     let mut post = Post::new_random((PostUuid(id.to_string()), user_id.clone()));
@@ -144,6 +165,12 @@ impl RandomGeneration for Server {
                 })
                 .collect();
 
+            user.data.groups = Some(groups
+                .iter()
+                .filter(|_| rand::random_bool(0.5))
+                .map(|(id, _)| id.clone())
+                .collect());
+
             for group_id in user.data.groups.iter().flatten() {
                 let group = groups.get_mut(group_id).unwrap();
                 group.add_member(user_id.clone());
@@ -152,22 +179,30 @@ impl RandomGeneration for Server {
                         PostUuid(group.store.posts.len().to_string()),
                         user_id.clone(),
                     ));
-                    group
-                        .store
+                    group.store
                         .add_post(post.data.author, post.data.title, post.data.content);
                 }
             }
         }
 
-        let credentials = [(LoginAuth::default(), UserUuid("0".into()))]
-            .into_iter()
-            .collect::<HashMap<_, _>>();
-        Self {
+        let mut  server = Self {
             client: Elasticsearch::new(Transport::single_node("localhost:9200").unwrap()),
             users,
             groups,
             sessions: Default::default(),
-            credentials,
+            credentials: Default::default(),
+        };
+        
+        let user_ids = server.users
+            .keys()
+            .cloned()
+            .tuple_combinations()
+            .filter(|_| rand::random_bool(0.5)).collect::<Vec<_>>();
+
+        let datetime_of_friendship = Utc::now();
+        for (id1, id2) in user_ids {
+            server.make_users_friends(&id1, &id2, datetime_of_friendship);
         }
+        server
     }
 }

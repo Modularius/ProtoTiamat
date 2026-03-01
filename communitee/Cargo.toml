@@ -17,6 +17,7 @@ cfg-if.workspace = true
 chrono = { workspace = true, optional = false }
 clap = { workspace = true, optional = true }
 console_error_panic_hook.workspace = true
+#itertools.workspace = true
 leptos.workspace = true
 leptos_meta.workspace = true
 leptos_actix = { workspace = true, optional = true }

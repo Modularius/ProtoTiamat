@@ -13,6 +13,7 @@ chrono = { workspace = true, optional = false }
 clap = { workspace = true, optional = true }
 console_error_panic_hook.workspace = true
 elasticsearch = { workspace = true, optional = true }
+itertools = { workspace = true, optional = false }
 miette.workspace = true
 rand = { workspace = true, optional = true }
 serde = { workspace = true, optional = false }
