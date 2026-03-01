@@ -13,7 +13,10 @@ pub use structs::{ClientSideData, DefaultData, PublicUrl};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        mod telemetry;
+
         pub use structs::{ServerSideData, InitialUserData, Server, SessionStorage};
+        pub use telemetry::{TracerEngine, TracerOptions};
     }
 }
 

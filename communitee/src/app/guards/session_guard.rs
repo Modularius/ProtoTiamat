@@ -13,10 +13,12 @@ pub fn SessionGuard<C>(
         .expect_context();
     let session = top_level_context.session;
 
-    move ||{
+    move || {
+        tracing::debug!("Running Session Guard.");
         let children = children.clone();
         let session = session.clone();
         Suspend::new(async move {
+            tracing::debug!("Session Guard Suspend.");
             let session_id = session.await;
             view!{
                 <ErrorBoundary fallback = error_box>

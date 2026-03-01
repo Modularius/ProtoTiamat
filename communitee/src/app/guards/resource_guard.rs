@@ -21,12 +21,14 @@ where
 {
     let server_action = ServerAction::<S>::new();
     move || {
+        tracing::debug!("Running Page Guard.");
         let children = children.clone();
         let session_id = use_context::<TopLevelContext>()
             .expect_context()
             .session_id_expect();
         server_action.dispatch(with_parameters(session_id));
         Suspend::new(async move {
+        tracing::debug!("Running Page Guard Suspend.");
             server_action.value()
                 .get()
                 .map(|value|
@@ -43,18 +45,4 @@ where
                 )
         })
     }
-    
-    // Suspend::new(async move {
-    //     let user_id = get_user_id_from_session_id(session_id).await;
-    //     view!{
-    //         <ErrorBoundary fallback = error_box>
-    //             {
-    //                 user_id.map(|user_id| {
-    //                     top_level_context.user_id.set(user_id);
-    //                     children.into_inner()()
-    //                 })
-    //             }
-    //         </ErrorBoundary>
-    //     }
-    // })
 }

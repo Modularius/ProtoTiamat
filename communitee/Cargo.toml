@@ -25,6 +25,9 @@ leptos_router.workspace = true
 leptos-use.workspace = true
 libertee.workspace = true
 miette.workspace = true
+opentelemetry = { workspace = true, optional = true }
+opentelemetry-otlp = { workspace = true, optional = true }
+opentelemetry_sdk = { workspace = true, optional = true }
 rand = { workspace = true, optional = true }
 reqwest = { workspace = true, optional = true }
 serde = { workspace = true, optional = false }
@@ -32,6 +35,7 @@ strum = { workspace = true, optional = false }
 thiserror = { workspace = true, optional = false }
 tokio = { workspace = true, optional = true }
 tracing = { workspace = true, optional = false }
+tracing-opentelemetry = { workspace = true, optional = true }
 tracing-subscriber.workspace = true
 url.workspace = true
 uuid = { workspace = true, optional = true }
@@ -62,9 +66,13 @@ ssr = [
   "dep:actix-files",
   "dep:anyhow",
   "dep:leptos_actix",
+  "dep:opentelemetry",
+  "dep:opentelemetry-otlp",
+  "dep:opentelemetry_sdk",
   "dep:rand",
   "dep:reqwest",
   "dep:tokio",
+  "dep:tracing-opentelemetry",
   "dep:clap",
 ]
 

@@ -120,17 +120,6 @@ async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext
 
 #[component]
 fn UserBar() -> impl IntoView {
-    /*let session_id = use_context::<TopLevelContext>()
-        .expect_context()
-        .session_id;
-
-    let user_bar_action = ServerAction::<GetTopBarData>::new();
-    
-    Effect::new(move || {
-        user_bar_action.dispatch(GetTopBarData { session_id: session_id.get()
-            .expect("`UserBar` must only be used in `IsLoggedIn` block, this should never fail.")
-        });
-    });*/
     view!{
         <PageGuard with_parameters = |session_id|GetUserBarData{ session_id }>
         {

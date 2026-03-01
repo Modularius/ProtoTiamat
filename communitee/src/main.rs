@@ -4,16 +4,16 @@ use leptos::prelude::*;
 use libertee::LoginAuth;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use clap::Parser;
-        use communitee::{App, ClientSideData, DefaultData, InitialUserData, ServerSideData, SessionStorage, shell, Server, PublicUrl};
-        use libertee::RandomGeneration;
-        use std::net::SocketAddr;
-        use std::sync::{Arc, Mutex};
-        use tracing::info;
-        use tracing_subscriber::{EnvFilter, Layer, layer::SubscriberExt};
         use actix_identity::IdentityMiddleware;
         use actix_session::SessionMiddleware;
         use actix_web::cookie::Key;
+        use clap::Parser;
+        use communitee::{App, ClientSideData, DefaultData, InitialUserData, PublicUrl, ServerSideData, SessionStorage, shell, Server, TracerEngine, TracerOptions};
+        use libertee::RandomGeneration;
+        use std::net::SocketAddr;
+        use std::sync::{Arc, Mutex};
+        use tracing::{info, warn};
+        //use tracing_subscriber::{EnvFilter, Layer, layer::SubscriberExt};
 
         #[derive(Parser)]
         #[clap(author, version, about)]
@@ -50,22 +50,31 @@ cfg_if! {
             // set up logging
             console_error_panic_hook::set_once();
 
-            let stdout_tracer = tracing_subscriber::fmt::layer()
+            /*let stdout_tracer = tracing_subscriber::fmt::layer()
                 .with_writer(std::io::stdout)
                 .with_ansi(false)
                 .with_target(false);
-
+            */
             // This filter is applied to the stdout tracer
-            let log_filter = EnvFilter::from_default_env();
+            //let log_filter = EnvFilter::from_default_env();
 
-            let subscriber =
-                tracing_subscriber::Registry::default().with(stdout_tracer.with_filter(log_filter));
+            //let subscriber =
+            //    tracing_subscriber::Registry::default().with(stdout_tracer.with_filter(log_filter));
 
             //  This is only called once, so will never panic
-            tracing::subscriber::set_global_default(subscriber)
-                .expect("tracing::subscriber::set_global_default should only be called once");
+            //tracing::subscriber::set_global_default(subscriber)
+            //    .expect("tracing::subscriber::set_global_default should only be called once");
 
             let args = Cli::parse();
+            
+            let tracer = TracerEngine::new(TracerOptions::new(args.otel_endpoint.as_deref(), args.otel_namespace), "communitee");
+            if tracer.use_otel() {
+                if let Some(e) = tracer.get_otel_setup_error() {
+                    warn!("{e}");
+                } else if let Err(e) = tracer.set_otel_error_handler(|e| warn!("{e}")) {
+                    warn!("{e}");
+                }
+            }
 
             let mut server = Server::new_random(Default::default());
             if let Some(initial_user) = args.initial_user {
@@ -74,7 +83,7 @@ cfg_if! {
                     password: initial_user.initial_user_password
                 };
                 server.create_new_user(&auth, initial_user.initial_user_name, None);
-                server.create_new_session(&auth);
+                //server.create_new_session(&auth);
             }
 
             let server_side_data = ServerSideData {
