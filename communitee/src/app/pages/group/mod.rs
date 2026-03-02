@@ -1,18 +1,18 @@
 use crate::{
     app::{
-        components::{AdColumns, MainColumn, NewPostBox, PostBox, PostData},
+        components::{AdColumns, FootBar, MainColumn, NewPostBox, PostBox, PostData, TopBar},
         generic_components::{
             ButtonControl, ButtonFunction, ControlStack, ErrorBox, LabelledControlStack,
-            ResourceView, RoundedBox, SessionView,
-        },
+            RoundedBox,
+        }, guards::{PageGuard, SessionGuard},
     },
-    server_functions::format_datetime, structs::ContextExt,
+    server_functions::format_datetime, structs::{ContextExt, Expect},
 };
 use leptos::{either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
 #[cfg(feature = "ssr")]
 use libertee::UserData;
-use libertee::{GroupUuid, Session, SessionUuid, UserUuid};
+use libertee::{GroupUuid, SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Params, PartialEq)]
@@ -25,12 +25,16 @@ cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
 } }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct GroupPageData {
+pub struct GroupPageDataContext {
     user_id: UserUuid,
     user_name: String,
     group_id: GroupUuid,
     group_name: String,
     member: Option<GroupWithMemberPageData>,
+}
+
+impl Expect for GroupPageDataContext {
+    const EXPECT: &'static str = "GroupPageDataContext should be provided, this should never fail.";
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -63,7 +67,7 @@ impl GroupWithMemberPageData {
                         .data
                         .members
                         .get(delegate_id)
-                        .and_then(|delegate| server.get_user(&delegate.user))
+                        .and_then(|delegate| server.get_user(&delegate.user).ok())
                         .map(|delegate| {
                             GroupWithMemberDelegatePageData::new(&delegate.data, weight)
                         })
@@ -91,78 +95,89 @@ impl GroupWithMemberDelegatePageData {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct GroupPageParamsContext {
+    group_id: GroupUuid,
+}
+
+impl Expect for GroupPageParamsContext {
+    const EXPECT: &'static str = "GroupPageParamsContext should be provided, this should never fail.";
+}
+
 #[server]
 pub async fn get_group_page_data(
     session_id: SessionUuid,
     group_id: GroupUuid,
-) -> Result<GroupPageData, ServerFnError> {
+) -> Result<GroupPageDataContext, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect_context();
     let server = server_side_data.server.lock()?;
 
-    let group = server.get_group(&group_id);
+    let group = server.get_group(&group_id)
+        .map_err(ServerFnErrorErr::ServerError)?;
 
     let session = server.get_session(&session_id)
-        .ok_or_else(||ServerFnErrorErr::ServerError(format!("No Session found with id {}", session_id.to_string())))?;
+        .map_err(ServerFnErrorErr::ServerError)?;
 
-    let data = GroupPageData {
-        user_id: session.user_data.id.clone(),
-        user_name: session.user_data.name.clone(),
+    let user = server.get_user(&session.user)
+        .map_err(ServerFnErrorErr::ServerError)?;
+    
+    let data = GroupPageDataContext {
+        user_id: user.data.id.clone(),
+        user_name: user.data.name.clone(),
         group_id: group_id.clone(),
-        group_name: group
-            .map(|group| group.data.name.clone())
-            .unwrap_or("No Group".into()),
-        member: group.and_then(|group| {
+        group_name: group.data.name.clone(),
+        member: {
             let member_id = group.get_member_id_from_user_id(&session.user);
             member_id
                 .and_then(|member_id| group.data.members.get(&member_id))
                 .map(|member| GroupWithMemberPageData::new(&server, group, member))
-        }),
+        },
     };
     Ok(data)
 }
 
 #[component]
 pub fn GroupPage() -> impl IntoView {
-    || {
-        view! {
-            <SessionView action = |session_id: SessionUuid| {
-                let session_id = session_id.clone();
-                let params = use_params::<GroupParams>();
-                let group_id = move || {
-                    params
-                        .get()
-                        .ok()
-                        .and_then(|params| params.group_id.map(|group_id|GroupUuid(group_id)))
-                        .unwrap_or_default()
-                };
-                let group_page_data = {
-                    let group_id = group_id.clone();
-                    Resource::new_blocking(
-                        move || (session_id.clone(), group_id()),
-                        |(session_id,group_id)| get_group_page_data(session_id, group_id),
-                    )
-                };
-                view!{
-                    <ResourceView
-                        resource = group_page_data
-                        action = move |group_page_data|
-                            GroupPageWithData(GroupPageWithDataProps{ group_page_data })
-                    />
-                }
-            } />
-        }
+    let params = use_params::<GroupParams>();
+    let group_id = params.get()
+        .ok()
+        .and_then(|params|params.group_id.map(GroupUuid));
+    match group_id {
+        Some(group_id) => Either::Left({
+            provide_context(GroupPageParamsContext { group_id });
+            view! {
+                <SessionGuard>
+                    <TopBar/>
+                        <PageGuard with_parameters = |session_id| GetGroupPageData{
+                                session_id,
+                                group_id: { use_context::<GroupPageParamsContext>().expect_context().group_id }
+                            }>
+                            <GroupPageWithData />
+                        </PageGuard>
+                    <FootBar/>
+                </SessionGuard>
+            }
+        }),
+        None => Either::Right(view!{
+            <SessionGuard>
+                <TopBar/>
+                    <MainColumn>
+                        <div> "No User Found" </div>
+                    </MainColumn>
+                <FootBar/>
+            </SessionGuard>
+        }),
     }
 }
 
 #[component]
-fn GroupPageWithData(group_page_data: GroupPageData) -> impl IntoView {
-    let group_page_data = group_page_data.clone();
+fn GroupPageWithData() -> impl IntoView {
+    let group_page_data = use_context::<GroupPageDataContext>().expect_context();
     let member = group_page_data.member;
     view! {
         <MainColumn>
             <h1 class = "text-4xl m-2"> "Hi there " {group_page_data.user_name} "!" </h1>
-            //<AccessBar user_data = user_data.clone()/>
             <AdColumns>
                 <h2 class = "text-2xl m-2"> "Group Name: " {group_page_data.group_name} </h2>
                 {

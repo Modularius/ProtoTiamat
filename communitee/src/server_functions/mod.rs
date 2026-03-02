@@ -41,11 +41,13 @@ pub async fn get_session_from_identity() -> Result<Option<SessionUuid>, ServerFn
                 .expect_context()
                 .server;
             let server = server_mutex.lock()?;
-            Ok(server.get_session(&SessionUuid(id))
-                .map(|session|session.uuid.clone())
-            )
+            Ok(Some(server
+                .get_session(&SessionUuid(id))
+                .map_err(ServerFnErrorErr::ServerError)?
+                .uuid.clone()
+            ))
         },
-        Err(_) => {Ok(None)},
+        Err(e) => {Ok(None)},
     }
 }
 

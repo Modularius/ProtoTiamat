@@ -12,7 +12,7 @@ cfg_if! {
         use libertee::RandomGeneration;
         use std::net::SocketAddr;
         use std::sync::{Arc, Mutex};
-        use tracing::{info, warn};
+        use tracing::{debug, info, warn};
         //use tracing_subscriber::{EnvFilter, Layer, layer::SubscriberExt};
 
         #[derive(Parser)]
@@ -111,6 +111,7 @@ cfg_if! {
                         view!{ <App /> }
                     }
                 });
+                debug!("{routes:?}");
                 let leptos_options = &conf.leptos_options;
                 let site_root = leptos_options.site_root.clone().to_string();
 

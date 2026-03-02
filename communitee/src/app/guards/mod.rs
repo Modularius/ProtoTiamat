@@ -1,6 +1,6 @@
 mod resource_guard;
 mod session_guard;
-mod user_guard;
+//mod user_guard;
 
 pub use session_guard::SessionGuard;
 pub use resource_guard::PageGuard;
@@ -8,7 +8,7 @@ pub use resource_guard::PageGuard;
 use leptos::prelude::*;
 
 use crate::{app::TopLevelContext, structs::ContextExt};
-use libertee::{Session, SessionUuid, UserData};
+//use libertee::{Session, SessionUuid, UserData};
 
 
 #[component]

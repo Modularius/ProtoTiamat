@@ -1,11 +1,11 @@
 use crate::{app::{
-    components::{AdColumns, MainColumn},
+    components::{AdColumns, FootBar, MainColumn, TopBar},
     generic_components::{
-        ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, RoundedBox, SessionView,
-    },
-}, structs::ContextExt};
+        ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox
+    }, guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard},
+}, structs::{ContextExt, Expect}};
 use leptos::prelude::*;
-use libertee::{GroupData, Session, SessionUuid};
+use libertee::{GroupData, SessionUuid};
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -13,12 +13,16 @@ cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
 } }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct GroupslistPageData {
+pub struct GroupslistPageDataContext {
     user_name: String,
     groups: Vec<GroupData>,
 }
 
-impl Default for GroupslistPageData {
+impl Expect for GroupslistPageDataContext {
+    const EXPECT: &'static str = "GroupslistPageDataContext should be provided, this should never fail.";
+}
+
+impl Default for GroupslistPageDataContext {
     fn default() -> Self {
         Self {
             user_name: "User Unknown".into(),
@@ -31,58 +35,53 @@ impl Default for GroupslistPageData {
 pub async fn get_groupslist_page_data(
     session_id: SessionUuid,
     max_groups: usize,
-) -> Result<GroupslistPageData, ServerFnError> {
+) -> Result<GroupslistPageDataContext, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect_context();
     let server = server_side_data.server.lock()?;
     
     let session = server.get_session(&session_id)
-        .ok_or_else(||ServerFnErrorErr::ServerError(format!("No Session found with id {}", session_id.to_string())))?;
+        .map_err(ServerFnErrorErr::ServerError)?;
 
-    let data = server
-        .get_user(&session.user)
-        .map(|user| GroupslistPageData {
-            user_name: session.user_data.name.clone(),
-            groups: user
-                .data
-                .groups
-                .iter()
-                .flatten()
-                .take(max_groups)
-                .flat_map(|group_id| server.get_group(group_id).map(|group| group.data.clone()))
-                .collect(),
-        })
-        .unwrap_or_default();
+    let user = server.get_user(&session.user)
+        .map_err(ServerFnErrorErr::ServerError)?;
+
+    let data = GroupslistPageDataContext {
+        user_name: user.data.name.clone(),
+        groups: user
+            .data
+            .groups
+            .iter()
+            .flatten()
+            .take(max_groups)
+            .flat_map(|group_id| server.get_group(group_id).map(|group| group.data.clone()))
+            .collect(),
+    };
     Ok(data)
 }
 
 #[component]
 pub fn GroupslistPage() -> impl IntoView {
-    || {
-        view! {
-            <SessionView action = |session_id: SessionUuid| {
-                let session_id = session_id.clone();
-                let groupslist_page_data = {
-                    let session_id = session_id.clone();
-                    Resource::new_blocking(
-                        move || session_id.clone(),
-                        |session_id| get_groupslist_page_data(session_id, 5),
-                    )
-                };
-                view!{
-                    <ResourceView
-                        resource = groupslist_page_data
-                        action = |groupslist_page_data|
-                            GroupslistPageWithData(GroupslistPageWithDataProps{ groupslist_page_data })
-                    />
-                }
-            } />
-        }
+    view! {
+        <SessionGuard>
+            <TopBar/>
+                <IsLoggedIn>
+                    <PageGuard with_parameters = |session_id|GetGroupslistPageData{ session_id, max_groups: 10 }>
+                        <GroupslistPageWithData />
+                    </PageGuard>
+                </IsLoggedIn>
+                <NotLoggedIn>
+                    "Not Logged In"
+                </NotLoggedIn>
+            <FootBar/>
+        </SessionGuard>
     }
 }
 
 #[component]
-pub fn GroupslistPageWithData(groupslist_page_data: GroupslistPageData) -> impl IntoView {
+pub fn GroupslistPageWithData() -> impl IntoView {
+    let groupslist_page_data = use_context::<GroupslistPageDataContext>()
+        .expect_context();
     view! {
         <MainColumn>
             <h1> "Hi there " {groupslist_page_data.user_name} "!" </h1>

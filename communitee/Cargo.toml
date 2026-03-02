@@ -41,10 +41,12 @@ tracing-subscriber.workspace = true
 url.workspace = true
 uuid = { workspace = true, optional = true }
 wasm-bindgen = { workspace = true, optional = true }
+wasm-tracing = { workspace = true, optional = true }
 
 [features]
 hydrate = [
   "dep:wasm-bindgen",
+  "dep:wasm-tracing",
   "leptos/hydrate",
   "leptos/tracing",
   "leptos/trace-component-props",

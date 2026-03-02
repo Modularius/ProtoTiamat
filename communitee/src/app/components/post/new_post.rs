@@ -22,17 +22,19 @@ pub async fn submit_post(data: SubmitPostData) -> Result<Option<PostData>, Serve
             SubmitPostType::UserSelf => {
                 None
             },
-            SubmitPostType::Reply(post_uuid) => {
+            SubmitPostType::Reply(_post_uuid) => {
                 None
             },
             SubmitPostType::Group(group_uuid) => {
-                let post_id = server.add_post_to_group(&group_uuid, &data.user_id, data.subject, data.contents);
-                let group = server.get_group(&group_uuid);
-                let user = server.get_user(&data.user_id);
-                Option::zip(post_id, group)
-                    .and_then(|(post_id, group)|
-                        Option::zip(group.get_post(&post_id), user)
-                            .map(|(post, user)|PostData::new(post, user)))
+                let post_id = server.add_post_to_group(&group_uuid, &data.user_id, data.subject, data.contents)
+                    .map_err(ServerFnErrorErr::ServerError)?;
+                let group = server.get_group(&group_uuid)
+                    .map_err(ServerFnErrorErr::ServerError)?;
+                let user = server.get_user(&data.user_id)
+                    .map_err(ServerFnErrorErr::ServerError)?;
+                let post = group.get_post(&post_id)
+                    .map_err(ServerFnErrorErr::ServerError)?;
+                Some(PostData::new(post, user))
             },
         }
     };

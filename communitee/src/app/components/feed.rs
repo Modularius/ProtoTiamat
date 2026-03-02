@@ -5,11 +5,11 @@ use crate::app::components::{
 use leptos::prelude::*;
 
 #[component]
-pub fn Feed<F>(feed: F, max: usize) -> impl IntoView
+pub fn Feed<F>(_feed: F, _max: usize) -> impl IntoView
 where
     F: Iterator<Item = PostData>,
 {
-    let posts = feed.take(max).collect::<Vec<_>>();
+    let posts = _feed.take(_max).collect::<Vec<_>>();
     view! {
         <For
             each = move ||posts.clone().into_iter().enumerate()

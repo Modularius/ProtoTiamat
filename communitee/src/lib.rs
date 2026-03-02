@@ -27,6 +27,7 @@ pub fn hydrate() {
     use leptos::prelude::use_context;
 
     console_error_panic_hook::set_once();
+    wasm_tracing::set_as_global_default();
 
     leptos::mount::hydrate_body(App);
 
@@ -34,12 +35,6 @@ pub fn hydrate() {
         .expect("TopLevelContext should exists, this should never fail.")
         .client_side_data;
 
-    // The `leak` consumes the `String`, marks it's heap allocation as `'static`
-    // and returns a static reference to it.
-    // This only results in an actual memory leak if the returned reference is ever dropped.
-    // By passing it to `set_server_url` we ensure this doesn't happen until the app is closed.
-    // Maybe, one day, leptos will allow `set_server_url` to be a String, allowing us to avoid
-    // having to use this scary sounding `leak` method... but this is not that day.
     let public_url: &'static str = client_side_data.public_url.hydrate_form();
     leptos::server_fn::client::set_server_url(public_url);
 }

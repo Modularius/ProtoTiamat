@@ -1,4 +1,5 @@
 use leptos::{prelude::*, server_fn::ServerFn};
+use tracing::{info, info_span};
 
 use crate::{
     app::{TopLevelContext, generic_components::error_box},
@@ -21,14 +22,17 @@ where
 {
     let server_action = ServerAction::<S>::new();
     move || {
-        tracing::debug!("Running Page Guard.");
+        let _guard = info_span!("PageGuard").entered();
         let children = children.clone();
         let session_id = use_context::<TopLevelContext>()
             .expect_context()
             .session_id_expect();
         server_action.dispatch(with_parameters(session_id));
         Suspend::new(async move {
-        tracing::debug!("Running Page Guard Suspend.");
+            let span = info_span!("PagenGuard Suspense");
+            let _guard = span.enter();
+
+            info!("A Little Info.");
             server_action.value()
                 .get()
                 .map(|value|

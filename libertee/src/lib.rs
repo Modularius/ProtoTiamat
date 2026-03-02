@@ -1,4 +1,5 @@
 mod group;
+mod message;
 mod post;
 mod session;
 mod user;
@@ -8,6 +9,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 pub use group::{GroupData, GroupUuid};
+pub use message::{MessageData, MessageUuid};
 pub use post::PostUuid;
 pub use session::{Session, SessionUuid};
 pub use user::{UserData, UserUuid};
@@ -40,7 +42,8 @@ cfg_if! {
         pub use user::User;
         pub use post::Post;
         pub use feed::Feed;
-        pub(crate) use store::Store;
+        pub use message::Message;
+        pub(crate) use store::{Store, MessageStore};
 
         use rand::seq::IteratorRandom;
         pub trait Uuidlike {

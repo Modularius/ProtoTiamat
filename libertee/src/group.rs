@@ -103,8 +103,9 @@ cfg_if! {
                 Some(post.clone())
             }
 
-            pub fn get_post(&self, post_id: &PostUuid) -> Option<&Post> {
+            pub fn get_post(&self, post_id: &PostUuid) -> Result<&Post, String> {
                 self.store.get_post(post_id)
+                    .ok_or_else(||format!("No Post found with id {}", post_id.to_string()))
             }
 
             pub fn create_feed(&self, target_member: &MemberUuid, last_post: Option<PostUuid>, max_size: usize) -> Feed {

@@ -4,18 +4,12 @@ mod error_box;
 mod inert_containers;
 mod labelled_input;
 
-use std::sync::Arc;
-
 pub use button::{ButtonControl, ButtonFunction, CloseButton, SubmitControl};
 pub use control_stack::{Control, ControlStack, LabelledControlStack};
 pub use error_box::error_box;
 pub use inert_containers::{ErrorBox, RoundedBox, SharpBox};
 pub use labelled_input::{LabelledInput, LabelledSelect, LabelledTextArea};
-use leptos::{either::Either, prelude::*};
-
-use crate::{app::TopLevelContext, structs::ContextExt};
-use libertee::{Session, SessionUuid, UserData};
-
+/*
 #[component]
 pub fn ResourceView<F, R, V>(
     resource: Resource<Result<R, ServerFnError>>,
@@ -76,7 +70,7 @@ pub fn SessionView(
     const EXPECT : &'static str = "SessionView should only be used inside `IsLoggedIn` tags, this should never fail";        
     move||action.run(session_id.get().expect(EXPECT))
 }
-
+*/
 /*#[component]
 pub fn SessionView(
     #[prop(into)]

@@ -51,6 +51,12 @@ impl PublicUrl {
         if let Some('/') = url.chars().last() {
             url.pop();
         }
+        // The `leak` consumes the `String`, marks it's heap allocation as `'static`
+        // and returns a static reference to it.
+        // This only results in an actual memory leak if the returned reference is ever dropped.
+        // By passing it to `set_server_url` we ensure this doesn't happen until the app is closed.
+        // Maybe, one day, leptos will allow `set_server_url` to be a String, allowing us to avoid
+        // having to use this scary sounding `leak` method... but this is not that day.
         url.leak()
     }
 }

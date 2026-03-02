@@ -4,7 +4,7 @@ use libertee::SessionUuid;
 use serde::{Deserialize, Serialize};
 
 use crate::{app::{
-    TopLevelContext, generic_components::{
+    generic_components::{
         ButtonControl, ButtonFunction, ControlStack, LabelledControlStack,
     },
     guards::{IsLoggedIn, NotLoggedIn, PageGuard}
@@ -110,7 +110,7 @@ async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext
     let server = server_side_data.server.lock()?;
     
     let session = server.get_session(&session_id)
-        .ok_or_else(||ServerFnErrorErr::ServerError(format!("No Session found with id {}", session_id.to_string())))?;
+        .map_err(ServerFnErrorErr::ServerError)?;
 
     Ok(UserBarDataContext {
         user_name: session.user_data.name.clone(),

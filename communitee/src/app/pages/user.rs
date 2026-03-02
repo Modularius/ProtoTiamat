@@ -1,14 +1,14 @@
 use std::collections::HashMap;
 
-use crate::app::{
-    components::{AdColumns, MainColumn},
+use crate::{app::{
+    components::{AdColumns, FootBar, MainColumn, TopBar},
     generic_components::{
-        ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, RoundedBox, SessionView,
-    },
-};
+        ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox,
+    }, guards::{PageGuard, SessionGuard},
+}, structs::{ContextExt, Expect}};
 use leptos::{Params, either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
-use libertee::{Session, SessionUuid, UserUuid};
+use libertee::{SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -21,13 +21,17 @@ struct UserParams {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct UserPageData {
+pub struct UserPageDataContext {
     pub user_name: String,
     pub name: String,
     pub datetime_joined: String,
     pub properties: HashMap<String, String>,
     pub groups_in: Vec<GroupInData>,
     pub friends: Vec<FriendOfData>,
+}
+
+impl Expect for UserPageDataContext {
+    const EXPECT: &'static str = "UserPageDataContext should be provided, this should never fail.";
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -46,101 +50,111 @@ pub struct FriendOfData {
 #[server]
 async fn get_user_page_data(
     session_id: SessionUuid,
-    user_id: Option<UserUuid>,
-) -> Result<Option<UserPageData>, ServerFnError> {
+    user_id: UserUuid,
+) -> Result<UserPageDataContext, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
-        .expect("ServerSideData should be provided, this should never fail.");
+        .expect_context();
     let server = server_side_data.server.lock()?;
 
     let session = server.get_session(&session_id)
-        .ok_or_else(||ServerFnErrorErr::ServerError(format!("No Session found with id {}", session_id.to_string())))?;
+        .map_err(ServerFnErrorErr::ServerError)?;
 
-    let user_page_data = user_id
-        .and_then(|user_id| server.get_user(&user_id.into()))
-        .map(|user| {
-            let properties = user.data.properties.clone();
-            let groups_in = user
-                .data
-                .groups
-                .iter()
-                .flatten()
-                .flat_map(|group_id| {
-                    server.get_group(group_id).and_then(|group| {
-                        let member_id = group.get_member_id_from_user_id(&user.data.id);
-                        member_id
-                            .and_then(|member_id| group.data.members.get(member_id))
-                            .map(|member| GroupInData {
-                                name: group.data.name.clone(),
-                                link_to_group: format!("/group/{}", group.data.id.to_string()),
-                                datetime_joined: format_datetime(&member.joined),
-                            })
+    let user = server.get_user(&user_id)
+        .map_err(ServerFnErrorErr::ServerError)?;
+    
+    let properties = user.data.properties.clone();
+    let groups_in = user
+        .data
+        .groups
+        .iter()
+        .flatten()
+        .flat_map(|group_id| {
+            server.get_group(group_id).ok().and_then(|group| {
+                let member_id = group.get_member_id_from_user_id(&user.data.id);
+                member_id
+                    .and_then(|member_id| group.data.members.get(member_id))
+                    .map(|member| GroupInData {
+                        name: group.data.name.clone(),
+                        link_to_group: format!("/group/{}", group.data.id.to_string()),
+                        datetime_joined: format_datetime(&member.joined),
                     })
+            })
+        })
+        .collect();
+    let friends = user
+        .data
+        .friends
+        .iter()
+        .flatten()
+        .flat_map(|friendship| {
+            server
+                .get_user(&friendship.user_id)
+                .map(|friend| FriendOfData {
+                    name: friend.data.name.clone(),
+                    link_to_user: format!("/user/{}", friend.data.id.to_string()),
+                    datetime_of_friendship: format_datetime(
+                        &friendship.datetime_of_friendship,
+                    ),
                 })
-                .collect();
-            let friends = user
-                .data
-                .friends
-                .iter()
-                .flatten()
-                .flat_map(|friendship| {
-                    server
-                        .get_user(&friendship.user_id)
-                        .map(|friend| FriendOfData {
-                            name: friend.data.name.clone(),
-                            link_to_user: format!("/user/{}", friend.data.id.to_string()),
-                            datetime_of_friendship: format_datetime(
-                                &friendship.datetime_of_friendship,
-                            ),
-                        })
-                })
-                .collect();
+        })
+        .collect();
 
-            UserPageData {
-                user_name: session.user_data.name.clone(),
-                name: user.data.name.clone(),
-                datetime_joined: format_datetime(&user.data.datetime_joined),
-                properties: properties.unwrap_or_default(),
-                groups_in,
-                friends,
-            }
-        });
-    Ok(user_page_data)
+    Ok(UserPageDataContext {
+        user_name: session.user_data.name.clone(),
+        name: user.data.name.clone(),
+        datetime_joined: format_datetime(&user.data.datetime_joined),
+        properties: properties.unwrap_or_default(),
+        groups_in,
+        friends,
+    })
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct UserPageParamsContext {
+    user_id: UserUuid,
+}
+
+impl Expect for UserPageParamsContext {
+    const EXPECT: &'static str = "UserPageParamsContext should be provided, this should never fail.";
 }
 
 #[component]
 pub fn UserPage() -> impl IntoView {
-    {
-        view! {
-            <SessionView action = |session_id: SessionUuid| {
-                let session_id = session_id.clone();
-                let params = use_params::<UserParams>();
-                let user_id = params.get()
-                    .ok()
-                    .and_then(|params|params.user_id.map(UserUuid));
-
-                let user_page_data = Resource::new_blocking(
-                    move||(session_id.clone(), user_id.clone()),
-                    |(session_id, user_id)| get_user_page_data(session_id.clone(), user_id.clone())
-                );
-                view!{
-                    <div>
-                    <ResourceView resource = user_page_data action = move |user_page_data| {
-                        match user_page_data {
-                            Some(user_page_data) => Either::Left(view!{
-                                <UserPageWithData user_page_data />
-                            }),
-                            None => Either::Right(view!{}),
-                        }
-                    }/>
-                    </div>
-                }
-            } />
-        }
+    let params = use_params::<UserParams>();
+    let user_id = params.get()
+        .ok()
+        .and_then(|params|params.user_id.map(UserUuid));
+    match user_id {
+        Some(user_id) => Either::Left({
+            provide_context(UserPageParamsContext { user_id });
+            view! {
+                <SessionGuard>
+                    <TopBar/>
+                        <PageGuard with_parameters = |session_id| GetUserPageData{
+                                session_id,
+                                user_id: { use_context::<UserPageParamsContext>().expect_context().user_id }
+                            }>
+                            <UserPageWithData />
+                        </PageGuard>
+                    <FootBar/>
+                </SessionGuard>
+            }
+        }),
+        None => Either::Right(view!{
+            <SessionGuard>
+                <TopBar/>
+                    <MainColumn>
+                        <div> "No User Found" </div>
+                    </MainColumn>
+                <FootBar/>
+            </SessionGuard>
+        }),
     }
 }
 
 #[component]
-pub fn UserPageWithData(user_page_data: UserPageData) -> impl IntoView {
+pub fn UserPageWithData() -> impl IntoView {
+    let user_page_data = use_context::<UserPageDataContext>()
+        .expect_context();
     view! {
         <MainColumn>
             <h1> "Hi there " {user_page_data.user_name} "!" </h1>

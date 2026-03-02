@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use chrono::Utc;
+use clap::builder::Str;
 use elasticsearch::{Elasticsearch, IndexParts, cat::CatIndicesParts, http::{request::JsonBody, transport::Transport}};
 use serde_json::json;
 use itertools::Itertools;
@@ -20,24 +21,29 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn get_user(&self, uuid: &UserUuid) -> Option<&User> {
+    pub fn get_user(&self, uuid: &UserUuid) -> Result<&User, String> {
         self.users.get(uuid)
+            .ok_or_else(||format!("No User found with id {}", uuid.to_string()))
     }
 
-    pub fn get_user_mut(&mut self, uuid: &UserUuid) -> Option<&mut User> {
+    pub fn get_user_mut(&mut self, uuid: &UserUuid) -> Result<&mut User, String> {
         self.users.get_mut(uuid)
+            .ok_or_else(||format!("No User found with id {}", uuid.to_string()))
     }
 
-    pub fn get_group(&self, uuid: &GroupUuid) -> Option<&Group> {
+    pub fn get_group(&self, uuid: &GroupUuid) -> Result<&Group, String> {
         self.groups.get(uuid)
+            .ok_or_else(||format!("No Group found with id {}", uuid.to_string()))
     }
 
-    pub fn get_group_mut(&mut self, uuid: &GroupUuid) -> Option<&mut Group> {
+    pub fn get_group_mut(&mut self, uuid: &GroupUuid) -> Result<&mut Group, String> {
         self.groups.get_mut(uuid)
+            .ok_or_else(||format!("No Group found with id {}", uuid.to_string()))
     }
 
-    pub fn get_session(&self, uuid: &SessionUuid) -> Option<&Session> {
+    pub fn get_session(&self, uuid: &SessionUuid) -> Result<&Session, String> {
         self.sessions.get(uuid)
+            .ok_or_else(||format!("No Session found with id {}", uuid.to_string()))
     }
 
     pub fn remove_session(&mut self, uuid: &SessionUuid) -> Option<Session> {
@@ -62,7 +68,7 @@ impl Server {
         // Fixme: should guard against clashes with existing Uuids
         let session_id = SessionUuid(Uuid::generate_random(16));
         if let Some(user_id) = self.credentials.get(auth) {
-            if let Some(user) = self.get_user(user_id) {
+            if let Ok(user) = self.get_user(user_id) {
                 self.sessions.insert(
                     session_id.clone(),
                     Session::new(session_id.clone(), user_id.clone(), Default::default(), user.data.clone()),
@@ -84,17 +90,15 @@ impl Server {
         
     }
 
-    pub fn add_post_to_group(&mut self, group_id: &GroupUuid, user_id: &UserUuid, subject: String, contents: String) -> Option<PostUuid> {
+    pub fn add_post_to_group(&mut self, group_id: &GroupUuid, user_id: &UserUuid, subject: String, contents: String) -> Result<PostUuid, String> {
         //let member_id = self.get_group(&group_id).and_then(|group|group.get_member_id_from_user_id(user_id));
-        let group = self.get_group_mut(&group_id);
-        group.map(|group| {
-            let id = group.store.add_post(user_id.clone(), subject, contents);
-            //group.store.get_post_mut(id);
-            id
-        })
+        let group = self.get_group_mut(&group_id)?;
+        let id = group.store.add_post(user_id.clone(), subject, contents);
+        //group.store.get_post_mut(id);
+        Ok(id)
     }
 
-    pub fn create_initial_user(&mut self, auth: &LoginAuth, name: String, datetime: Option<Timestamp>) -> Option<&mut User> {
+    pub fn create_initial_user(&mut self, auth: &LoginAuth, name: String, datetime: Option<Timestamp>) -> Result<&mut User, String> {
         let datetime = datetime.unwrap_or(Utc::now());
         let friendships = self.users.keys().cloned().filter(|_| rand::random_bool(0.5)).collect_vec();
         let groups = self.groups.keys().cloned().filter(|_| rand::random_bool(0.5)).collect_vec();
@@ -111,21 +115,21 @@ impl Server {
     }
 
     pub fn make_users_friends(&mut self, user_id1: &UserUuid, user_id2: &UserUuid, datetime: Timestamp) {
-        if let Some(user_1) = self.get_user_mut(user_id1) {
+        if let Ok(user_1) = self.get_user_mut(user_id1) {
             user_1.add_friendship(Friendship { user_id: user_id2.clone(), datetime_of_friendship: datetime });
         }
 
-        if let Some(user_2) = self.get_user_mut(user_id2) {
+        if let Ok(user_2) = self.get_user_mut(user_id2) {
             user_2.add_friendship(Friendship { user_id: user_id1.clone(), datetime_of_friendship: datetime });
         }
     }
 
     pub fn make_user_group_member(&mut self, user_id: &UserUuid, group_id: &GroupUuid) {
         // FIXME some prior check for group and user existance
-        if let Some(user) = self.get_user_mut(user_id) {
+        if let Ok(user) = self.get_user_mut(user_id) {
             user.add_group(group_id.clone());
         }
-        if let Some(group) = self.get_group_mut(group_id) {
+        if let Ok(group) = self.get_group_mut(group_id) {
             group.add_member(user_id.clone());
         }
     }

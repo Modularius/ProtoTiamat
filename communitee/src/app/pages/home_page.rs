@@ -1,6 +1,6 @@
 use crate::{app::{
-    components::{AdColumns, MainColumn, NewPostBox, PostBox, PostData}, generic_components::RoundedBox,
-    guards::{IsLoggedIn, NotLoggedIn, PageGuard}
+    components::{AdColumns, FootBar, MainColumn, NewPostBox, PostBox, PostData, TopBar}, generic_components::RoundedBox,
+    guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard}
 }, structs::{ContextExt, Expect}};
 use leptos::prelude::*;
 use libertee::{SessionUuid, UserUuid};
@@ -34,10 +34,10 @@ pub async fn get_home_page_data(
     let server = server_side_data.server.lock()?;
     
     let session = server.get_session(&session_id)
-        .ok_or_else(||ServerFnErrorErr::ServerError(format!("No Session found with id {}", session_id.to_string())))?;
+        .map_err(ServerFnErrorErr::ServerError)?;
 
     let user = server.get_user(&session.user)
-        .ok_or_else(||ServerFnErrorErr::ServerError(format!("No User found with id {}", session.user.to_string())))?;
+        .map_err(ServerFnErrorErr::ServerError)?;
 
     let data = HomePageDataContext {
         user_id: user.data.id.clone(),
@@ -61,37 +61,21 @@ pub async fn get_home_page_data(
 #[component]
 #[tracing::instrument]
 pub fn HomePage() -> impl IntoView {
-    //let home_page_data: ServerAction<GetHomePageData> = ServerAction::new();
     view! {
-        <MainColumn>
-            <IsLoggedIn>
-                <PageGuard with_parameters = |session_id|GetHomePageData{ session_id, max_posts: 10 }>
-                    <HomePageWithData />
-                </PageGuard>
-                // {move || {
-                //     let session_id = use_context::<TopLevelContext>()
-                //         .expect_context()
-                //         .session_id_expect();
-                //     home_page_data.dispatch( GetHomePageData{ session_id, max_posts: 10 } );
-                //     Suspend::new(async move {
-                //         home_page_data.value().get().map(|home_page_data|
-                //             view!{
-                //                 <ErrorBoundary fallback = error_box>
-                //                     {home_page_data.map(|home_page_data|
-                //                         home_page_data.map(|home_page_data|
-                //                             HomePageWithData(HomePageWithDataProps { home_page_data })
-                //                         )
-                //                     )}
-                //                 </ErrorBoundary>
-                //             }
-                //         )
-                //     })
-                // }}
-            </IsLoggedIn>
-            <NotLoggedIn>
-                <LandingPage />
-            </NotLoggedIn>
-        </MainColumn>
+        <SessionGuard>
+            <TopBar/>
+            <MainColumn>
+                <IsLoggedIn>
+                    <PageGuard with_parameters = |session_id|GetHomePageData{ session_id, max_posts: 10 }>
+                        <HomePageWithData />
+                    </PageGuard>
+                </IsLoggedIn>
+                <NotLoggedIn>
+                    <LandingPage />
+                </NotLoggedIn>
+            </MainColumn>
+        <FootBar />
+    </SessionGuard>
     }
 }
 

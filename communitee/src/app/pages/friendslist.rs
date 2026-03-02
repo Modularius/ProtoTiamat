@@ -1,12 +1,11 @@
 use crate::{app::{
-    components::{AdColumns, MainColumn},
+    components::{AdColumns, FootBar, MainColumn, TopBar},
     generic_components::{
-        ButtonControl, ButtonFunction, LabelledControlStack, ResourceView, SessionView, SharpBox,
-    },
-}, structs::ContextExt};
+        ButtonControl, ButtonFunction, LabelledControlStack, SharpBox,
+    }, guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard},
+}, structs::{ContextExt, Expect}};
 use leptos::prelude::*;
-use libertee::{Session, SessionUuid};
-use libertee::UserUuid;
+use libertee::{SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -32,41 +31,43 @@ impl FriendData {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct FriendslistPageData {
+pub struct GetFriendslistPageDataContext {
     user_name: String,
     friends: Vec<FriendData>,
+}
+
+impl Expect for GetFriendslistPageDataContext {
+    const EXPECT: &'static str = "";
 }
 
 #[server]
 async fn get_friendslist_page_data(
     session_id: SessionUuid,
     max_friends: usize,
-) -> Result<FriendslistPageData, ServerFnError> {
+) -> Result<GetFriendslistPageDataContext, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>()
         .expect_context();
     let server = server_side_data.server.lock()?;
 
     let session = server.get_session(&session_id)
-        .ok_or_else(||ServerFnErrorErr::ServerError(format!("No Session found with id {}", session_id.to_string())))?;
+        .map_err(ServerFnErrorErr::ServerError)?;
 
-    let data = FriendslistPageData {
-        user_name: session.user_data.name.clone(),
-        friends: server
-            .get_user(&session.user)
-            .map(|user| {
-                user.data
-                    .friends
-                    .iter()
-                    .flatten()
-                    .take(max_friends)
-                    .flat_map(|friendship| {
-                        server
-                            .get_user(&friendship.user_id)
-                            .map(|friend| FriendData::from(friend))
-                    })
-                    .collect()
+    let user = server.get_user(&session.user)
+        .map_err(ServerFnErrorErr::ServerError)?;
+
+    let data = GetFriendslistPageDataContext {
+        user_name: user.data.name.clone(),
+        friends: user.data
+            .friends
+            .iter()
+            .flatten()
+            .take(max_friends)
+            .flat_map(|friendship| {
+                server
+                    .get_user(&friendship.user_id)
+                    .map(|friend| FriendData::from(friend))
             })
-            .unwrap_or_default(),
+            .collect(),
     };
 
     Ok(data)
@@ -74,27 +75,27 @@ async fn get_friendslist_page_data(
 
 #[component]
 pub fn FriendlistPage() -> impl IntoView {
-    || {
-        view! {
-            <SessionView action = |session_id: SessionUuid| {
-                let friendslist_page_data = Resource::new_blocking(
-                    move ||session_id.clone(),
-                    |session_id| get_friendslist_page_data(session_id, 10)
-                );
-                view!{
-                    <ResourceView
-                        resource = friendslist_page_data
-                        action = |friendslist_page_data|
-                            FriendlistPageWithData(FriendlistPageWithDataProps{ friendslist_page_data })
-                    />
-                }
-            } />
-        }
+    view! {
+        <SessionGuard>
+            <TopBar/>
+                <IsLoggedIn>
+                    <PageGuard with_parameters = |session_id|GetFriendslistPageData{ session_id, max_friends: 10 }>
+                        <FriendlistPageWithData />
+                    </PageGuard>
+                </IsLoggedIn>
+                
+                <NotLoggedIn>
+                    "Not Logged In"
+                </NotLoggedIn>
+            <FootBar/>
+        </SessionGuard>
     }
 }
 
 #[component]
-pub fn FriendlistPageWithData(friendslist_page_data: FriendslistPageData) -> impl IntoView {
+pub fn FriendlistPageWithData() -> impl IntoView {
+    let friendslist_page_data = use_context::<GetFriendslistPageDataContext>()
+        .expect_context();
     view! {
         <MainColumn>
             <h1 class = "text-3xl m-6"> "Hi there " {friendslist_page_data.user_name} "!" </h1>

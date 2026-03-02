@@ -38,12 +38,13 @@ pub struct Friendship {
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use rand::prelude::IndexedRandom;
-        use crate::Store;
+        use crate::{Store, MessageStore};
 
         #[derive(Clone, Debug)]
         pub struct User {
             pub data: UserData,
             pub store: Store,
+            pub messages: MessageStore,
         }
 
         impl User {
@@ -51,6 +52,7 @@ cfg_if! {
                 Self {
                     data,
                     store: Default::default(),
+                    messages: Default::default(),
                 }
             }
 

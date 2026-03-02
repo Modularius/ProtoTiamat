@@ -1,4 +1,5 @@
 use leptos::prelude::*;
+use tracing::info_span;
 use crate::{
     app::{TopLevelContext, generic_components::error_box},
     structs::ContextExt
@@ -14,11 +15,12 @@ pub fn SessionGuard<C>(
     let session = top_level_context.session;
 
     move || {
-        tracing::debug!("Running Session Guard.");
+        let _guard = info_span!("SessionGuard").entered();
         let children = children.clone();
         let session = session.clone();
         Suspend::new(async move {
-            tracing::debug!("Session Guard Suspend.");
+            let span = info_span!("SessionGuard Suspense");
+            let _guard = span.enter();
             let session_id = session.await;
             view!{
                 <ErrorBoundary fallback = error_box>
