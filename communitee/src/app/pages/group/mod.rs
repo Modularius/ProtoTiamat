@@ -11,8 +11,7 @@ use crate::{
 use leptos::{either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
 #[cfg(feature = "ssr")]
-use libertee::UserData;
-use libertee::{GroupUuid, SessionUuid, UserUuid};
+use libertee::{Delegate, GroupUuid, SessionUuid, UserData, UserUuid};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Params, PartialEq)]
@@ -62,7 +61,7 @@ impl GroupWithMemberPageData {
             delegates: member
                 .delegates
                 .iter()
-                .map(|(delegate_id, &weight)| {
+                .map(|(delegate_id, &Delegate { weight, ..})| {
                     group
                         .data
                         .members

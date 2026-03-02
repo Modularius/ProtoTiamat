@@ -8,7 +8,7 @@ use cfg_if::cfg_if;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-pub use group::{GroupData, GroupUuid};
+pub use group::{GroupData, GroupUuid, Delegate};
 pub use message::{MessageData, MessageUuid};
 pub use post::PostUuid;
 pub use session::{Session, SessionUuid};

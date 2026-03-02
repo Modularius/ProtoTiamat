@@ -1,9 +1,16 @@
-use cfg_if::cfg_if;
-use chrono::Utc;
-use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, ops::Deref};
+mod member;
+mod policy;
+mod history;
 
-use crate::{RandomGeneration, Real, Timestamp, UserUuid, Uuid};
+use cfg_if::cfg_if;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+use crate::{RandomGeneration, Real, UserUuid, Uuid};
+
+pub use member::{Delegate, Member, MemberUuid};
+pub use history::GroupHistory;
+pub use policy::GroupAdmin;
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct GroupUuid(pub Uuid);
@@ -25,42 +32,9 @@ pub struct GroupData {
     pub id: GroupUuid,
     pub name: String,
     pub members: HashMap<MemberUuid, Member>,
+    pub admins: HashMap<MemberUuid, GroupAdmin>,
     pub member_by_user_id: HashMap<UserUuid, MemberUuid>,
     pub adjacent_groups: Vec<(GroupUuid, Real)>,
-}
-
-#[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct MemberUuid(Uuid);
-
-impl Into<MemberUuid> for String {
-    fn into(self) -> MemberUuid {
-        MemberUuid(self)
-    }
-}
-
-impl ToString for MemberUuid {
-    fn to_string(&self) -> String {
-        self.0.clone()
-    }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Member {
-    pub id: MemberUuid,
-    pub user: UserUuid,
-    pub joined: Timestamp,
-    pub delegates: HashMap<MemberUuid, Real>,
-}
-
-impl Member {
-    pub fn new(id: MemberUuid, user: UserUuid) -> Self {
-        Self {
-            id,
-            user,
-            joined: Utc::now(),
-            delegates: Default::default(),
-        }
-    }
 }
 
 cfg_if! {
@@ -73,6 +47,7 @@ cfg_if! {
         pub struct Group {
             pub data: GroupData,
             pub store: Store,
+            pub history: Vec<GroupHistory>,
         }
 
         impl Group {
@@ -80,6 +55,7 @@ cfg_if! {
                 Self {
                     data,
                     store: Default::default(),
+                    history: Default::default(),
                 }
             }
 
