@@ -1,6 +1,6 @@
 use leptos::prelude::*;
 use leptos_router::components::A;
-use libertee::SessionUuid;
+use libertee::{LiberteeError, SessionUuid};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -107,17 +107,22 @@ impl Expect for UserBarDataContext {
 }
 
 #[server]
+#[tracing::instrument()]
 async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
 
     let session = server
         .get_session(&session_id)
-        .map_err(ServerFnErrorErr::ServerError)?;
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+
+    let user = server
+        .get_user(&session.user)
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
     Ok(UserBarDataContext {
-        user_name: session.user_data.name.clone(),
-        user_page_href: format!("/user/{}", session.user_data.id.to_string()),
+        user_name: user.data.name.clone(),
+        user_page_href: format!("/user/{}", user.data.id.to_string()),
     })
 }
 

@@ -7,7 +7,7 @@ use crate::{
     structs::{ContextExt, Expect},
 };
 use leptos::prelude::*;
-use libertee::{GroupData, SessionUuid};
+use libertee::{GroupData, LiberteeError, SessionUuid};
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -44,11 +44,11 @@ pub async fn get_groupslist_page_data(
 
     let session = server
         .get_session(&session_id)
-        .map_err(ServerFnErrorErr::ServerError)?;
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
     let user = server
         .get_user(&session.user)
-        .map_err(ServerFnErrorErr::ServerError)?;
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
     let data = GroupslistPageDataContext {
         user_name: user.data.name.clone(),

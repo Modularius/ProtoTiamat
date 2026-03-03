@@ -7,7 +7,7 @@ use crate::{
     structs::{ContextExt, Expect},
 };
 use leptos::prelude::*;
-use libertee::{SessionUuid, UserUuid};
+use libertee::{LiberteeError, SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -38,11 +38,11 @@ pub async fn get_home_page_data(
 
     let session = server
         .get_session(&session_id)
-        .map_err(ServerFnErrorErr::ServerError)?;
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
     let user = server
         .get_user(&session.user)
-        .map_err(ServerFnErrorErr::ServerError)?;
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
     let data = HomePageDataContext {
         user_id: user.data.id.clone(),

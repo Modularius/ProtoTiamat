@@ -2,15 +2,13 @@ use std::collections::HashMap;
 
 use crate::{
     app::{
-        components::{AdColumns, FootBar, MainColumn, TopBar},
-        generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox},
-        guards::{PageGuard, SessionGuard},
+        TopLevelContext, components::{AdColumns, FootBar, MainColumn, TopBar}, generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox}, guards::{IsLoggedIn, PageGuard, ResourceGuard, SessionGuard}
     },
     structs::{ContextExt, Expect},
 };
 use leptos::{Params, either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
-use libertee::{SessionUuid, UserUuid};
+use libertee::{LiberteeError, SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -56,16 +54,19 @@ async fn get_user_page_data(
 ) -> Result<UserPageDataContext, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
-
+tracing::debug!("Got Server");
     let session = server
         .get_session(&session_id)
-        .map_err(ServerFnErrorErr::ServerError)?;
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
+tracing::debug!("Got Session");
     let user = server
         .get_user(&user_id)
-        .map_err(ServerFnErrorErr::ServerError)?;
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
+tracing::debug!("Got User");
     let properties = user.data.properties.clone();
+tracing::debug!("Got Props");
     let groups_in = user
         .data
         .groups
@@ -79,7 +80,7 @@ async fn get_user_page_data(
                     .map(|member| GroupInData {
                         name: group.data.name.clone(),
                         link_to_group: format!("/group/{}", group.data.id.to_string()),
-                        datetime_joined: format_datetime(&member.joined),
+                        datetime_joined: chrono::Utc::now().to_rfc3339(), //format_datetime(&member.joined),
                     })
             })
         })
@@ -95,15 +96,15 @@ async fn get_user_page_data(
                 .map(|friend| FriendOfData {
                     name: friend.data.name.clone(),
                     link_to_user: format!("/user/{}", friend.data.id.to_string()),
-                    datetime_of_friendship: format_datetime(&friendship.datetime_of_friendship),
+                    datetime_of_friendship: chrono::Utc::now().to_rfc3339()// format_datetime(&friendship.datetime_of_friendship),
                 })
         })
         .collect();
 
     Ok(UserPageDataContext {
-        user_name: session.user_data.name.clone(),
+        user_name: user.data.name.clone(),
         name: user.data.name.clone(),
-        datetime_joined: format_datetime(&user.data.datetime_joined),
+        datetime_joined: chrono::Utc::now().to_rfc3339(),//format_datetime(&user.data.datetime_joined),
         properties: properties.unwrap_or_default(),
         groups_in,
         friends,
@@ -122,36 +123,49 @@ impl Expect for UserPageParamsContext {
 #[component]
 pub fn UserPage() -> impl IntoView {
     let params = use_params::<UserParams>();
-    let user_id = params
-        .get()
-        .ok()
-        .and_then(|params| params.user_id.map(UserUuid));
-    match user_id {
-        Some(user_id) => Either::Left({
-            provide_context(UserPageParamsContext { user_id });
-            view! {
-                <SessionGuard>
-                    <TopBar/>
-                        <PageGuard with_parameters = |session_id| GetUserPageData{
+    let source = move ||(use_context::<TopLevelContext>().expect_context().session_id, params);
+    let fetch = async |(session_id, user_id) : (RwSignal<Option<SessionUuid>>, Memo<Result<UserParams, _>>)| if let Some((s,p)) = Option::zip(session_id.get(), user_id.get().ok().and_then(|p|p.user_id)) { Some(get_user_page_data(s,UserUuid(p)).await) } else { None };
+    let resource = Resource::new(source, fetch);
+    view! {
+        <SessionGuard>
+            <TopBar/>
+                <IsLoggedIn>
+                        <ResourceGuard resource>
+                            <UserPageWithData />
+                        </ResourceGuard>
+                        /*<PageGuard with_parameters = |session_id| GetUserPageData{
                                 session_id,
                                 user_id: { use_context::<UserPageParamsContext>().expect_context().user_id }
                             }>
                             <UserPageWithData />
-                        </PageGuard>
+                        </PageGuard>*/
+                </IsLoggedIn>
+            <FootBar/>
+        </SessionGuard>
+                }
+                /*
+    || {
+        let params = use_params::<UserParams>();
+        let user_id = params
+            .get()
+            .ok()
+            .and_then(|params| params.user_id.map(UserUuid));
+        match user_id {
+            Some(user_id) => Either::Left({
+                provide_context(UserPageParamsContext { user_id });
+
+            }),
+            None => Either::Right(view! {
+                <SessionGuard>
+                    <TopBar/>
+                        <MainColumn>
+                            <div> "No User Found" </div>
+                        </MainColumn>
                     <FootBar/>
                 </SessionGuard>
-            }
-        }),
-        None => Either::Right(view! {
-            <SessionGuard>
-                <TopBar/>
-                    <MainColumn>
-                        <div> "No User Found" </div>
-                    </MainColumn>
-                <FootBar/>
-            </SessionGuard>
-        }),
-    }
+            }),
+        }
+    } */
 }
 
 #[component]

@@ -2,7 +2,7 @@ mod resource_guard;
 mod session_guard;
 //mod user_guard;
 
-pub use resource_guard::PageGuard;
+pub use resource_guard::{PageGuard, ResourceGuard};
 pub use session_guard::SessionGuard;
 
 use leptos::prelude::*;

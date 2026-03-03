@@ -10,7 +10,8 @@ pub fn SessionGuard<C>(children: TypedChildrenFn<C>) -> impl IntoView
 where
     C: IntoView + 'static,
 {
-    let top_level_context = use_context::<TopLevelContext>().expect_context();
+    let top_level_context = use_context::<TopLevelContext>()
+        .expect_context();
     let session = top_level_context.session;
 
     move || {

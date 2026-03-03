@@ -9,8 +9,7 @@ use crate::{
 use leptos::prelude::*;
 use leptos_meta::provide_meta_context;
 use leptos_router::{
-    components::{Outlet, ParentRoute, Route, Router, Routes},
-    path,
+    SsrMode, components::{Outlet, ParentRoute, Route, Router, Routes}, path
 };
 use libertee::SessionUuid;
 
@@ -49,26 +48,26 @@ pub fn App() -> impl IntoView {
 
     provide_context(TopLevelContext {
         client_side_data,
-        session: Resource::new_blocking(|| (), move |_| get_session_from_identity()),
+        session: Resource::new_blocking(|| (), |_| {tracing::warn!("This fetcher is being called."); get_session_from_identity()}),
         session_id: RwSignal::new(None),
     });
 
     view! {
         <Router> // base = public_path>
             <Routes fallback = NotFound>
-                <Route path = path!("/") view = HomePage />
-                <Route path = path!("/register") view = RegisterPage />
-                <Route path = path!("/login") view = LoginPage />
-                <Route path = path!("/friends") view = FriendlistPage />
-                <Route path = path!("/groups") view = GroupslistPage />
-                <Route path = path!("/messages") view = MessagesPage />
+                <Route path = path!("/") view = HomePage ssr = SsrMode::Async />
+                <Route path = path!("/register") view = RegisterPage ssr = SsrMode::Async />
+                <Route path = path!("/login") view = LoginPage ssr = SsrMode::Async />
+                <Route path = path!("/friends") view = FriendlistPage ssr = SsrMode::Async />
+                <Route path = path!("/groups") view = GroupslistPage ssr = SsrMode::Async />
+                <Route path = path!("/messages") view = MessagesPage ssr = SsrMode::Async />
                 <ParentRoute path = path!("/user") view = ||view!{<Outlet />}>
-                    <Route path = path!(":user_id") view = UserPage />
+                    <Route path = path!(":user_id") view = UserPage ssr = SsrMode::Async />
                 </ParentRoute>
                 <ParentRoute path = path!("/group") view = ||view!{<Outlet />}>
-                    <Route path = path!(":group_id") view = GroupPage />
+                    <Route path = path!(":group_id") view = GroupPage ssr = SsrMode::Async />
                 </ParentRoute>
-                <Route path = path!("/help") view = HelpPage />
+                <Route path = path!("/help") view = HelpPage ssr = SsrMode::Async />
         </Routes>
         </Router>
     }

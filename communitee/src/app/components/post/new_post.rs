@@ -1,5 +1,5 @@
 use leptos::prelude::*;
-use libertee::{GroupUuid, PostUuid, UserUuid};
+use libertee::{GroupUuid, LiberteeError, PostUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString};
 
@@ -30,16 +30,16 @@ pub async fn submit_post(data: SubmitPostData) -> Result<Option<PostData>, Serve
             SubmitPostType::Group(group_uuid) => {
                 let post_id = server
                     .add_post_to_group(&group_uuid, &data.user_id, data.subject, data.contents)
-                    .map_err(ServerFnErrorErr::ServerError)?;
+                    .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
                 let group = server
                     .get_group(&group_uuid)
-                    .map_err(ServerFnErrorErr::ServerError)?;
+                    .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
                 let user = server
                     .get_user(&data.user_id)
-                    .map_err(ServerFnErrorErr::ServerError)?;
+                    .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
                 let post = group
                     .get_post(&post_id)
-                    .map_err(ServerFnErrorErr::ServerError)?;
+                    .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
                 Some(PostData::new(post, user))
             }
         }

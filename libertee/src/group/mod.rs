@@ -6,7 +6,7 @@ use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::{RandomGeneration, Real, UserUuid, Uuid};
+use crate::{LiberteeError, RandomGeneration, Real, UserUuid, Uuid};
 
 pub use member::{Delegate, Member, MemberUuid};
 //pub use history::GroupHistory;
@@ -79,9 +79,9 @@ cfg_if! {
                 Some(post.clone())
             }
 
-            pub fn get_post(&self, post_id: &PostUuid) -> Result<&Post, String> {
+            pub fn get_post(&self, post_id: &PostUuid) -> Result<&Post, LiberteeError> {
                 self.store.get_post(post_id)
-                    .ok_or_else(||format!("No Post found with id {}", post_id.to_string()))
+                    .ok_or_else(|| LiberteeError::NoPostFound(post_id.clone()))
             }
 
             pub fn create_feed(&self, target_member: &MemberUuid, last_post: Option<PostUuid>, max_size: usize) -> Feed {

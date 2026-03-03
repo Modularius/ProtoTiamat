@@ -4,10 +4,10 @@ use chrono::Utc;
 //use elasticsearch::{Elasticsearch, http::transport::Transport};
 use elasticsearch as _;
 use itertools::Itertools;
+use tracing::instrument;
 
 use crate::{
-    Group, GroupData, GroupUuid, LoginAuth, Post, PostUuid, RandomGeneration, Session, SessionUuid,
-    Timestamp, User, UserData, UserUuid, Uuid, Uuidlike, user::Friendship,
+    Group, GroupData, GroupUuid, LiberteeError, LoginAuth, Post, PostUuid, RandomGeneration, Session, SessionUuid, Timestamp, User, UserData, UserUuid, Uuid, Uuidlike, user::Friendship
 };
 
 #[derive(Default, Clone, Debug)]
@@ -20,46 +20,48 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn get_user(&self, uuid: &UserUuid) -> Result<&User, String> {
+    pub fn get_user(&self, uuid: &UserUuid) -> Result<&User, LiberteeError> {
         self.users
             .get(uuid)
-            .ok_or_else(|| format!("No User found with id {}", uuid.to_string()))
+            .ok_or_else(|| LiberteeError::NoUserFound(uuid.clone()))
     }
 
-    pub fn get_user_mut(&mut self, uuid: &UserUuid) -> Result<&mut User, String> {
+    pub fn get_user_mut(&mut self, uuid: &UserUuid) -> Result<&mut User, LiberteeError> {
         self.users
             .get_mut(uuid)
-            .ok_or_else(|| format!("No User found with id {}", uuid.to_string()))
+            .ok_or_else(|| LiberteeError::NoUserFound(uuid.clone()))
     }
 
-    pub fn get_group(&self, uuid: &GroupUuid) -> Result<&Group, String> {
+    pub fn get_group(&self, uuid: &GroupUuid) -> Result<&Group, LiberteeError> {
         self.groups
             .get(uuid)
-            .ok_or_else(|| format!("No Group found with id {}", uuid.to_string()))
+            .ok_or_else(|| LiberteeError::NoGroupFound(uuid.clone()))
     }
 
-    pub fn get_group_mut(&mut self, uuid: &GroupUuid) -> Result<&mut Group, String> {
+    pub fn get_group_mut(&mut self, uuid: &GroupUuid) -> Result<&mut Group, LiberteeError> {
         self.groups
             .get_mut(uuid)
-            .ok_or_else(|| format!("No Group found with id {}", uuid.to_string()))
+            .ok_or_else(|| LiberteeError::NoGroupFound(uuid.clone()))
     }
 
-    pub fn get_session(&self, uuid: &SessionUuid) -> Result<&Session, String> {
+    #[instrument(skip_all, err)]
+    pub fn get_session(&self, uuid: &SessionUuid) -> Result<&Session, LiberteeError> {
         self.sessions
             .get(uuid)
-            .ok_or_else(|| format!("No Session found with id {}", uuid.to_string()))
+            .ok_or_else(|| LiberteeError::NoSessionFound(uuid.clone()))
     }
 
     pub fn remove_session(&mut self, uuid: &SessionUuid) -> Option<Session> {
         self.sessions.remove(uuid)
     }
 
+    #[instrument(skip_all, fields(auth, name, datetime))]
     pub fn create_new_user(
         &mut self,
         auth: &LoginAuth,
         name: String,
         datetime: Option<Timestamp>,
-    ) -> Option<&mut User> {
+    ) -> Result<&mut User, LiberteeError> {
         let user_id = UserUuid(Uuid::generate_random(16));
         self.users.insert(
             user_id.clone(),
@@ -71,26 +73,31 @@ impl Server {
             }),
         );
         self.credentials.insert(auth.clone(), user_id.clone());
-        self.users.get_mut(&user_id)
+        self.get_user_mut(&user_id)
     }
 
-    pub fn create_new_session(&mut self, auth: &LoginAuth) -> Option<&Session> {
+    #[instrument(skip_all, fields(auth))]
+    pub fn create_new_session(&mut self, auth: &LoginAuth) -> Result<&Session, LiberteeError> {
         // Fixme: should guard against clashes with existing Uuids
         let session_id = SessionUuid(Uuid::generate_random(16));
-        if let Some(user_id) = self.credentials.get(auth) {
-            if let Ok(user) = self.get_user(user_id) {
-                self.sessions.insert(
-                    session_id.clone(),
-                    Session::new(
-                        session_id.clone(),
-                        user_id.clone(),
-                        Default::default(),
-                        user.data.clone(),
-                    ),
-                );
-            }
+        let user_id = self.credentials
+            .get(auth)
+            .ok_or_else(|| LiberteeError::NoCredentialsFound(auth.clone()))?;
+
+        if ! self.users.contains_key(&user_id) {
+            return Err(LiberteeError::CredentialsButNoUserFound { auth: auth.clone(), user_id: user_id.clone() });
         }
-        self.sessions.get(&session_id)
+
+        self.sessions.insert(
+            session_id.clone(),
+            Session::new(
+                session_id.clone(),
+                user_id.clone(),
+                Default::default(),
+                //user.data.clone(),
+            ),
+        );
+        self.get_session(&session_id)
     }
     /*
        async fn save(&self) {
@@ -105,13 +112,14 @@ impl Server {
 
        }
     */
+    #[instrument(skip_all, fields(group_id, user_id))]
     pub fn add_post_to_group(
         &mut self,
         group_id: &GroupUuid,
         user_id: &UserUuid,
         subject: String,
         contents: String,
-    ) -> Result<PostUuid, String> {
+    ) -> Result<PostUuid, LiberteeError> {
         //let member_id = self.get_group(&group_id).and_then(|group|group.get_member_id_from_user_id(user_id));
         let group = self.get_group_mut(&group_id)?;
         let id = group.store.add_post(user_id.clone(), subject, contents);
@@ -119,12 +127,13 @@ impl Server {
         Ok(id)
     }
 
+    #[instrument]
     pub fn create_initial_user(
         &mut self,
         auth: &LoginAuth,
         name: String,
         datetime: Option<Timestamp>,
-    ) -> Result<&mut User, String> {
+    ) -> Result<&mut User, LiberteeError> {
         let datetime = datetime.unwrap_or(Utc::now());
         let friendships = self
             .users
@@ -155,6 +164,7 @@ impl Server {
         self.get_user_mut(&user_id)
     }
 
+    #[instrument]
     pub fn make_users_friends(
         &mut self,
         user_id1: &UserUuid,
@@ -176,6 +186,7 @@ impl Server {
         }
     }
 
+    #[instrument]
     pub fn make_user_group_member(&mut self, user_id: &UserUuid, group_id: &GroupUuid) {
         // FIXME some prior check for group and user existance
         if let Ok(user) = self.get_user_mut(user_id) {

@@ -7,7 +7,7 @@ use crate::{
     structs::{ContextExt, Expect},
 };
 use leptos::prelude::*;
-use libertee::{SessionUuid, UserUuid};
+use libertee::{LiberteeError, SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -52,11 +52,11 @@ async fn get_friendslist_page_data(
 
     let session = server
         .get_session(&session_id)
-        .map_err(ServerFnErrorErr::ServerError)?;
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
     let user = server
         .get_user(&session.user)
-        .map_err(ServerFnErrorErr::ServerError)?;
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
     let data = GetFriendslistPageDataContext {
         user_name: user.data.name.clone(),

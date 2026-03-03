@@ -1,3 +1,4 @@
+mod errors;
 mod group;
 mod message;
 mod post;
@@ -8,8 +9,9 @@ use cfg_if::cfg_if;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+pub use errors::LiberteeError;
 pub use group::{Delegate, GroupData, GroupUuid};
-pub use message::{MessageData, MessageUuid};
+pub use message::MessageUuid;
 pub use post::PostUuid;
 pub use session::{Session, SessionUuid};
 pub use user::{UserData, UserUuid};
@@ -42,7 +44,7 @@ cfg_if! {
         pub use user::User;
         pub use post::Post;
         pub use feed::Feed;
-        pub use message::Message;
+        pub use message::{Message, MessageData};
         pub(crate) use store::{Store, MessageStore};
 
         use rand::seq::IteratorRandom;

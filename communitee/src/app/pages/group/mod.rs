@@ -12,7 +12,7 @@ use crate::{
 use leptos::{either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
 
-use libertee::{Delegate, GroupUuid, SessionUuid, UserData, UserUuid};
+use libertee::{Delegate, GroupUuid, LiberteeError, SessionUuid, UserData, UserUuid};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Params, PartialEq)]
@@ -115,15 +115,15 @@ pub async fn get_group_page_data(
 
     let group = server
         .get_group(&group_id)
-        .map_err(ServerFnErrorErr::ServerError)?;
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
     let session = server
         .get_session(&session_id)
-        .map_err(ServerFnErrorErr::ServerError)?;
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
     let user = server
         .get_user(&session.user)
-        .map_err(ServerFnErrorErr::ServerError)?;
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
     let data = GroupPageDataContext {
         user_id: user.data.id.clone(),

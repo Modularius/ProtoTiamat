@@ -1,7 +1,7 @@
 use cfg_if::cfg_if;
 use chrono::SubsecRound;
 use leptos::prelude::*;
-use libertee::{LoginAuth, Session, SessionUuid, Timestamp};
+use libertee::{LiberteeError, LoginAuth, Session, SessionUuid, Timestamp};
 use tracing::debug;
 
 use crate::structs::ContextExt;
@@ -42,7 +42,7 @@ pub async fn get_session_from_identity() -> Result<Option<SessionUuid>, ServerFn
             Ok(Some(
                 server
                     .get_session(&SessionUuid(id))
-                    .map_err(ServerFnErrorErr::ServerError)?
+                    .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?
                     .uuid
                     .clone(),
             ))
@@ -61,13 +61,13 @@ pub async fn perform_login(
 
     let mut server = server_side_data.server.lock()?;
 
-    let session = server.create_new_session(&auth).cloned().ok_or_else(|| {
-        ServerFnErrorErr::ServerError(format!("Session creation failed with auth {auth:?}"))
-    })?;
+    let session = server.create_new_session(&auth)
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
     let request = extract::<HttpRequest>()
         .await
         .expect("Request should exist.");
+
     debug!("Beginning Login.");
     Identity::login(&request.extensions(), session.uuid.to_string())?;
     debug!("Login Successful.");
@@ -76,7 +76,7 @@ pub async fn perform_login(
         debug!("Redirecting.");
         leptos_actix::redirect(&redirect_to);
     }
-    Ok(session)
+    Ok(session.clone())
 }
 
 #[server]
@@ -117,10 +117,11 @@ pub async fn perform_logout(redirect_to: Option<String>) -> Result<bool, ServerF
 }
 
 #[server]
-pub async fn register(auth: LoginAuth, new_path: String) -> Result<Option<Session>, ServerFnError> {
+pub async fn register(auth: LoginAuth, new_path: String) -> Result<Session, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>().expect_context();
 
     let mut server = server_side_data.server.lock()?;
-    let session = server.create_new_session(&auth).cloned();
-    Ok(session)
+    let session = server.create_new_session(&auth)
+        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+    Ok(session.clone())
 }

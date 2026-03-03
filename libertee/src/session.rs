@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use chrono::{TimeDelta, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::{Timestamp, UserData, UserUuid, Uuid};
+use crate::{Timestamp, UserUuid, Uuid};
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SessionUuid(pub Uuid);
@@ -24,7 +24,7 @@ impl ToString for SessionUuid {
 pub struct Session {
     pub uuid: SessionUuid,
     pub user: UserUuid,
-    pub user_data: UserData,
+    //pub user_data: UserData,
     started: Timestamp,
     ttl: TimeDelta,
     state: HashMap<String, String>,
@@ -35,12 +35,12 @@ impl Session {
         uuid: SessionUuid,
         user: UserUuid,
         state: HashMap<String, String>,
-        user_data: UserData,
+        //user_data: UserData,
     ) -> Self {
         Self {
             uuid,
             user,
-            user_data,
+            //user_data,
             started: Utc::now(),
             ttl: TimeDelta::days(7),
             state,

@@ -82,7 +82,7 @@ cfg_if! {
                     username: initial_user.initial_user_username,
                     password: initial_user.initial_user_password
                 };
-                server.create_initial_user(&auth, initial_user.initial_user_name, None);
+                server.create_initial_user(&auth, initial_user.initial_user_name, None).unwrap();
             }
 
             let server_side_data = ServerSideData {
