@@ -67,7 +67,7 @@ pub fn SessionView(
         .expect_context()
         .session_id;
 
-    const EXPECT : &'static str = "SessionView should only be used inside `IsLoggedIn` tags, this should never fail";        
+    const EXPECT : &'static str = "SessionView should only be used inside `IsLoggedIn` tags, this should never fail";
     move||action.run(session_id.get().expect(EXPECT))
 }
 */

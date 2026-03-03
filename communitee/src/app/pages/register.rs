@@ -1,6 +1,7 @@
 use crate::app::{
     components::{FootBar, MainColumn, RegisterBox, TopBar},
-    generic_components::RoundedBox, guards::SessionGuard,
+    generic_components::RoundedBox,
+    guards::SessionGuard,
 };
 use leptos::prelude::*;
 

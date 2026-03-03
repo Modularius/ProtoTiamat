@@ -3,12 +3,13 @@ use leptos_router::components::A;
 use libertee::SessionUuid;
 use serde::{Deserialize, Serialize};
 
-use crate::{app::{
-    generic_components::{
-        ButtonControl, ButtonFunction, ControlStack, LabelledControlStack,
+use crate::{
+    app::{
+        generic_components::{ButtonControl, ButtonFunction, ControlStack, LabelledControlStack},
+        guards::{IsLoggedIn, NotLoggedIn, PageGuard},
     },
-    guards::{IsLoggedIn, NotLoggedIn, PageGuard}
-}, structs::{ContextExt, Expect}};
+    structs::{ContextExt, Expect},
+};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::ServerSideData;
@@ -61,35 +62,37 @@ fn ToolBar(children: Children) -> impl IntoView {
 
 #[component]
 pub fn TopBar() -> impl IntoView {
-    || view! {
-        <BigBar>
-            <SanctimoneousMissionStatement/>
-            <CommuniteeTitle/>
-            <RightBar>
+    || {
+        view! {
+            <BigBar>
+                <SanctimoneousMissionStatement/>
+                <CommuniteeTitle/>
+                <RightBar>
+                    <IsLoggedIn>
+                        <UserBar />
+                    </IsLoggedIn>
+                    <NotLoggedIn>
+                        <LoginBar />
+                    </NotLoggedIn>
+                </RightBar>
+            </BigBar>
+            <ToolBar>
                 <IsLoggedIn>
-                    <UserBar />
+                    <ButtonControl value = "Your Feed" on_click = ButtonFunction::Link("/") />
+                    <ButtonControl value = "Your Friends" on_click = ButtonFunction::Link("/friends") />
+                    <ButtonControl value = "Your Groups" on_click = ButtonFunction::Link("/groups") />
+                    <ButtonControl value = "Your Posts" on_click = ButtonFunction::Link("/posts") />
+                    <ButtonControl value = "Favourites" on_click = ButtonFunction::Link("/favourites") />
+                    <ButtonControl value = "Help" on_click = ButtonFunction::Link("/help") />
                 </IsLoggedIn>
                 <NotLoggedIn>
-                    <LoginBar />
+                    <ButtonControl value = "Home" on_click = ButtonFunction::Link("/") />
+                    <ButtonControl value = "Login" on_click = ButtonFunction::Link("/login") />
+                    <ButtonControl value = "Join Communitee" on_click = ButtonFunction::Link("/register") />
+                    <ButtonControl value = "What is Communitee" on_click = ButtonFunction::Link("/help") />
                 </NotLoggedIn>
-            </RightBar>
-        </BigBar>
-        <ToolBar>
-            <IsLoggedIn>
-                <ButtonControl value = "Your Feed" on_click = ButtonFunction::Link("/") />
-                <ButtonControl value = "Your Friends" on_click = ButtonFunction::Link("/friends") />
-                <ButtonControl value = "Your Groups" on_click = ButtonFunction::Link("/groups") />
-                <ButtonControl value = "Your Posts" on_click = ButtonFunction::Link("/posts") />
-                <ButtonControl value = "Favourites" on_click = ButtonFunction::Link("/favourites") />
-                <ButtonControl value = "Help" on_click = ButtonFunction::Link("/help") />
-            </IsLoggedIn>
-            <NotLoggedIn>
-                <ButtonControl value = "Home" on_click = ButtonFunction::Link("/") />
-                <ButtonControl value = "Login" on_click = ButtonFunction::Link("/login") />
-                <ButtonControl value = "Join Communitee" on_click = ButtonFunction::Link("/register") />
-                <ButtonControl value = "What is Communitee" on_click = ButtonFunction::Link("/help") />
-            </NotLoggedIn>
-        </ToolBar>
+            </ToolBar>
+        }
     }
 }
 
@@ -105,22 +108,22 @@ impl Expect for UserBarDataContext {
 
 #[server]
 async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext, ServerFnError> {
-    let server_side_data = use_context::<ServerSideData>()
-        .expect_context();
+    let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
-    
-    let session = server.get_session(&session_id)
+
+    let session = server
+        .get_session(&session_id)
         .map_err(ServerFnErrorErr::ServerError)?;
 
     Ok(UserBarDataContext {
         user_name: session.user_data.name.clone(),
-        user_page_href: format!("/user/{}", session.user_data.id.to_string())
+        user_page_href: format!("/user/{}", session.user_data.id.to_string()),
     })
 }
 
 #[component]
 fn UserBar() -> impl IntoView {
-    view!{
+    view! {
         <PageGuard with_parameters = |session_id|GetUserBarData{ session_id }>
         {
             let user_bar_data = use_context::<UserBarDataContext>().expect_context();
@@ -135,7 +138,7 @@ fn UserBar() -> impl IntoView {
         }
         </PageGuard>
     }
-/*
+    /*
     move ||Suspend::new(async move {
         let user_bar_data = user_bar_action.value().get();
         user_bar_data.map(|user_bar_data|

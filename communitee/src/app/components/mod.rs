@@ -1,11 +1,11 @@
 //mod access_bar;
+mod container_columns;
 mod feed;
 mod login_box;
-mod container_columns;
 mod post;
 mod topbar;
 
-pub use login_box::{LoginBox, LogoutBox, RegisterBox};
 pub use container_columns::{AdColumns, MainColumn};
-pub use post::{PostBox, PostData, NewPostBox, SubmitPost};
+pub use login_box::{LoginBox, LogoutBox, RegisterBox};
+pub use post::{NewPostBox, PostBox, PostData, SubmitPost};
 pub use topbar::{FootBar, TopBar};

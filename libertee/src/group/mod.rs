@@ -1,6 +1,6 @@
 mod member;
-mod policy;
-mod history;
+//mod policy;
+//mod history;
 
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
@@ -9,8 +9,8 @@ use std::collections::HashMap;
 use crate::{RandomGeneration, Real, UserUuid, Uuid};
 
 pub use member::{Delegate, Member, MemberUuid};
-pub use history::GroupHistory;
-pub use policy::GroupAdmin;
+//pub use history::GroupHistory;
+//pub use policy::GroupAdmin;
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct GroupUuid(pub Uuid);
@@ -32,7 +32,7 @@ pub struct GroupData {
     pub id: GroupUuid,
     pub name: String,
     pub members: HashMap<MemberUuid, Member>,
-    pub admins: HashMap<MemberUuid, GroupAdmin>,
+    //pub admins: HashMap<MemberUuid, GroupAdmin>,
     pub member_by_user_id: HashMap<UserUuid, MemberUuid>,
     pub adjacent_groups: Vec<(GroupUuid, Real)>,
 }
@@ -47,7 +47,7 @@ cfg_if! {
         pub struct Group {
             pub data: GroupData,
             pub store: Store,
-            pub history: Vec<GroupHistory>,
+            //pub history: Vec<GroupHistory>,
         }
 
         impl Group {
@@ -55,7 +55,7 @@ cfg_if! {
                 Self {
                     data,
                     store: Default::default(),
-                    history: Default::default(),
+                    //history: Default::default(),
                 }
             }
 

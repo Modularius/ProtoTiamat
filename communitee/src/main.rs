@@ -40,7 +40,7 @@ cfg_if! {
             #[clap(long, default_value = "http://localhost:3000/")]
             public_url: PublicUrl,
         }
-        
+
         #[actix_web::main]
         async fn main() -> miette::Result<()> {
             use actix_files::Files;
@@ -66,7 +66,7 @@ cfg_if! {
             //    .expect("tracing::subscriber::set_global_default should only be called once");
 
             let args = Cli::parse();
-            
+
             let tracer = TracerEngine::new(TracerOptions::new(args.otel_endpoint.as_deref(), args.otel_namespace), "communitee");
             if tracer.use_otel() {
                 if let Some(e) = tracer.get_otel_setup_error() {

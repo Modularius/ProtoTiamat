@@ -1,23 +1,23 @@
 use crate::{
-    app::{TopLevelContext, generic_components::{
-        ControlStack, ErrorBox, LabelledInput, LabelledSelect, SubmitControl
-    }},
-    server_functions::{PerformLogin, PerformLogout, Register}, structs::ContextExt,
+    app::{
+        TopLevelContext,
+        generic_components::{
+            ControlStack, ErrorBox, LabelledInput, LabelledSelect, SubmitControl,
+        },
+    },
+    server_functions::{PerformLogin, PerformLogout, Register},
+    structs::ContextExt,
 };
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString};
 
 #[component]
-pub fn LoginBox(
-    #[prop(optional)]
-    redirect_to: Option<&'static str>
-) -> impl IntoView {
+pub fn LoginBox(#[prop(optional)] redirect_to: Option<&'static str>) -> impl IntoView {
     let login = ServerAction::<PerformLogin>::new();
     Effect::new(move || {
         if let Some(Ok(_session)) = login.value().get() {
-            let top_level_context = use_context::<TopLevelContext>()
-                .expect_context();
+            let top_level_context = use_context::<TopLevelContext>().expect_context();
             top_level_context.session.refetch();
         }
     });
@@ -26,7 +26,7 @@ pub fn LoginBox(
             {redirect_to.map(|redirect_to|view!{
                 <input type = "hidden" name = "redirect_to" value = {redirect_to}/>
             })}
-            
+
             <Show when = move ||login.value().get().is_some_and(|value|value.is_err())>
                 <ErrorBox>
                     "Login Failed."
@@ -44,15 +44,11 @@ pub fn LoginBox(
 }
 
 #[component]
-pub fn LogoutBox(
-    #[prop(optional)]
-    redirect_to: Option<&'static str>
-) -> impl IntoView {
+pub fn LogoutBox(#[prop(optional)] redirect_to: Option<&'static str>) -> impl IntoView {
     let logout = ServerAction::<PerformLogout>::new();
     Effect::new(move || {
         if let Some(Ok(true)) = logout.value().get() {
-            let top_level_context = use_context::<TopLevelContext>()
-                .expect_context();
+            let top_level_context = use_context::<TopLevelContext>().expect_context();
             top_level_context.session.refetch();
         }
     });
@@ -61,7 +57,7 @@ pub fn LogoutBox(
             {redirect_to.map(|redirect_to|view!{
                 <input type = "hidden" name = "redirect_to" value = {redirect_to}/>
             })}
-            
+
             <Show when = move ||logout.value().get().is_some_and(|value|value.is_err() || value.is_ok_and(|value|!value))>
                 <ErrorBox>
                     "Logout Failed."

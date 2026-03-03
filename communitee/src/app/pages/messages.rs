@@ -1,8 +1,11 @@
-use crate::{app::{
-    components::{AdColumns, FootBar, MainColumn, TopBar},
-    generic_components::RoundedBox,
-    guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard},
-}, structs::{ContextExt, Expect}};
+use crate::{
+    app::{
+        components::{AdColumns, FootBar, MainColumn, TopBar},
+        generic_components::RoundedBox,
+        guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard},
+    },
+    structs::{ContextExt, Expect},
+};
 use leptos::prelude::*;
 use libertee::SessionUuid;
 use serde::{Deserialize, Serialize};
@@ -22,11 +25,12 @@ struct MessageData {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct MessagesPageDataContext {
     user_name: String,
-    messages: Vec<(String,String,Vec<MessageData>)>,
+    messages: Vec<(String, String, Vec<MessageData>)>,
 }
 
 impl Expect for MessagesPageDataContext {
-    const EXPECT: &'static str = "MessagesPageDataContext should be provided, this should never fail.";
+    const EXPECT: &'static str =
+        "MessagesPageDataContext should be provided, this should never fail.";
 }
 
 #[server]
@@ -34,26 +38,27 @@ pub async fn get_messages_page_data(
     session_id: SessionUuid,
     max_messages: usize,
 ) -> Result<MessagesPageDataContext, ServerFnError> {
-    let server_side_data = use_context::<ServerSideData>()
-        .expect_context();
+    let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
-    
-    let session = server.get_session(&session_id)
+
+    let session = server
+        .get_session(&session_id)
         .map_err(ServerFnErrorErr::ServerError)?;
 
-    let user = server.get_user(&session.user)
+    let user = server
+        .get_user(&session.user)
         .map_err(ServerFnErrorErr::ServerError)?;
 
     let data = MessagesPageDataContext {
         user_name: user.data.name.clone(),
-        messages: Default::default()/*user
-            .data
-            .groups
-            .iter()
-            .flatten()
-            .take(max_messages)
-            .flat_map(|group_id| server.get_group(group_id).map(|group| group.data.clone()))
-            .collect(),*/
+        messages: Default::default(), /*user
+                                      .data
+                                      .groups
+                                      .iter()
+                                      .flatten()
+                                      .take(max_messages)
+                                      .flat_map(|group_id| server.get_group(group_id).map(|group| group.data.clone()))
+                                      .collect(),*/
     };
     Ok(data)
 }
@@ -78,8 +83,7 @@ pub fn MessagesPage() -> impl IntoView {
 
 #[component]
 pub fn MessagesPageWithData() -> impl IntoView {
-    let messages_page_data = use_context::<MessagesPageDataContext>()
-        .expect_context();
+    let messages_page_data = use_context::<MessagesPageDataContext>().expect_context();
     view! {
         <MainColumn>
             <h1> "Hi there " {messages_page_data.user_name} "!" </h1>

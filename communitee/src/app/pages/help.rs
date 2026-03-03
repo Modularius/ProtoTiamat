@@ -1,6 +1,9 @@
-use crate::app::{components::{FootBar, MainColumn, TopBar}, generic_components::RoundedBox, guards::SessionGuard};
+use crate::app::{
+    components::{FootBar, MainColumn, TopBar},
+    generic_components::RoundedBox,
+    guards::SessionGuard,
+};
 use leptos::prelude::*;
-
 
 #[component]
 pub fn HelpPage() -> impl IntoView {

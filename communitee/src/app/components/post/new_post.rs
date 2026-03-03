@@ -3,9 +3,16 @@ use libertee::{GroupUuid, PostUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString};
 
-use crate::{app::{components::PostData, generic_components::{
-    ButtonControl, ButtonFunction, ControlStack, LabelledInput, LabelledTextArea, SubmitControl,
-}}, structs::ContextExt};
+use crate::{
+    app::{
+        components::PostData,
+        generic_components::{
+            ButtonControl, ButtonFunction, ControlStack, LabelledInput, LabelledTextArea,
+            SubmitControl,
+        },
+    },
+    structs::ContextExt,
+};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::ServerSideData;
@@ -13,34 +20,32 @@ cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
 
 #[server]
 pub async fn submit_post(data: SubmitPostData) -> Result<Option<PostData>, ServerFnError> {
-    let server_side_data = use_context::<ServerSideData>()
-        .expect_context();
+    let server_side_data = use_context::<ServerSideData>().expect_context();
     let mut server = server_side_data.server.lock()?;
 
     let post_data = {
         match data.submmit_post_type {
-            SubmitPostType::UserSelf => {
-                None
-            },
-            SubmitPostType::Reply(_post_uuid) => {
-                None
-            },
+            SubmitPostType::UserSelf => None,
+            SubmitPostType::Reply(_post_uuid) => None,
             SubmitPostType::Group(group_uuid) => {
-                let post_id = server.add_post_to_group(&group_uuid, &data.user_id, data.subject, data.contents)
+                let post_id = server
+                    .add_post_to_group(&group_uuid, &data.user_id, data.subject, data.contents)
                     .map_err(ServerFnErrorErr::ServerError)?;
-                let group = server.get_group(&group_uuid)
+                let group = server
+                    .get_group(&group_uuid)
                     .map_err(ServerFnErrorErr::ServerError)?;
-                let user = server.get_user(&data.user_id)
+                let user = server
+                    .get_user(&data.user_id)
                     .map_err(ServerFnErrorErr::ServerError)?;
-                let post = group.get_post(&post_id)
+                let post = group
+                    .get_post(&post_id)
                     .map_err(ServerFnErrorErr::ServerError)?;
                 Some(PostData::new(post, user))
-            },
+            }
         }
     };
     Ok(post_data)
 }
-
 
 #[derive(
     Default,

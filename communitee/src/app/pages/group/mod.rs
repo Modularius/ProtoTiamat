@@ -2,15 +2,16 @@ use crate::{
     app::{
         components::{AdColumns, FootBar, MainColumn, NewPostBox, PostBox, PostData, TopBar},
         generic_components::{
-            ButtonControl, ButtonFunction, ControlStack, ErrorBox, LabelledControlStack,
-            RoundedBox,
-        }, guards::{PageGuard, SessionGuard},
+            ButtonControl, ButtonFunction, ControlStack, ErrorBox, LabelledControlStack, RoundedBox,
+        },
+        guards::{PageGuard, SessionGuard},
     },
-    server_functions::format_datetime, structs::{ContextExt, Expect},
+    server_functions::format_datetime,
+    structs::{ContextExt, Expect},
 };
 use leptos::{either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
-#[cfg(feature = "ssr")]
+
 use libertee::{Delegate, GroupUuid, SessionUuid, UserData, UserUuid};
 use serde::{Deserialize, Serialize};
 
@@ -61,7 +62,7 @@ impl GroupWithMemberPageData {
             delegates: member
                 .delegates
                 .iter()
-                .map(|(delegate_id, &Delegate { weight, ..})| {
+                .map(|(delegate_id, &Delegate { weight, .. })| {
                     group
                         .data
                         .members
@@ -100,7 +101,8 @@ pub struct GroupPageParamsContext {
 }
 
 impl Expect for GroupPageParamsContext {
-    const EXPECT: &'static str = "GroupPageParamsContext should be provided, this should never fail.";
+    const EXPECT: &'static str =
+        "GroupPageParamsContext should be provided, this should never fail.";
 }
 
 #[server]
@@ -108,19 +110,21 @@ pub async fn get_group_page_data(
     session_id: SessionUuid,
     group_id: GroupUuid,
 ) -> Result<GroupPageDataContext, ServerFnError> {
-    let server_side_data = use_context::<ServerSideData>()
-        .expect_context();
+    let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
 
-    let group = server.get_group(&group_id)
+    let group = server
+        .get_group(&group_id)
         .map_err(ServerFnErrorErr::ServerError)?;
 
-    let session = server.get_session(&session_id)
+    let session = server
+        .get_session(&session_id)
         .map_err(ServerFnErrorErr::ServerError)?;
 
-    let user = server.get_user(&session.user)
+    let user = server
+        .get_user(&session.user)
         .map_err(ServerFnErrorErr::ServerError)?;
-    
+
     let data = GroupPageDataContext {
         user_id: user.data.id.clone(),
         user_name: user.data.name.clone(),
@@ -139,9 +143,10 @@ pub async fn get_group_page_data(
 #[component]
 pub fn GroupPage() -> impl IntoView {
     let params = use_params::<GroupParams>();
-    let group_id = params.get()
+    let group_id = params
+        .get()
         .ok()
-        .and_then(|params|params.group_id.map(GroupUuid));
+        .and_then(|params| params.group_id.map(GroupUuid));
     match group_id {
         Some(group_id) => Either::Left({
             provide_context(GroupPageParamsContext { group_id });
@@ -158,7 +163,7 @@ pub fn GroupPage() -> impl IntoView {
                 </SessionGuard>
             }
         }),
-        None => Either::Right(view!{
+        None => Either::Right(view! {
             <SessionGuard>
                 <TopBar/>
                     <MainColumn>

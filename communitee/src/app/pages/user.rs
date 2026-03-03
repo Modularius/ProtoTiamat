@@ -1,11 +1,13 @@
 use std::collections::HashMap;
 
-use crate::{app::{
-    components::{AdColumns, FootBar, MainColumn, TopBar},
-    generic_components::{
-        ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox,
-    }, guards::{PageGuard, SessionGuard},
-}, structs::{ContextExt, Expect}};
+use crate::{
+    app::{
+        components::{AdColumns, FootBar, MainColumn, TopBar},
+        generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox},
+        guards::{PageGuard, SessionGuard},
+    },
+    structs::{ContextExt, Expect},
+};
 use leptos::{Params, either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
 use libertee::{SessionUuid, UserUuid};
@@ -52,16 +54,17 @@ async fn get_user_page_data(
     session_id: SessionUuid,
     user_id: UserUuid,
 ) -> Result<UserPageDataContext, ServerFnError> {
-    let server_side_data = use_context::<ServerSideData>()
-        .expect_context();
+    let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
 
-    let session = server.get_session(&session_id)
+    let session = server
+        .get_session(&session_id)
         .map_err(ServerFnErrorErr::ServerError)?;
 
-    let user = server.get_user(&user_id)
+    let user = server
+        .get_user(&user_id)
         .map_err(ServerFnErrorErr::ServerError)?;
-    
+
     let properties = user.data.properties.clone();
     let groups_in = user
         .data
@@ -92,9 +95,7 @@ async fn get_user_page_data(
                 .map(|friend| FriendOfData {
                     name: friend.data.name.clone(),
                     link_to_user: format!("/user/{}", friend.data.id.to_string()),
-                    datetime_of_friendship: format_datetime(
-                        &friendship.datetime_of_friendship,
-                    ),
+                    datetime_of_friendship: format_datetime(&friendship.datetime_of_friendship),
                 })
         })
         .collect();
@@ -114,15 +115,17 @@ struct UserPageParamsContext {
 }
 
 impl Expect for UserPageParamsContext {
-    const EXPECT: &'static str = "UserPageParamsContext should be provided, this should never fail.";
+    const EXPECT: &'static str =
+        "UserPageParamsContext should be provided, this should never fail.";
 }
 
 #[component]
 pub fn UserPage() -> impl IntoView {
     let params = use_params::<UserParams>();
-    let user_id = params.get()
+    let user_id = params
+        .get()
         .ok()
-        .and_then(|params|params.user_id.map(UserUuid));
+        .and_then(|params| params.user_id.map(UserUuid));
     match user_id {
         Some(user_id) => Either::Left({
             provide_context(UserPageParamsContext { user_id });
@@ -139,7 +142,7 @@ pub fn UserPage() -> impl IntoView {
                 </SessionGuard>
             }
         }),
-        None => Either::Right(view!{
+        None => Either::Right(view! {
             <SessionGuard>
                 <TopBar/>
                     <MainColumn>
@@ -153,8 +156,7 @@ pub fn UserPage() -> impl IntoView {
 
 #[component]
 pub fn UserPageWithData() -> impl IntoView {
-    let user_page_data = use_context::<UserPageDataContext>()
-        .expect_context();
+    let user_page_data = use_context::<UserPageDataContext>().expect_context();
     view! {
         <MainColumn>
             <h1> "Hi there " {user_page_data.user_name} "!" </h1>

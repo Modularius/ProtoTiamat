@@ -24,7 +24,7 @@ pub struct UserData {
     pub id: UserUuid,
     pub name: String,
     pub datetime_joined: Timestamp,
-    pub properties: Option<HashMap<String, String>>,    // Optional until can figure out how to make jsonserde parse empty containers
+    pub properties: Option<HashMap<String, String>>, // Optional until can figure out how to make jsonserde parse empty containers
     pub groups: Option<Vec<GroupUuid>>,
     pub friends: Option<Vec<Friendship>>,
 }

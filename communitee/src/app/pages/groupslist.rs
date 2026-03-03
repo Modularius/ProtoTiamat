@@ -1,9 +1,11 @@
-use crate::{app::{
-    components::{AdColumns, FootBar, MainColumn, TopBar},
-    generic_components::{
-        ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox
-    }, guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard},
-}, structs::{ContextExt, Expect}};
+use crate::{
+    app::{
+        components::{AdColumns, FootBar, MainColumn, TopBar},
+        generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox},
+        guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard},
+    },
+    structs::{ContextExt, Expect},
+};
 use leptos::prelude::*;
 use libertee::{GroupData, SessionUuid};
 use serde::{Deserialize, Serialize};
@@ -19,7 +21,8 @@ pub struct GroupslistPageDataContext {
 }
 
 impl Expect for GroupslistPageDataContext {
-    const EXPECT: &'static str = "GroupslistPageDataContext should be provided, this should never fail.";
+    const EXPECT: &'static str =
+        "GroupslistPageDataContext should be provided, this should never fail.";
 }
 
 impl Default for GroupslistPageDataContext {
@@ -36,14 +39,15 @@ pub async fn get_groupslist_page_data(
     session_id: SessionUuid,
     max_groups: usize,
 ) -> Result<GroupslistPageDataContext, ServerFnError> {
-    let server_side_data = use_context::<ServerSideData>()
-        .expect_context();
+    let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
-    
-    let session = server.get_session(&session_id)
+
+    let session = server
+        .get_session(&session_id)
         .map_err(ServerFnErrorErr::ServerError)?;
 
-    let user = server.get_user(&session.user)
+    let user = server
+        .get_user(&session.user)
         .map_err(ServerFnErrorErr::ServerError)?;
 
     let data = GroupslistPageDataContext {
@@ -80,8 +84,7 @@ pub fn GroupslistPage() -> impl IntoView {
 
 #[component]
 pub fn GroupslistPageWithData() -> impl IntoView {
-    let groupslist_page_data = use_context::<GroupslistPageDataContext>()
-        .expect_context();
+    let groupslist_page_data = use_context::<GroupslistPageDataContext>().expect_context();
     view! {
         <MainColumn>
             <h1> "Hi there " {groupslist_page_data.user_name} "!" </h1>

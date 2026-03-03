@@ -1,7 +1,7 @@
 mod app_entry;
-mod guards;
 mod components;
 mod generic_components;
+mod guards;
 mod pages;
 
 use crate::structs::{ClientSideData, ContextExt};

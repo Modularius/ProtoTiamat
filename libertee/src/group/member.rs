@@ -27,7 +27,6 @@ pub struct Delegate {
     pub weight: Real,
 }
 
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Member {
     pub id: MemberUuid,

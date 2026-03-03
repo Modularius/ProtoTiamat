@@ -50,14 +50,19 @@ impl Store {
     }
 }
 
-
 #[derive(Default, Clone, Debug)]
 pub struct MessageStore {
     pub messages: BTreeMap<MessageUuid, Message>,
 }
 
 impl MessageStore {
-    pub fn add_message(&mut self, author: UserUuid, recepient: UserUuid, title: String, content: String) -> MessageUuid {
+    pub fn add_message(
+        &mut self,
+        author: UserUuid,
+        recepient: UserUuid,
+        title: String,
+        content: String,
+    ) -> MessageUuid {
         let id = MessageUuid(
             (self
                 .messages
@@ -80,7 +85,7 @@ impl MessageStore {
                     title,
                     content,
                 },
-                replies: Default::default()
+                replies: Default::default(),
             },
         );
         id

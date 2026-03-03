@@ -1,6 +1,7 @@
 use crate::{
     app::pages::{
-        FriendlistPage, GroupPage, GroupslistPage, HelpPage, HomePage, LoginPage, MessagesPage, RegisterPage, UserPage
+        FriendlistPage, GroupPage, GroupslistPage, HelpPage, HomePage, LoginPage, MessagesPage,
+        RegisterPage, UserPage,
     },
     server_functions::get_session_from_identity,
     structs::{ClientSideData, ContextExt, Expect},
@@ -25,13 +26,14 @@ pub struct TopLevelContext {
 
 impl TopLevelContext {
     pub fn session_id_expect(&self) -> SessionUuid {
-        self.session_id.get()
+        self.session_id
+            .get()
             .expect("session_id should only be called inside <IsLoggedIn>, this should never fail.")
     }
 }
 
 impl Expect for TopLevelContext {
-    const EXPECT : &'static str = "`TopLevelContext` should be provided, this should never fail.";
+    const EXPECT: &'static str = "`TopLevelContext` should be provided, this should never fail.";
 }
 
 /// An app router which renders the homepage and handles 404's
@@ -40,11 +42,8 @@ pub fn App() -> impl IntoView {
     // Provides context that manages stylesheets, titles, meta tags, etc.
     provide_meta_context();
 
-    let client_side_data = SharedValue::new(|| {
-        use_context::<ClientSideData>()
-            .expect_context()
-    })
-    .into_inner();
+    let client_side_data =
+        SharedValue::new(|| use_context::<ClientSideData>().expect_context()).into_inner();
 
     //let public_path = client_side_data.public_url.router_base_form();
 

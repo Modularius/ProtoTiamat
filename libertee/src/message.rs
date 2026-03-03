@@ -1,13 +1,10 @@
-use std::{
-    borrow::Borrow,
-    ops::{Deref, Range},
-};
+use std::ops::Range;
 
 use cfg_if::cfg_if;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
-use crate::{RandomGeneration, Real, Timestamp, UserUuid, Uuid};
+use crate::{RandomGeneration, Timestamp, UserUuid, Uuid};
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MessageUuid(pub Uuid);
@@ -24,19 +21,19 @@ impl ToString for MessageUuid {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct MessageData {
-    pub id: MessageUuid,
-    pub author: UserUuid,
-    pub recepient: UserUuid,
-    pub sent_at: Timestamp,
-    pub title: String,
-    pub content: String,
-}
-
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use rand::seq::IndexedRandom;
+
+        #[derive(Clone, Debug, Serialize, Deserialize)]
+        pub struct MessageData {
+            pub id: MessageUuid,
+            pub author: UserUuid,
+            pub recepient: UserUuid,
+            pub sent_at: Timestamp,
+            pub title: String,
+            pub content: String,
+        }
 
         fn generate_random_text(num_words: Range<usize>, word_length: Range<usize>) -> String {
             let alphabet = "abcdefghijklmnopqrstuvwxyz".chars().collect::<Vec<_>>();

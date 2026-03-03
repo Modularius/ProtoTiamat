@@ -1,4 +1,7 @@
-use crate::app::{components::{AdColumns, FootBar, LoginBox, LogoutBox, MainColumn, TopBar}, guards::{IsLoggedIn, NotLoggedIn, SessionGuard}};
+use crate::app::{
+    components::{AdColumns, FootBar, LoginBox, LogoutBox, MainColumn, TopBar},
+    guards::{IsLoggedIn, NotLoggedIn, SessionGuard},
+};
 use leptos::prelude::*;
 
 #[component]

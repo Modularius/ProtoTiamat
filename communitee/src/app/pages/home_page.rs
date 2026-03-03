@@ -1,7 +1,11 @@
-use crate::{app::{
-    components::{AdColumns, FootBar, MainColumn, NewPostBox, PostBox, PostData, TopBar}, generic_components::RoundedBox,
-    guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard}
-}, structs::{ContextExt, Expect}};
+use crate::{
+    app::{
+        components::{AdColumns, FootBar, MainColumn, NewPostBox, PostBox, PostData, TopBar},
+        generic_components::RoundedBox,
+        guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard},
+    },
+    structs::{ContextExt, Expect},
+};
 use leptos::prelude::*;
 use libertee::{SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
@@ -29,14 +33,15 @@ pub async fn get_home_page_data(
     session_id: SessionUuid,
     max_posts: usize,
 ) -> Result<HomePageDataContext, ServerFnError> {
-    let server_side_data = use_context::<ServerSideData>()
-        .expect_context();
+    let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
-    
-    let session = server.get_session(&session_id)
+
+    let session = server
+        .get_session(&session_id)
         .map_err(ServerFnErrorErr::ServerError)?;
 
-    let user = server.get_user(&session.user)
+    let user = server
+        .get_user(&session.user)
         .map_err(ServerFnErrorErr::ServerError)?;
 
     let data = HomePageDataContext {
@@ -81,8 +86,7 @@ pub fn HomePage() -> impl IntoView {
 
 #[component]
 fn HomePageWithData() -> impl IntoView {
-    let home_page_data = use_context::<HomePageDataContext>()
-        .expect_context();
+    let home_page_data = use_context::<HomePageDataContext>().expect_context();
     view! {
         <h1 class = "text-3xl m-6"> "Hi there " {home_page_data.user_name.clone()} "!" </h1>
         <AdColumns>
@@ -106,7 +110,6 @@ fn HomePageWithData() -> impl IntoView {
         </AdColumns>
     }
 }
-
 
 #[component]
 fn LandingPage() -> impl IntoView {

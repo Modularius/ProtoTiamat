@@ -3,22 +3,19 @@ use tracing::{info, info_span};
 
 use crate::{
     app::{TopLevelContext, generic_components::error_box},
-    structs::ContextExt
+    structs::ContextExt,
 };
 use libertee::SessionUuid;
 
 #[component]
-pub fn PageGuard<S, P, C>(
-    with_parameters: P,
-    children: TypedChildrenFn<C>,
-) -> impl IntoView
+pub fn PageGuard<S, P, C>(with_parameters: P, children: TypedChildrenFn<C>) -> impl IntoView
 where
-    C : IntoView + 'static,
+    C: IntoView + 'static,
     Result<View<C>, <S as ServerFn>::Error>: IntoView,
-    P : Fn(SessionUuid)->S + Send + 'static,
-    S : ServerFn + Clone + Send + Sync + 'static,
-    <S as ServerFn>::Output : Clone + Sync + 'static,
-    <S as ServerFn>::Error : Clone
+    P: Fn(SessionUuid) -> S + Send + 'static,
+    S: ServerFn + Clone + Send + Sync + 'static,
+    <S as ServerFn>::Output: Clone + Sync + 'static,
+    <S as ServerFn>::Error: Clone,
 {
     let server_action = ServerAction::<S>::new();
     move || {
@@ -33,20 +30,18 @@ where
             let _guard = span.enter();
 
             info!("A Little Info.");
-            server_action.value()
-                .get()
-                .map(|value|
-                    view!{
-                        <ErrorBoundary fallback = error_box>
-                        {
-                            value.map(|value| {
-                                provide_context(value);
-                                children.into_inner()()
-                            })
-                        }
-                        </ErrorBoundary>
+            server_action.value().get().map(|value| {
+                view! {
+                    <ErrorBoundary fallback = error_box>
+                    {
+                        value.map(|value| {
+                            provide_context(value);
+                            children.into_inner()()
+                        })
                     }
-                )
+                    </ErrorBoundary>
+                }
+            })
         })
     }
 }

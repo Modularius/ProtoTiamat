@@ -1,17 +1,16 @@
-use leptos::prelude::*;
-use tracing::info_span;
 use crate::{
     app::{TopLevelContext, generic_components::error_box},
-    structs::ContextExt
+    structs::ContextExt,
 };
+use leptos::prelude::*;
+use tracing::info_span;
 
 #[component]
-pub fn SessionGuard<C>(
-    children: TypedChildrenFn<C>,
-) -> impl IntoView where C : IntoView + 'static
+pub fn SessionGuard<C>(children: TypedChildrenFn<C>) -> impl IntoView
+where
+    C: IntoView + 'static,
 {
-    let top_level_context = use_context::<TopLevelContext>()
-        .expect_context();
+    let top_level_context = use_context::<TopLevelContext>().expect_context();
     let session = top_level_context.session;
 
     move || {
@@ -22,7 +21,7 @@ pub fn SessionGuard<C>(
             let span = info_span!("SessionGuard Suspense");
             let _guard = span.enter();
             let session_id = session.await;
-            view!{
+            view! {
                 <ErrorBoundary fallback = error_box>
                     {
                         session_id.map(|session_id| {

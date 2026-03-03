@@ -1,13 +1,9 @@
-use cfg_if::cfg_if;
-use chrono::Utc;
+use crate::{GroupUuid, Real, group::MemberUuid};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-
-use crate::{GroupUuid, RandomGeneration, Real, Timestamp, UserUuid, Uuid, group::MemberUuid};
 
 pub enum PolicyType {
     Rename {
-        new_name: String
+        new_name: String,
     },
     ChangeGroupProperty {
         property: String,
@@ -48,11 +44,11 @@ pub enum GroupPermission {
     PostPrivate,
     VoteOnPolicy,
     Moderate,
-    PenaliseMember
+    PenaliseMember,
 }
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct GroupAdmin {
     member_id: MemberUuid,
-    permissions: Vec<GroupPermission>
+    permissions: Vec<GroupPermission>,
 }

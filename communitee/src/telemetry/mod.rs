@@ -104,5 +104,3 @@ impl Drop for TracerEngine {
         opentelemetry::global::shutdown_tracer_provider()
     }
 }
-
-
