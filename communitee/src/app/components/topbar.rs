@@ -5,10 +5,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     app::{
-        generic_components::{ButtonControl, ButtonFunction, ControlStack, LabelledControlStack},
-        guards::{IsLoggedIn, NotLoggedIn, PageGuard},
-    },
-    structs::{ContextExt, Expect},
+        TopLevelContext, generic_components::{ButtonControl, ButtonFunction, ControlStack, LabelledControlStack}, guards::{IsLoggedIn, NotLoggedIn, PageGuard, ResourceGuard}
+    }, server_functions::{GetSessionFromIdentity, get_session_from_identity}, structs::{ContextExt, Expect}
 };
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -128,8 +126,17 @@ async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext
 
 #[component]
 fn UserBar() -> impl IntoView {
-    view! {
-        <PageGuard with_parameters = |session_id|GetUserBarData{ session_id }>
+    let source = ||action.version().get();
+    let fetch = async |session_id : RwSignal<Option<SessionUuid>>| {
+        match session_id.get() {
+            Some(session_id) => Some(get_user_bar_data(session_id).await),
+            None => None,
+        }
+    };
+    let resource = Resource::new(source, fetch);
+    move || view! {
+        <ResourceGuard resource>
+        //<PageGuard with_parameters = |session_id|GetUserBarData{ session_id }>
         {
             let user_bar_data = use_context::<UserBarDataContext>().expect_context();
             let label = user_bar_data.user_name;
@@ -141,7 +148,8 @@ fn UserBar() -> impl IntoView {
                 </LabelledControlStack>
             }
         }
-        </PageGuard>
+        //</PageGuard>
+        </ResourceGuard>
     }
     /*
     move ||Suspend::new(async move {

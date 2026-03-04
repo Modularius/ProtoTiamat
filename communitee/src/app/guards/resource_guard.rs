@@ -14,13 +14,37 @@ where
     T: Clone + Send + Sync + 'static,
     C: IntoView + 'static,
 {
-    move || {
+    {
         let span = info_span!("PageGuard");
         let _guard = span.enter();
         /*let session_id = use_context::<TopLevelContext>()
             .expect_context()
             .session_id_expect();*/
-
+        view!{
+            <Transition>
+            {
+                move || {
+                    let children = children.clone();
+                    info!("A Little Info.");
+                    resource.get()
+                        .flatten()
+                        .map(|value| {
+                            view! {
+                                <ErrorBoundary fallback = error_box>
+                                {
+                                    value.map(|value| {
+                                        provide_context(value);
+                                        children.into_inner()()
+                                    })
+                                }
+                                </ErrorBoundary>
+                            }
+                        })
+                }
+            }
+            </Transition>
+        }
+        /*
         let children = children.clone();
         let future = async move |parent_span| {
             let span = info_span!(parent: &parent_span, "PageGuard Suspense");
@@ -43,6 +67,7 @@ where
                 })
         };
         Suspend::new(future(span.clone()))
+        */
     }
 }
 

@@ -1,8 +1,6 @@
 use crate::{
     app::{
-        components::{AdColumns, FootBar, MainColumn, NewPostBox, PostBox, PostData, TopBar},
-        generic_components::RoundedBox,
-        guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard},
+        TopLevelContext, components::{AdColumns, FootBar, MainColumn, NewPostBox, PostBox, PostData, TopBar}, generic_components::RoundedBox, guards::{IsLoggedIn, NotLoggedIn, PageGuard, ResourceGuard, SessionGuard}
     },
     structs::{ContextExt, Expect},
 };
@@ -66,14 +64,24 @@ pub async fn get_home_page_data(
 #[component]
 #[tracing::instrument]
 pub fn HomePage() -> impl IntoView {
+    let source = ||use_context::<TopLevelContext>().expect_context().session_id;
+    let fetch = async |session_id : RwSignal<Option<SessionUuid>>| {
+        match session_id.get() {
+            Some(session_id) => Some(get_home_page_data(session_id, 10).await),
+            None => None,
+        }
+    };
+    let resource = Resource::new(source, fetch);
     view! {
         <SessionGuard>
-            <TopBar/>
+            //<TopBar/>
             <MainColumn>
                 <IsLoggedIn>
-                    <PageGuard with_parameters = |session_id|GetHomePageData{ session_id, max_posts: 10 }>
+                    //<PageGuard with_parameters = |session_id|GetHomePageData{ session_id, max_posts: 10 }>
+                    <ResourceGuard resource>
                         <HomePageWithData />
-                    </PageGuard>
+                    </ResourceGuard>
+                    //</PageGuard>
                 </IsLoggedIn>
                 <NotLoggedIn>
                     <LandingPage />

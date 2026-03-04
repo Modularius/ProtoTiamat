@@ -12,26 +12,30 @@ where
 {
     let top_level_context = use_context::<TopLevelContext>()
         .expect_context();
-    let session = top_level_context.session;
+    let session_id = top_level_context.session;
 
-    move || {
+    {
         let _guard = info_span!("SessionGuard").entered();
-        let children = children.clone();
-        let session = session.clone();
-        Suspend::new(async move {
-            let span = info_span!("SessionGuard Suspense");
-            let _guard = span.enter();
-            let session_id = session.await;
-            view! {
-                <ErrorBoundary fallback = error_box>
+        
+        //let span = info_span!("SessionGuard Suspense");
+        //let _guard = span.enter();
+        view! {
+            <Transition>
+            { move || {
+                let children = children.clone();
+                session_id.get().map(|session_id| view! {
+                    //Suspend::new(async move {
+                    <ErrorBoundary fallback = error_box>
                     {
                         session_id.map(|session_id| {
                             top_level_context.session_id.set(session_id);
                             children.into_inner()()
                         })
                     }
-                </ErrorBoundary>
-            }
-        })
+                    </ErrorBoundary>
+                })
+            }}
+            </Transition>
+        }
     }
 }
