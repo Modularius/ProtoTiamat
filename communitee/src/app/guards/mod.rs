@@ -15,10 +15,10 @@ pub fn IsLoggedIn<C>(children: TypedChildrenFn<C>) -> impl IntoView
 where
     C: IntoView + 'static,
 {
-    let session = use_context::<TopLevelContext>().expect_context().session_id;
+    let session = use_context::<TopLevelContext>().expect_context().login.value();
     Show(ShowProps {
         children: children.clone(),
-        when: move || session.get().is_some(),
+        when: move || session.get().is_some_and(|res|res.is_ok()),
         fallback: Default::default(),
     })
 }
@@ -28,10 +28,10 @@ pub fn NotLoggedIn<C>(children: TypedChildrenFn<C>) -> impl IntoView
 where
     C: IntoView + 'static,
 {
-    let session = use_context::<TopLevelContext>().expect_context().session_id;
+    let session = use_context::<TopLevelContext>().expect_context().login.value();
     Show(ShowProps {
         children: children.clone(),
-        when: move || session.get().is_none(),
+        when: move || session.get().is_none_or(|res|res.is_err()),
         fallback: Default::default(),
     })
 }

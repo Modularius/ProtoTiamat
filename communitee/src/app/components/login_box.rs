@@ -14,13 +14,14 @@ use strum::{Display, EnumIter, EnumString};
 
 #[component]
 pub fn LoginBox(#[prop(optional)] redirect_to: Option<&'static str>) -> impl IntoView {
-    let login = ServerAction::<PerformLogin>::new();
+    /*let login = ServerAction::<PerformLogin>::new();
     Effect::new(move || {
         if let Some(Ok(_session)) = login.value().get() {
             let top_level_context = use_context::<TopLevelContext>().expect_context();
             top_level_context.session.refetch();
         }
-    });
+    });*/
+    let login = use_context::<TopLevelContext>().expect_context().login;
     view! {
         <ActionForm action = login>
             {redirect_to.map(|redirect_to|view!{
@@ -45,13 +46,14 @@ pub fn LoginBox(#[prop(optional)] redirect_to: Option<&'static str>) -> impl Int
 
 #[component]
 pub fn LogoutBox(#[prop(optional)] redirect_to: Option<&'static str>) -> impl IntoView {
-    let logout = ServerAction::<PerformLogout>::new();
+    let logout = use_context::<TopLevelContext>().expect_context().logout;
+    /*let logout = ServerAction::<PerformLogout>::new();
     Effect::new(move || {
         if let Some(Ok(true)) = logout.value().get() {
             let top_level_context = use_context::<TopLevelContext>().expect_context();
             top_level_context.session.refetch();
         }
-    });
+    });*/
     view! {
         <ActionForm action = logout>
             {redirect_to.map(|redirect_to|view!{

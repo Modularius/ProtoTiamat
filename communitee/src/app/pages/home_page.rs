@@ -64,21 +64,21 @@ pub async fn get_home_page_data(
 #[component]
 #[tracing::instrument]
 pub fn HomePage() -> impl IntoView {
-    let source = ||use_context::<TopLevelContext>().expect_context().session_id;
-    let fetch = async |session_id : RwSignal<Option<SessionUuid>>| {
-        match session_id.get() {
-            Some(session_id) => Some(get_home_page_data(session_id, 10).await),
-            None => None,
-        }
+    let source = || {
+        let tlc = use_context::<TopLevelContext>().expect_context();
+        (tlc.login.version().get(),tlc.logout.version().get())
     };
-    let resource = Resource::new(source, fetch);
+    let fetch = async |_| {
+        let session_id: SessionUuid = use_context::<TopLevelContext>().expect_context().session_id_expect();
+        Some(get_home_page_data(session_id, 10).await)
+    };
     view! {
         <SessionGuard>
-            //<TopBar/>
+            <TopBar/>
             <MainColumn>
                 <IsLoggedIn>
                     //<PageGuard with_parameters = |session_id|GetHomePageData{ session_id, max_posts: 10 }>
-                    <ResourceGuard resource>
+                    <ResourceGuard resource = Resource::new(source, fetch)>
                         <HomePageWithData />
                     </ResourceGuard>
                     //</PageGuard>

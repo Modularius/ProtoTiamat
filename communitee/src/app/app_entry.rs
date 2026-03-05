@@ -3,7 +3,7 @@ use crate::{
         FriendlistPage, GroupPage, GroupslistPage, HelpPage, HomePage, LoginPage, MessagesPage,
         RegisterPage, UserPage,
     },
-    server_functions::get_session_from_identity,
+    server_functions::{PerformLogin, PerformLogout, get_session_from_identity},
     structs::{ClientSideData, ContextExt, Expect},
 };
 use leptos::prelude::*;
@@ -19,15 +19,20 @@ use libertee::SessionUuid;
 #[derive(Clone)]
 pub struct TopLevelContext {
     pub client_side_data: ClientSideData,
-    pub session: Resource<Result<Option<SessionUuid>, ServerFnError>>,
-    pub session_id: RwSignal<Option<SessionUuid>>,
+    pub session_id_res: Resource<Result<Option<SessionUuid>, ServerFnError>>,
+    pub login: ServerAction<PerformLogin>,
+    pub logout: ServerAction<PerformLogout>,
 }
 
 impl TopLevelContext {
+    #[inline]
+    #[track_caller]
     pub fn session_id_expect(&self) -> SessionUuid {
-        self.session_id
+        self.session_id_res
             .get()
-            .expect("session_id should only be called inside <IsLoggedIn>, this should never fail.")
+            .unwrap()
+            .expect("session_id_expect should only be called inside <SessionGuard>, this should never fail.")
+            .expect("session_id_expect should only be called inside <IsLoggedIn>, this should never fail.")
     }
 }
 
@@ -46,10 +51,13 @@ pub fn App() -> impl IntoView {
 
     //let public_path = client_side_data.public_url.router_base_form();
 
+    let login = ServerAction::new();
+    let logout = ServerAction::new();
     provide_context(TopLevelContext {
         client_side_data,
-        session: Resource::new_blocking(|| (), |_| {tracing::warn!("This fetcher is being called."); get_session_from_identity()}),
-        session_id: RwSignal::new(None),
+        session_id_res: Resource::new_blocking(|| (), |_| {tracing::warn!("This fetcher is being called."); get_session_from_identity()}),
+        login,
+        logout,
     });
 
     view! {

@@ -60,7 +60,7 @@ fn ToolBar(children: Children) -> impl IntoView {
 
 #[component]
 pub fn TopBar() -> impl IntoView {
-    || {
+    {
         view! {
             <BigBar>
                 <SanctimoneousMissionStatement/>
@@ -126,16 +126,16 @@ async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext
 
 #[component]
 fn UserBar() -> impl IntoView {
-    let source = ||action.version().get();
-    let fetch = async |session_id : RwSignal<Option<SessionUuid>>| {
-        match session_id.get() {
-            Some(session_id) => Some(get_user_bar_data(session_id).await),
-            None => None,
-        }
+    let source = || {
+        let tlc = use_context::<TopLevelContext>().expect_context();
+        (tlc.login.version().get(),tlc.logout.version().get())
     };
-    let resource = Resource::new(source, fetch);
-    move || view! {
-        <ResourceGuard resource>
+    let fetch = async |_| {
+        let session_id: SessionUuid = use_context::<TopLevelContext>().expect_context().session_id_expect();
+        Some(get_user_bar_data(session_id).await)
+    };
+    view! {
+        <ResourceGuard resource = Resource::new(source, fetch)>
         //<PageGuard with_parameters = |session_id|GetUserBarData{ session_id }>
         {
             let user_bar_data = use_context::<UserBarDataContext>().expect_context();

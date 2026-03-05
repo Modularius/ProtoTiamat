@@ -123,8 +123,20 @@ impl Expect for UserPageParamsContext {
 #[component]
 pub fn UserPage() -> impl IntoView {
     let params = use_params::<UserParams>();
-    let source = move ||(use_context::<TopLevelContext>().expect_context().session_id, params);
-    let fetch = async |(session_id, user_id) : (RwSignal<Option<SessionUuid>>, Memo<Result<UserParams, _>>)| if let Some((s,p)) = Option::zip(session_id.get(), user_id.get().ok().and_then(|p|p.user_id)) { Some(get_user_page_data(s,UserUuid(p)).await) } else { None };
+    let source = move || {
+        let tlc = use_context::<TopLevelContext>().expect_context();
+        (tlc.login.version().get(),tlc.logout.version().get(),params.get())
+    };
+    let fetch = async |(_, _, params): (_,_,Result<UserParams, _>)| {
+        let session_id: SessionUuid = use_context::<TopLevelContext>().expect_context().session_id_expect();
+        match params {
+            Ok(up) => match up.user_id {
+                Some(id) => Some(get_user_page_data(session_id, UserUuid(id)).await),
+                None => None,
+            },
+            Err(_) => None,
+        }
+    };
     let resource = Resource::new(source, fetch);
     view! {
         <SessionGuard>

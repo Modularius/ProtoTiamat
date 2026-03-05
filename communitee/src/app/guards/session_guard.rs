@@ -12,7 +12,7 @@ where
 {
     let top_level_context = use_context::<TopLevelContext>()
         .expect_context();
-    let session_id = top_level_context.session;
+    let session_id = top_level_context.session_id_res;
 
     {
         let _guard = info_span!("SessionGuard").entered();
@@ -28,7 +28,7 @@ where
                     <ErrorBoundary fallback = error_box>
                     {
                         session_id.map(|session_id| {
-                            top_level_context.session_id.set(session_id);
+                            //top_level_context.session_id.set(session_id);
                             children.into_inner()()
                         })
                     }
