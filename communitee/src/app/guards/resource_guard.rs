@@ -14,6 +14,7 @@ where
     T: Clone + Send + Sync + 'static,
     C: IntoView + 'static,
 {
+    info!("Running Resource Guard.");
     {
         let span = info_span!("PageGuard");
         let _guard = span.enter();
@@ -23,6 +24,7 @@ where
         view!{
             <Transition>
             {
+                info!("Running inside transition.");
                 move || {
                     let children = children.clone();
                     info!("A Little Info.");

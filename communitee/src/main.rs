@@ -50,21 +50,6 @@ cfg_if! {
             // set up logging
             console_error_panic_hook::set_once();
 
-            /*let stdout_tracer = tracing_subscriber::fmt::layer()
-                .with_writer(std::io::stdout)
-                .with_ansi(false)
-                .with_target(false);
-            */
-            // This filter is applied to the stdout tracer
-            //let log_filter = EnvFilter::from_default_env();
-
-            //let subscriber =
-            //    tracing_subscriber::Registry::default().with(stdout_tracer.with_filter(log_filter));
-
-            //  This is only called once, so will never panic
-            //tracing::subscriber::set_global_default(subscriber)
-            //    .expect("tracing::subscriber::set_global_default should only be called once");
-
             let args = Cli::parse();
 
             let tracer = TracerEngine::new(TracerOptions::new(args.otel_endpoint.as_deref(), args.otel_namespace), "communitee");

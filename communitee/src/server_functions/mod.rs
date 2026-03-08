@@ -47,7 +47,7 @@ pub async fn get_session_from_identity() -> Result<Option<SessionUuid>, ServerFn
                     .clone(),
             ))
         }
-        Err(e) => Ok(None),
+        Err(_e) => Ok(None),
     }
 }
 

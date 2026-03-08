@@ -1,6 +1,6 @@
 use crate::{
     app::{
-        TopLevelContext, components::{AdColumns, FootBar, MainColumn, NewPostBox, PostBox, PostData, TopBar}, generic_components::RoundedBox, guards::{IsLoggedIn, NotLoggedIn, PageGuard, ResourceGuard, SessionGuard}
+        TopLevelContext, components::{AdColumns, FootBar, LoginBox, MainColumn, NewPostBox, PostBox, PostData, TopBar}, generic_components::RoundedBox, guards::{IsLoggedIn, NotLoggedIn, PageGuard, ResourceGuard, SessionGuard}
     },
     structs::{ContextExt, Expect},
 };
@@ -69,11 +69,13 @@ pub fn HomePage() -> impl IntoView {
         (tlc.login.version().get(),tlc.logout.version().get())
     };
     let fetch = async |_| {
-        let session_id: SessionUuid = use_context::<TopLevelContext>().expect_context().session_id_expect();
+        let session_id: SessionUuid = use_context::<TopLevelContext>()
+            .expect_context()
+            .session_id_expect();
         Some(get_home_page_data(session_id, 10).await)
     };
     view! {
-        <SessionGuard>
+        //<SessionGuard>
             <TopBar/>
             <MainColumn>
                 <IsLoggedIn>
@@ -85,10 +87,11 @@ pub fn HomePage() -> impl IntoView {
                 </IsLoggedIn>
                 <NotLoggedIn>
                     <LandingPage />
+                    <LoginBox />
                 </NotLoggedIn>
             </MainColumn>
-        <FootBar />
-    </SessionGuard>
+            <FootBar />
+        //</SessionGuard>
     }
 }
 

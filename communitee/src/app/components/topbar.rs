@@ -127,12 +127,16 @@ async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext
 #[component]
 fn UserBar() -> impl IntoView {
     let source = || {
-        let tlc = use_context::<TopLevelContext>().expect_context();
-        (tlc.login.version().get(),tlc.logout.version().get())
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
+        (top_level_context.login.version().get(),top_level_context.logout.version().get())
     };
     let fetch = async |_| {
-        let session_id: SessionUuid = use_context::<TopLevelContext>().expect_context().session_id_expect();
-        Some(get_user_bar_data(session_id).await)
+        let session_id = use_context::<TopLevelContext>().expect_context().session_id;
+        if let Some(session_id) = session_id.get() {
+            Some(get_user_bar_data(session_id).await)
+        } else {
+            None
+        }
     };
     view! {
         <ResourceGuard resource = Resource::new(source, fetch)>

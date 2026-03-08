@@ -20,6 +20,7 @@ use libertee::SessionUuid;
 pub struct TopLevelContext {
     pub client_side_data: ClientSideData,
     pub session_id_res: Resource<Result<Option<SessionUuid>, ServerFnError>>,
+    pub session_id: Signal<Option<SessionUuid>>,
     pub login: ServerAction<PerformLogin>,
     pub logout: ServerAction<PerformLogout>,
 }
@@ -35,6 +36,7 @@ impl TopLevelContext {
             .expect("session_id_expect should only be called inside <IsLoggedIn>, this should never fail.")
     }
 }
+/**/
 
 impl Expect for TopLevelContext {
     const EXPECT: &'static str = "`TopLevelContext` should be provided, this should never fail.";
@@ -51,11 +53,28 @@ pub fn App() -> impl IntoView {
 
     //let public_path = client_side_data.public_url.router_base_form();
 
-    let login = ServerAction::new();
-    let logout = ServerAction::new();
+    let login = ServerAction::<PerformLogin>::new();
+    let logout = ServerAction::<PerformLogout>::new();
+    let session_id_res: Resource<Result<Option<SessionUuid>, ServerFnError>> = Resource::new_blocking(
+            move|| (login.version().get(), logout.version().get()),
+            |_| get_session_from_identity()
+    );
+    let session_id = Signal::derive(move || session_id_res
+        .get()
+        .and_then(|session_id_res|
+            match session_id_res {
+                Ok(session_id_res) => session_id_res,
+                Err(e) => {
+                    tracing::error!("{e}");
+                    None
+                }
+            }
+        )
+    );
     provide_context(TopLevelContext {
         client_side_data,
-        session_id_res: Resource::new_blocking(|| (), |_| {tracing::warn!("This fetcher is being called."); get_session_from_identity()}),
+        session_id_res,
+        session_id,
         login,
         logout,
     });
