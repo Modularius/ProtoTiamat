@@ -5,4 +5,4 @@ let params = [
     "--initial-user-username", "FredieFuckah",
     "--initial-user-password", ""
 ]
-RUST_LOG=debug cargo leptos watch -p communitee -- ...$params
+RUST_LOG=debug OTEL_LEVEL=info,actix_web=info cargo leptos watch -p communitee -- ...$params

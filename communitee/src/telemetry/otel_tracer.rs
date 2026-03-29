@@ -55,7 +55,7 @@ where
             .install_batch(opentelemetry_sdk::runtime::Tokio)?;
 
         let filter = match EnvFilter::builder()
-            .with_default_directive(LevelFilter::OFF.into())
+            .with_default_directive(LevelFilter::DEBUG.into())
             .with_env_var("OTEL_LEVEL")
             .from_env()
         {

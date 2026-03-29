@@ -12,6 +12,7 @@ use leptos_router::{
     SsrMode, components::{Outlet, ParentRoute, Route, Router, Routes}, path
 };
 use libertee::SessionUuid;
+use tracing::{Span, instrument};
 
 /// This struct enable a degree of type-checking for the [use_context]/[use_context] functions.
 /// Any component making use of the following fields should call `use_context::<TopLevelContext>()`
@@ -54,7 +55,9 @@ impl Expect for TopLevelContext {
 
 /// An app router which renders the homepage and handles 404's
 #[component]
+#[instrument]
 pub fn App() -> impl IntoView {
+    provide_context(tracing::Span::current());
     // Provides context that manages stylesheets, titles, meta tags, etc.
     provide_meta_context();
 

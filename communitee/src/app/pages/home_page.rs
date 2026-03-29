@@ -7,6 +7,7 @@ use crate::{
 use leptos::prelude::*;
 use libertee::{LiberteeError, SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
+use tracing::{Span, instrument};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::{ServerSideData, server_functions::format_datetime};
@@ -26,7 +27,7 @@ impl Expect for HomePageDataContext {
 }
 
 #[server]
-#[tracing::instrument]
+#[instrument]
 pub async fn get_home_page_data(
     session_id: SessionUuid,
     max_posts: usize,
@@ -62,8 +63,9 @@ pub async fn get_home_page_data(
 }
 
 #[component]
-#[tracing::instrument]
+#[instrument]
 pub fn HomePage() -> impl IntoView {
+    provide_context(tracing::Span::current());
     let source = || {
         let top_level_context = use_context::<TopLevelContext>()
             .expect_context();
@@ -103,7 +105,9 @@ pub fn HomePage() -> impl IntoView {
 }
 
 #[component]
+#[instrument]
 fn HomePageWithData() -> impl IntoView {
+    provide_context(tracing::Span::current());
     let home_page_data = use_context::<HomePageDataContext>().expect_context();
     view! {
         <h1 class = "text-3xl m-6"> "Hi there " {home_page_data.user_name.clone()} "!" </h1>
@@ -130,7 +134,9 @@ fn HomePageWithData() -> impl IntoView {
 }
 
 #[component]
+#[instrument]
 fn LandingPage() -> impl IntoView {
+    provide_context(tracing::Span::current());
     view! {
         <h1 class = "text-3xl m-6"> "Hi there, welcome to Communitee." </h1>
         <h2 class = "text-xl m-2"> "The social media platform exclusively controlled by its users." </h2>
