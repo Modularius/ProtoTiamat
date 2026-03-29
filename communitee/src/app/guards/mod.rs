@@ -6,11 +6,13 @@ pub use resource_guard::{PageGuard, ResourceGuard};
 pub use session_guard::SessionGuard;
 
 use leptos::prelude::*;
+use tracing::instrument;
 
 use crate::{app::TopLevelContext, structs::ContextExt};
 //use libertee::{Session, SessionUuid, UserData};
 
 #[component]
+#[instrument(skip_all)]
 pub fn IsLoggedIn<C>(children: TypedChildrenFn<C>) -> impl IntoView
 where
     C: IntoView + 'static,
@@ -19,22 +21,25 @@ where
         .expect_context()
         .session_id;
 
-    move || Show(ShowProps {
+    let current_span = tracing::Span::current();
+    move || current_span.in_scope(||Show(ShowProps {
         children: children.clone(),
         when: move || session.get_untracked().is_some(),
         fallback: Default::default(),
-    })
+    }))
 }
 
 #[component]
+#[instrument(skip_all)]
 pub fn NotLoggedIn<C>(children: TypedChildrenFn<C>) -> impl IntoView
 where
     C: IntoView + 'static,
 {
     let session = use_context::<TopLevelContext>().expect_context().session_id;
-    move || Show(ShowProps {
+    let current_span = tracing::Span::current();
+    move || current_span.in_scope(||Show(ShowProps {
         children: children.clone(),
         when: move || session.get().is_none(),
         fallback: Default::default(),
-    })
+    }))
 }

@@ -57,6 +57,7 @@ stylers = { version = "*" }
 tokio = { version = "1.47", features = ["macros", "rt", "sync"] }
 thiserror = "2.0.16"
 tracing = "0.1.41"
+tracing-actix-web = { version = "0.7.21" }
 tracing-opentelemetry = "0.23.0"
 tracing-subscriber = { version = "0.3.20", features = ["std", "fmt", "env-filter"] }
 url = { version = "2.5.7", features = ["serde"] }

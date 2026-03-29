@@ -2,6 +2,7 @@ use leptos::prelude::*;
 use leptos_router::components::A;
 use libertee::{LiberteeError, SessionUuid};
 use serde::{Deserialize, Serialize};
+use tracing::instrument;
 
 use crate::{
     app::{
@@ -14,6 +15,7 @@ cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
 } }
 
 #[component]
+#[instrument]
 fn CommuniteeTitle() -> impl IntoView {
     view! {
         <div class = "text-4xl text-nowrap text-purple-100 text-center text-shadow-2xl w-1/2">
@@ -23,6 +25,7 @@ fn CommuniteeTitle() -> impl IntoView {
 }
 
 #[component]
+#[instrument]
 fn SanctimoneousMissionStatement() -> impl IntoView {
     view! {
         <div class = "text-lg  text-nowrap text-purple-100 text-center text-shadow-xl  w-1/4 hidden md:block">
@@ -32,6 +35,7 @@ fn SanctimoneousMissionStatement() -> impl IntoView {
 }
 
 #[component]
+#[instrument(skip_all)]
 fn RightBar(children: Children) -> impl IntoView {
     view! {
         <div class = "text-purple-100 w-1/2 md:w-1/4">
@@ -41,6 +45,7 @@ fn RightBar(children: Children) -> impl IntoView {
 }
 
 #[component]
+#[instrument(skip_all)]
 fn BigBar(children: Children) -> impl IntoView {
     view! {
         <div class = "bg-indigo-700 flex flex-col md:flex-row items-center justify-even">
@@ -50,6 +55,7 @@ fn BigBar(children: Children) -> impl IntoView {
 }
 
 #[component]
+#[instrument(skip_all)]
 fn ToolBar(children: Children) -> impl IntoView {
     view! {
         <div class = "bg-green-700 text-green-100 text-sm md:text-lg flex flex-row items-center p-1 gap-x-1 gap-y-1 justify-stretch md:justify-even">
@@ -59,6 +65,7 @@ fn ToolBar(children: Children) -> impl IntoView {
 }
 
 #[component]
+#[instrument]
 pub fn TopBar() -> impl IntoView {
     {
         view! {
@@ -105,7 +112,7 @@ impl Expect for UserBarDataContext {
 }
 
 #[server]
-#[tracing::instrument()]
+#[instrument]
 async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
@@ -125,6 +132,7 @@ async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext
 }
 
 #[component]
+#[instrument]
 fn UserBar() -> impl IntoView {
     let source = || {
         let top_level_context = use_context::<TopLevelContext>().expect_context();
@@ -179,6 +187,7 @@ fn UserBar() -> impl IntoView {
 }
 
 #[component]
+#[instrument]
 fn LoginBar() -> impl IntoView {
     view! {
         <ControlStack>
@@ -189,6 +198,7 @@ fn LoginBar() -> impl IntoView {
 }
 
 #[component]
+#[instrument]
 pub fn FootBar() -> impl IntoView {
     view! {
         <BigBar>

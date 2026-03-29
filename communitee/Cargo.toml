@@ -36,6 +36,7 @@ strum = { workspace = true, optional = false }
 thiserror = { workspace = true, optional = false }
 tokio = { workspace = true, optional = true }
 tracing = { workspace = true, optional = false }
+tracing-actix-web = { workspace = true, optional = true }
 tracing-opentelemetry = { workspace = true, optional = true }
 tracing-subscriber.workspace = true
 url.workspace = true
@@ -62,7 +63,7 @@ ssr = [
   "miette/fancy",
   "tokio/rt-multi-thread",
   "tokio/signal",
-  "dep:uuid",
+  "dep:clap",
   "dep:actix-identity",
   "dep:actix-session",
   "dep:actix-web",
@@ -75,8 +76,9 @@ ssr = [
   "dep:rand",
   "dep:reqwest",
   "dep:tokio",
+  "dep:tracing-actix-web",
   "dep:tracing-opentelemetry",
-  "dep:clap",
+  "dep:uuid",
 ]
 
 [package.metadata.leptos]

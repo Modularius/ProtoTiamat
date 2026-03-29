@@ -2,7 +2,6 @@
 use cfg_if::cfg_if;
 use leptos::prelude::*;
 use libertee::LoginAuth;
-use tracing::instrument;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use actix_identity::IdentityMiddleware;
@@ -13,7 +12,8 @@ cfg_if! {
         use libertee::RandomGeneration;
         use std::net::SocketAddr;
         use std::sync::{Arc, Mutex};
-        use tracing::{debug, info, warn, info_span};
+        use tracing::{debug, debug_span, info_span, warn};
+        use tracing_actix_web::TracingLogger;
         //use tracing_subscriber::{EnvFilter, Layer, layer::SubscriberExt};
 
         #[derive(Parser)]
@@ -88,45 +88,51 @@ cfg_if! {
             let conf = get_configuration(None).unwrap();
             let addr = conf.leptos_options.site_addr;
 
+            let servers_span = info_span!("http_servers");
             actix_web::HttpServer::new(move || {
-                info_span!("server", "listening_on" = format!("http://{}", &addr)).in_scope(|| {
-                    // Generate the list of routes in your Leptos App
-                    let routes = generate_route_list({
-                        let client_side_data = client_side_data.clone();
-                        let current_span = tracing::Span::current();
-                        move || info_span!(parent: current_span.id(), "generate_route_list").in_scope(|| {
-                            provide_context(client_side_data.clone());
-                            provide_context(tracing::Span::current());
-                            view!{ <App /> }
-                        })
-                    });
-                    routes.iter()
-                        .for_each(|route|debug!("{route:?}"));
-                    
-                    let leptos_options = &conf.leptos_options;
-                    let site_root = leptos_options.site_root.clone().to_string();
-
-                    actix_web::App::new()
-                        .service(Files::new("/pkg", format!("{site_root}/pkg")))
-                        .leptos_routes_with_context(routes, {
-                            let server_side_data = server_side_data.clone();
+                servers_span.in_scope(||
+                    info_span!("build_server", "listening_on" = format!("http://{}", &addr)).in_scope(|| {
+                        // Generate the list of routes in your Leptos App
+                        let routes = generate_route_list({
                             let client_side_data = client_side_data.clone();
-                            move ||{
-                                provide_context(server_side_data.clone());
-                                provide_context(client_side_data.clone());
-                            }
-                        }, {
-                            let leptos_options = leptos_options.clone();
-                            provide_context(tracing::Span::current());
-                            move ||shell(leptos_options.clone())
-                        })
-                        .app_data(actix_web::web::Data::new(leptos_options.to_owned()))
-                        .wrap(IdentityMiddleware::default())
-                        .wrap(SessionMiddleware::new(
-                            session_storage.clone(),
-                            secret_key.clone(),
-                        ))
-                })
+                            let current_span = tracing::Span::current();
+                            move || info_span!(parent: current_span.id(), "generate_route_list")
+                                .in_scope(|| {
+                                    provide_context(client_side_data.clone());
+                                    provide_context(tracing::Span::current());
+                                    view!{ <App /> }
+                                })
+                        });
+                        debug_span!("generated_routes").in_scope(||
+                            routes.iter()
+                                .for_each(|route|debug!("{route:?}"))
+                        );
+                        
+                        let leptos_options = &conf.leptos_options;
+                        let site_root = leptos_options.site_root.clone().to_string();
+
+                        actix_web::App::new()
+                            .wrap(TracingLogger::default())
+                            .service(Files::new("/pkg", format!("{site_root}/pkg")))
+                            .leptos_routes_with_context(routes, {
+                                let server_side_data = server_side_data.clone();
+                                let client_side_data = client_side_data.clone();
+                                move ||{
+                                    provide_context(server_side_data.clone());
+                                    provide_context(client_side_data.clone());
+                                }
+                            }, {
+                                let leptos_options = leptos_options.clone();
+                                provide_context(tracing::Span::current());
+                                move ||shell(leptos_options.clone())
+                            })
+                            .app_data(actix_web::web::Data::new(leptos_options.to_owned()))
+                            .wrap(IdentityMiddleware::default())
+                            .wrap(SessionMiddleware::new(
+                                session_storage.clone(),
+                                secret_key.clone(),
+                            ))
+                }))
             })
             .bind(&addr)
             .into_diagnostic()?
