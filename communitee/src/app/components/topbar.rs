@@ -67,7 +67,7 @@ pub fn TopBar() -> impl IntoView {
                 <CommuniteeTitle/>
                 <RightBar>
                     <IsLoggedIn>
-                        <UserBar />
+                        {move || { view!{ <UserBar /> } } }
                     </IsLoggedIn>
                     <NotLoggedIn>
                         <LoginBar />

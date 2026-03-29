@@ -127,7 +127,7 @@ impl Server {
         Ok(id)
     }
 
-    #[instrument]
+    #[instrument(skip_all)]
     pub fn create_initial_user(
         &mut self,
         auth: &LoginAuth,
@@ -164,7 +164,7 @@ impl Server {
         self.get_user_mut(&user_id)
     }
 
-    #[instrument]
+    #[instrument(skip_all)]
     pub fn make_users_friends(
         &mut self,
         user_id1: &UserUuid,
@@ -186,7 +186,7 @@ impl Server {
         }
     }
 
-    #[instrument]
+    #[instrument(skip_all)]
     pub fn make_user_group_member(&mut self, user_id: &UserUuid, group_id: &GroupUuid) {
         // FIXME some prior check for group and user existance
         if let Ok(user) = self.get_user_mut(user_id) {
@@ -201,6 +201,7 @@ impl Server {
 impl RandomGeneration for Server {
     type Parameter = ();
 
+    #[instrument(skip_all)]
     fn new_random(_: Self::Parameter) -> Self {
         let mut users = (0..rand::random_range(14..19))
             .map(|i| {

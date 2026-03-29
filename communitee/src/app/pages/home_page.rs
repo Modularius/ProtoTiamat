@@ -65,8 +65,15 @@ pub async fn get_home_page_data(
 #[tracing::instrument]
 pub fn HomePage() -> impl IntoView {
     let source = || {
-        let tlc = use_context::<TopLevelContext>().expect_context();
-        (tlc.login.version().get(),tlc.logout.version().get())
+        let top_level_context = use_context::<TopLevelContext>()
+            .expect_context();
+        (top_level_context.login
+                .version()
+                .get(),
+            top_level_context.logout
+                .version()
+                .get()
+        )
     };
     let fetch = async |_| {
         let session_id: SessionUuid = use_context::<TopLevelContext>()

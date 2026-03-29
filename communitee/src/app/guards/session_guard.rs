@@ -19,23 +19,26 @@ where
         
         //let span = info_span!("SessionGuard Suspense");
         //let _guard = span.enter();
-        view! {
-            <Transition>
-            { move || {
-                let children = children.clone();
-                session_id.get().map(|session_id| view! {
-                    //Suspend::new(async move {
-                    <ErrorBoundary fallback = error_box>
-                    {
-                        session_id.map(|session_id| {
-                            //top_level_context.session_id.set(session_id);
-                            children.into_inner()()
-                        })
-                    }
-                    </ErrorBoundary>
-                })
-            }}
-            </Transition>
+        move || {
+            let children = children.clone();
+            view! {
+                <Transition>
+                { move || {
+                    let children = children.clone();
+                    session_id.get().map(|session_id| view! {
+                        //Suspend::new(async move {
+                        <ErrorBoundary fallback = error_box>
+                        {
+                            session_id.map(|session_id| {
+                                //top_level_context.session_id.set(session_id);
+                                children.into_inner()()
+                            })
+                        }
+                        </ErrorBoundary>
+                    })
+                }}
+                </Transition>
+            }
         }
     }
 }

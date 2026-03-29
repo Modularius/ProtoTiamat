@@ -1,8 +1,9 @@
+use serde::{Deserialize, Serialize};
 use thiserror;
 
 use crate::{GroupUuid, LoginAuth, PostUuid, SessionUuid, UserUuid};
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, Serialize, Deserialize)]
 pub enum LiberteeError {
     #[error("No User found with id {}", 0.to_string())]
     NoUserFound(UserUuid),

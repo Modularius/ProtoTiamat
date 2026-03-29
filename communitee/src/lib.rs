@@ -2,12 +2,14 @@
 #![recursion_limit = "256"]
 
 mod app;
+mod errors;
 mod server_functions;
 mod structs;
 
 use cfg_if::cfg_if;
 
 pub use app::{App, SubmitPost, shell};
+pub use errors::CommuniteeError;
 pub use structs::{ClientSideData, DefaultData, PublicUrl};
 
 cfg_if! {

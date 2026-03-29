@@ -35,6 +35,16 @@ impl TopLevelContext {
             .expect("session_id_expect should only be called inside <SessionGuard>, this should never fail.")
             .expect("session_id_expect should only be called inside <IsLoggedIn>, this should never fail.")
     }
+    #[inline]
+    #[track_caller]
+    pub fn login_expect(&self) -> SessionUuid {
+        self.login
+            .value()
+            .get()
+            .expect("session_id_expect should only be called inside <SessionGuard>, this should never fail.")
+            .expect("session_id_expect should only be called inside <IsLoggedIn>, this should never fail.")
+            
+    }
 }
 /**/
 

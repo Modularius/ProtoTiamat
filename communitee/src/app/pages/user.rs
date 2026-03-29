@@ -128,7 +128,7 @@ pub fn UserPage() -> impl IntoView {
         (tlc.login.version().get(),tlc.logout.version().get(),params.get())
     };
     let fetch = async |(_, _, params): (_,_,Result<UserParams, _>)| {
-        let session_id: SessionUuid = use_context::<TopLevelContext>().expect_context().session_id_expect();
+        let session_id: SessionUuid = use_context::<TopLevelContext>().expect_context().login_expect();
         match params {
             Ok(up) => match up.user_id {
                 Some(id) => Some(get_user_page_data(session_id, UserUuid(id)).await),

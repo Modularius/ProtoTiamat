@@ -14,13 +14,6 @@ use strum::{Display, EnumIter, EnumString};
 
 #[component]
 pub fn LoginBox(#[prop(optional)] redirect_to: Option<&'static str>) -> impl IntoView {
-    /*let login = ServerAction::<PerformLogin>::new();
-    Effect::new(move || {
-        if let Some(Ok(_session)) = login.value().get() {
-            let top_level_context = use_context::<TopLevelContext>().expect_context();
-            top_level_context.session.refetch();
-        }
-    });*/
     let login = use_context::<TopLevelContext>().expect_context().login;
     view! {
         <ActionForm action = login>

@@ -56,7 +56,7 @@ pub async fn get_session_from_identity() -> Result<Option<SessionUuid>, ServerFn
 pub async fn perform_login(
     auth: LoginAuth,
     redirect_to: Option<String>,
-) -> Result<Session, ServerFnError> {
+) -> Result<SessionUuid, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>().expect_context();
 
     let mut server = server_side_data.server.lock()?;
@@ -76,7 +76,7 @@ pub async fn perform_login(
         debug!("Redirecting.");
         leptos_actix::redirect(&redirect_to);
     }
-    Ok(session.clone())
+    Ok(session.uuid.clone())
 }
 
 #[server]

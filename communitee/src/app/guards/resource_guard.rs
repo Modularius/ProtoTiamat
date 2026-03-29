@@ -21,30 +21,32 @@ where
         /*let session_id = use_context::<TopLevelContext>()
             .expect_context()
             .session_id_expect();*/
-        view!{
-            <Transition>
-            {
-                info!("Running inside transition.");
-                move || {
-                    let children = children.clone();
-                    info!("A Little Info.");
-                    resource.get()
-                        .flatten()
-                        .map(|value| {
-                            view! {
-                                <ErrorBoundary fallback = error_box>
-                                {
-                                    value.map(|value| {
-                                        provide_context(value);
-                                        children.into_inner()()
-                                    })
+        move || {
+            let children = children.clone();
+            view!{
+                <Transition>
+                {
+                    move || {
+                        let children = children.clone();
+                        info!("A Little Info.");
+                        resource.get()
+                            .flatten()
+                            .map(|value| {
+                                view! {
+                                    <ErrorBoundary fallback = error_box>
+                                    {
+                                        value.map(|value| {
+                                            provide_context(value);
+                                            children.into_inner()()
+                                        })
+                                    }
+                                    </ErrorBoundary>
                                 }
-                                </ErrorBoundary>
-                            }
-                        })
+                            })
+                    }
                 }
+                </Transition>
             }
-            </Transition>
         }
         /*
         let children = children.clone();
