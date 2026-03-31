@@ -11,8 +11,10 @@ use crate::{
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString};
+use tracing::instrument;
 
 #[component]
+#[instrument(skip_all)]
 pub fn LoginBox(#[prop(optional)] redirect_to: Option<&'static str>) -> impl IntoView {
     let login = use_context::<TopLevelContext>().expect_context().login;
     view! {
@@ -38,6 +40,7 @@ pub fn LoginBox(#[prop(optional)] redirect_to: Option<&'static str>) -> impl Int
 }
 
 #[component]
+#[instrument(skip_all)]
 pub fn LogoutBox(#[prop(optional)] redirect_to: Option<&'static str>) -> impl IntoView {
     let logout = use_context::<TopLevelContext>().expect_context().logout;
     /*let logout = ServerAction::<PerformLogout>::new();

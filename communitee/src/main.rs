@@ -12,8 +12,9 @@ cfg_if! {
         use libertee::RandomGeneration;
         use std::net::SocketAddr;
         use std::sync::{Arc, Mutex};
-        use tracing::{debug, debug_span, info_span, warn};
+        use tracing::{debug, debug_span, info_span, Span, warn};
         use tracing_actix_web::TracingLogger;
+        use actix_web_opentelemetry::RequestTracing;
         //use tracing_subscriber::{EnvFilter, Layer, layer::SubscriberExt};
 
         #[derive(Parser)]
@@ -111,22 +112,30 @@ cfg_if! {
                         let leptos_options = &conf.leptos_options;
                         let site_root = leptos_options.site_root.clone().to_string();
 
+                        let span = Span::current();
                         actix_web::App::new()
                             .wrap(TracingLogger::default())
+                            .wrap(RequestTracing::new())
                             .service(Files::new("/pkg", format!("{site_root}/pkg")))
                             .leptos_routes_with_context(routes, {
                                 let server_side_data = server_side_data.clone();
                                 let client_side_data = client_side_data.clone();
+                                let span = Span::current();
                                 move ||{
+                                    provide_context(span.clone());
                                     provide_context(server_side_data.clone());
                                     provide_context(client_side_data.clone());
                                 }
                             }, {
                                 let leptos_options = leptos_options.clone();
-                                provide_context(tracing::Span::current());
-                                move ||shell(leptos_options.clone())
+                                let span = Span::current();
+                                move || {
+                                    provide_context(span.clone());
+                                    shell(leptos_options.clone())
+                                }
                             })
                             .app_data(actix_web::web::Data::new(leptos_options.to_owned()))
+                            .app_data(actix_web::web::Data::new(span))
                             .wrap(IdentityMiddleware::default())
                             .wrap(SessionMiddleware::new(
                                 session_storage.clone(),

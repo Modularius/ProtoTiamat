@@ -4,7 +4,7 @@ use chrono::Utc;
 //use elasticsearch::{Elasticsearch, http::transport::Transport};
 use elasticsearch as _;
 use itertools::Itertools;
-use tracing::{info, instrument};
+use tracing::instrument;
 
 use crate::{
     Group, GroupData, GroupUuid, LiberteeError, LoginAuth, Post, PostUuid, RandomGeneration, Session, SessionUuid, Timestamp, User, UserData, UserUuid, Uuid, Uuidlike, user::Friendship

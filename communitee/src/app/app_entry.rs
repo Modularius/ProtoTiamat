@@ -24,6 +24,7 @@ pub struct TopLevelContext {
     pub session_id: Signal<Option<SessionUuid>>,
     pub login: ServerAction<PerformLogin>,
     pub logout: ServerAction<PerformLogout>,
+    pub span: Span,
 }
 
 impl TopLevelContext {
@@ -55,9 +56,9 @@ impl Expect for TopLevelContext {
 
 /// An app router which renders the homepage and handles 404's
 #[component]
-#[instrument]
+#[instrument(parent=use_context::<Span>().and_then(|span|span.id()))]
 pub fn App() -> impl IntoView {
-    provide_context(tracing::Span::current());
+    //provide_context(tracing::Span::current());
     // Provides context that manages stylesheets, titles, meta tags, etc.
     provide_meta_context();
 
@@ -90,6 +91,7 @@ pub fn App() -> impl IntoView {
         session_id,
         login,
         logout,
+        span: Span::current()
     });
 
     view! {

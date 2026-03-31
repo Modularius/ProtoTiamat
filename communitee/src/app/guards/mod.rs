@@ -37,7 +37,7 @@ where
 {
     let session = use_context::<TopLevelContext>().expect_context().session_id;
     let current_span = tracing::Span::current();
-    move || current_span.in_scope(||Show(ShowProps {
+    current_span.in_scope(||Show(ShowProps {
         children: children.clone(),
         when: move || session.get().is_none(),
         fallback: Default::default(),

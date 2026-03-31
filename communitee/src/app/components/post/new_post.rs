@@ -2,6 +2,7 @@ use leptos::prelude::*;
 use libertee::{GroupUuid, LiberteeError, PostUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString};
+use tracing::instrument;
 
 use crate::{
     app::{
@@ -19,6 +20,7 @@ cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
 } }
 
 #[server]
+#[instrument]
 pub async fn submit_post(data: SubmitPostData) -> Result<Option<PostData>, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>().expect_context();
     let mut server = server_side_data.server.lock()?;
@@ -79,6 +81,7 @@ pub struct SubmitPostData {
 }
 
 #[component]
+#[instrument(skip_all)]
 pub fn NewPostBox(user_id: UserUuid, group_id: Option<GroupUuid>) -> impl IntoView {
     let submit_post = ServerAction::<SubmitPost>::new();
     view! {

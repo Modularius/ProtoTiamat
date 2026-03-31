@@ -1,5 +1,5 @@
 use leptos::{prelude::*, server_fn::ServerFn};
-use tracing::{info, info_span, instrument};
+use tracing::{Span, info, info_span, instrument};
 
 use crate::{
     app::{TopLevelContext, generic_components::error_box},
@@ -19,14 +19,12 @@ where
     /*let session_id = use_context::<TopLevelContext>()
         .expect_context()
         .session_id_expect();*/
-    let current_span = tracing::Span::current();
-    move || current_span.in_scope(||{
+    move || Span::current().in_scope(||{
         let children = children.clone();
         view!{
             <Transition>
             {
-                let current_span = tracing::Span::current();
-                move || current_span.in_scope(||{
+                move || Span::current().in_scope(||{
                     let children = children.clone();
                     resource.get()
                         .flatten()
@@ -36,7 +34,7 @@ where
                                 {
                                     value.map(|value| {
                                         provide_context(value);
-                                        children.into_inner()()
+                                        Span::current().in_scope(||children.into_inner()())
                                     })
                                 }
                                 </ErrorBoundary>

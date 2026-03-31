@@ -4,7 +4,7 @@ use crate::{
     },
     structs::{ContextExt, Expect},
 };
-use leptos::prelude::*;
+use leptos::{either::Either, prelude::*};
 use libertee::{LiberteeError, SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 use tracing::{Span, instrument};
@@ -63,9 +63,8 @@ pub async fn get_home_page_data(
 }
 
 #[component]
-#[instrument]
+#[instrument(parent = use_context::<TopLevelContext>().map(|c|c.span).unwrap_or(Span::current()))]
 pub fn HomePage() -> impl IntoView {
-    provide_context(tracing::Span::current());
     let source = || {
         let top_level_context = use_context::<TopLevelContext>()
             .expect_context();
@@ -87,6 +86,22 @@ pub fn HomePage() -> impl IntoView {
         //<SessionGuard>
             <TopBar/>
             <MainColumn>
+                {move ||
+                    if use_context::<TopLevelContext>().expect_context().session_id.get().is_some() {
+                        Either::Left(view!{
+                            <ResourceGuard resource = Resource::new(source, fetch)>
+                                <HomePageWithData />
+                            </ResourceGuard>
+                        })
+                    } else {
+                        Either::Right(view!{
+                            <LandingPage />
+                            <LoginBox />
+                        })
+                    }
+
+                }
+                /*
                 <IsLoggedIn>
                     //<PageGuard with_parameters = |session_id|GetHomePageData{ session_id, max_posts: 10 }>
                     <ResourceGuard resource = Resource::new(source, fetch)>
@@ -98,6 +113,7 @@ pub fn HomePage() -> impl IntoView {
                     <LandingPage />
                     <LoginBox />
                 </NotLoggedIn>
+                 */
             </MainColumn>
             <FootBar />
         //</SessionGuard>

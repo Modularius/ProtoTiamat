@@ -1,6 +1,8 @@
 use leptos::prelude::*;
+use tracing::instrument;
 
 #[component]
+#[instrument(skip_all)]
 pub fn MainColumn(children: Children) -> impl IntoView {
     view! {
         <div class = "middle-column">
@@ -12,6 +14,7 @@ pub fn MainColumn(children: Children) -> impl IntoView {
 }
 
 #[component]
+#[instrument(skip_all)]
 pub fn AdColumns(children: Children) -> impl IntoView {
     view! {
         <div class = "columns">

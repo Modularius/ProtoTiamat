@@ -11,9 +11,9 @@ use leptos::prelude::*;
 use leptos_meta::{HashedStylesheet, Meta, MetaTags, Title, provide_meta_context};
 use tracing::{Span, instrument};
 
-#[instrument]//(parent=use_context::<Span>().and_then(|span|span.id()))
+#[instrument(parent=&use_context::<Span>().and_then(|span|Some(span)).unwrap())]
 pub fn shell(leptos_options: LeptosOptions) -> impl IntoView {
-    provide_context(tracing::Span::current());
+    //provide_context(Span::current());
     let public_url: String = use_context::<ClientSideData>()
         .expect_context()
         .public_url
