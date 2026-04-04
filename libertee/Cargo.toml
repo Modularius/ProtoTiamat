@@ -15,6 +15,9 @@ console_error_panic_hook.workspace = true
 elasticsearch = { workspace = true, optional = true }
 itertools = { workspace = true, optional = false }
 miette.workspace = true
+opentelemetry = { workspace = true, optional = true }
+opentelemetry-otlp = { workspace = true, optional = true }
+opentelemetry_sdk = { workspace = true, optional = true }
 rand = { workspace = true, optional = true }
 serde = { workspace = true, optional = false }
 serde_json = { workspace = true, optional = false }
@@ -22,6 +25,7 @@ strum = { workspace = true, optional = false }
 thiserror = { workspace = true, optional = false }
 tokio = { workspace = true, optional = true }
 tracing = { workspace = true, optional = false }
+tracing-opentelemetry = { workspace = true, optional = true }
 tracing-subscriber.workspace = true
 url.workspace = true
 uuid = { workspace = true, optional = true }
@@ -30,10 +34,14 @@ uuid = { workspace = true, optional = true }
 hydrate = []
 ssr = [
   "miette/fancy",
-  "dep:elasticsearch",
-  "dep:uuid",
-  "dep:rand",
   "dep:clap",
+  "dep:elasticsearch",
+  "dep:opentelemetry",
+  "dep:opentelemetry-otlp",
+  "dep:opentelemetry_sdk",
+  "dep:rand",
+  "dep:tracing-opentelemetry",
+  "dep:uuid",
 ]
 
 

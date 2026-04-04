@@ -1,5 +1,9 @@
 [workspace]
-members = ["communitee", "libertee"]
+members = [
+    "communitee",
+    "facilitee",
+    "libertee"
+]
 resolver = "2"
 
 [workspace.package]
@@ -28,6 +32,7 @@ constcat = "0.6.1"
 console_error_panic_hook = "0.1"
 const_format = "0.2.34"
 elasticsearch = "9.1.0-alpha.1"
+facilitee = { path = "./facilitee" }
 git-version = "0.3.9"
 glob = "0.3.3"
 gloo-net = { version = "0.8", features = ["http"] }

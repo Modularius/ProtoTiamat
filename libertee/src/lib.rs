@@ -16,6 +16,13 @@ pub use post::PostUuid;
 pub use session::{Session, SessionUuid};
 pub use user::{UserData, UserUuid};
 
+cfg_if! {
+    if #[cfg(feature = "ssr")] {
+        mod telemetry;
+        pub use telemetry::{TracerEngine, TracerOptions};
+    }
+}
+
 /// Used by instances of the website to refer to server-side sessions.
 type Uuid = String;
 /// The timestamp type with timezone.

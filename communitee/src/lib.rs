@@ -1,30 +1,28 @@
 #![allow(unused_crate_dependencies)]
 #![recursion_limit = "256"]
 
-mod app;
 mod errors;
-mod server_functions;
-mod structs;
 
 use cfg_if::cfg_if;
 
-pub use app::{App, SubmitPost, shell};
 pub use errors::CommuniteeError;
-pub use structs::{ClientSideData, DefaultData, PublicUrl};
+pub use facilitee::{
+    App, SubmitPost, shell,
+    FaciliteeError,
+    ClientSideData, DefaultData, PublicUrl,
+};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        mod telemetry;
-
-        pub use structs::{ServerSideData, InitialUserData, Server, SessionStorage};
-        pub use telemetry::{TracerEngine, TracerOptions};
+        pub use facilitee::{ServerSideData, InitialUserData, Server, SessionStorage};
+        pub use libertee::{TracerEngine, TracerOptions};
     }
 }
 
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]
 pub fn hydrate() {
-    use crate::app::TopLevelContext;
+    use facilitee::TopLevelContext;
     use leptos::prelude::use_context;
 
     console_error_panic_hook::set_once();
