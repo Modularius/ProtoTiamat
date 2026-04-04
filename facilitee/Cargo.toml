@@ -5,11 +5,6 @@ license.workspace = true
 edition.workspace = true
 
 [dependencies]
-actix-files = { workspace = true, optional = true }
-actix-identity = { workspace = true, optional = true }
-actix-session = { workspace = true, optional = true }
-actix-web = { workspace = true, optional = true }
-actix-web-opentelemetry = { workspace = true, optional = true }
 anyhow = { workspace = true, optional = true }
 cfg-if.workspace = true
 chrono = { workspace = true, optional = false }
@@ -18,7 +13,6 @@ console_error_panic_hook.workspace = true
 #itertools.workspace = true
 leptos.workspace = true
 leptos_meta.workspace = true
-leptos_actix = { workspace = true, optional = true }
 leptos_reactive.workspace = true
 leptos_router.workspace = true
 leptos-use.workspace = true
@@ -62,13 +56,7 @@ ssr = [
   "tokio/rt-multi-thread",
   "tokio/signal",
   "dep:clap",
-  "dep:actix-identity",
-  "dep:actix-files",
-  "dep:actix-session",
-  "dep:actix-web",
-  "dep:actix-web-opentelemetry",
   "dep:anyhow",
-  "dep:leptos_actix",
   "dep:opentelemetry",
   "dep:opentelemetry-otlp",
   "dep:opentelemetry_sdk",

@@ -5,6 +5,19 @@ use serde::{Deserialize, Serialize};
 
 //pub use libertee::{GroupData, GroupUuid, LoginAuth, Session, SessionUuid, UserData, UserUuid, PostUuid, RandomGeneration};
 pub use public_url::PublicUrl;
+
+
+use leptos::{prelude::*, server_fn::ServerFn};
+
+pub trait SessionActions : Default + Sync + 'static {
+    type Login: ServerFn<Output = Option<SessionUuid>> + Sync + Clone + 'static;
+    type Logout: ServerFn + Sync + Clone + 'static;
+    type Fut: Future<Output = Result<Option<SessionUuid>, ServerFnError>> + Send + 'static;
+    type GetSessionIdFromIdentity: Fn((usize, usize)) -> Self::Fut + Send + Sync + 'static;
+    const GET_SESSION_FROM_IDENTITY: Self::GetSessionIdFromIdentity;
+}
+
+
 pub trait Expect: Sized {
     const EXPECT: &'static str;
 }
@@ -29,12 +42,9 @@ where
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        mod session_store;
-
         use clap::{Args};
         use std::sync::{Arc, Mutex};
         pub use libertee::{User, Server, Post, Feed, Member, Group, SessionUuid};
-        pub use session_store::SessionStorage;
 
         /// Encapsulates all run-time settings which are only available to the server.
         #[derive(Default, Clone)]

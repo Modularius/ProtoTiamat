@@ -2,6 +2,7 @@
 #![recursion_limit = "256"]
 
 mod errors;
+mod session;
 
 use cfg_if::cfg_if;
 

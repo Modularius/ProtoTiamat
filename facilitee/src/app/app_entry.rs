@@ -3,8 +3,8 @@ use crate::{
         FriendlistPage, GroupPage, GroupslistPage, HelpPage, HomePage, LoginPage, MessagesPage,
         RegisterPage, UserPage,
     },
-    server_functions::{PerformLogin, PerformLogout, get_session_from_identity},
-    structs::{ClientSideData, ContextExt, Expect},
+    //server_functions::{PerformLogin, PerformLogout, get_session_from_identity},
+    structs::{ClientSideData, ContextExt, Expect, SessionActions},
 };
 use leptos::prelude::*;
 use leptos_meta::provide_meta_context;
@@ -18,16 +18,16 @@ use tracing::{Span, instrument};
 /// Any component making use of the following fields should call `use_context::<TopLevelContext>()`
 /// and select the desired field.
 #[derive(Clone)]
-pub struct TopLevelContext {
+pub struct TopLevelContext<A: SessionActions> {
     pub client_side_data: ClientSideData,
     pub session_id_res: Resource<Result<Option<SessionUuid>, ServerFnError>>,
     pub session_id: Signal<Option<SessionUuid>>,
-    pub login: ServerAction<PerformLogin>,
-    pub logout: ServerAction<PerformLogout>,
+    pub login: ServerAction<A::Login>,
+    pub logout: ServerAction<A::Logout>,
     pub span: Span,
 }
 
-impl TopLevelContext {
+impl<A: SessionActions> TopLevelContext<A> {
     #[inline]
     #[track_caller]
     pub fn session_id_expect(&self) -> SessionUuid {
@@ -37,6 +37,7 @@ impl TopLevelContext {
             .expect("session_id_expect should only be called inside <SessionGuard>, this should never fail.")
             .expect("session_id_expect should only be called inside <IsLoggedIn>, this should never fail.")
     }
+    
     #[inline]
     #[track_caller]
     pub fn login_expect(&self) -> SessionUuid {
@@ -50,14 +51,14 @@ impl TopLevelContext {
 }
 /**/
 
-impl Expect for TopLevelContext {
+impl<A: SessionActions> Expect for TopLevelContext<A> {
     const EXPECT: &'static str = "`TopLevelContext` should be provided, this should never fail.";
 }
 
 /// An app router which renders the homepage and handles 404's
 #[component]
-#[instrument(parent=use_context::<Span>().and_then(|span|span.id()))]
-pub fn App() -> impl IntoView {
+#[instrument(skip_all, parent=use_context::<Span>().and_then(|span|span.id()))]
+pub fn App<A: SessionActions>(_a : A) -> impl IntoView {
     //provide_context(tracing::Span::current());
     // Provides context that manages stylesheets, titles, meta tags, etc.
     provide_meta_context();
@@ -67,11 +68,11 @@ pub fn App() -> impl IntoView {
 
     //let public_path = client_side_data.public_url.router_base_form();
 
-    let login = ServerAction::<PerformLogin>::new();
-    let logout = ServerAction::<PerformLogout>::new();
+    let login = ServerAction::<A::Login>::new();
+    let logout = ServerAction::<A::Logout>::new();
     let session_id_res: Resource<Result<Option<SessionUuid>, ServerFnError>> = Resource::new_blocking(
             move|| (login.version().get(), logout.version().get()),
-            |_| get_session_from_identity()
+            A::GET_SESSION_FROM_IDENTITY
     );
     let session_id = Signal::derive(move || session_id_res
         .get()
@@ -85,7 +86,7 @@ pub fn App() -> impl IntoView {
             }
         )
     );
-    provide_context(TopLevelContext {
+    provide_context(TopLevelContext::<A> {
         client_side_data,
         session_id_res,
         session_id,

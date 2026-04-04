@@ -1,7 +1,3 @@
-use actix_session::storage::{
-    LoadError, SaveError, SessionKey, SessionStore, UpdateError, generate_session_key,
-};
-use actix_web::cookie::time::Duration;
 use anyhow::Error;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};

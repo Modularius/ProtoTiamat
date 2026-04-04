@@ -10,7 +10,7 @@ pub use structs::{ClientSideData, DefaultData, PublicUrl};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        pub use structs::{ServerSideData, InitialUserData, Server, SessionStorage};
+        pub use structs::{ServerSideData, InitialUserData, Server};
         pub use libertee::{TracerEngine, TracerOptions};
     }
 }
