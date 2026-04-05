@@ -1,4 +1,4 @@
-use std::ops::Range;
+use std::{fmt::Display, ops::Range};
 
 use cfg_if::cfg_if;
 use chrono::Utc;
@@ -15,9 +15,9 @@ impl Into<MessageUuid> for String {
     }
 }
 
-impl ToString for MessageUuid {
-    fn to_string(&self) -> String {
-        self.0.clone()
+impl Display for MessageUuid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
     }
 }
 

@@ -8,5 +8,5 @@ pub use session::{PerformLogin, PerformLogout, Register, get_session_from_identi
 pub fn format_datetime(datetime: &Timestamp) -> String {
     let date = datetime.date_naive();
     let time = datetime.time().trunc_subsecs(0);
-    format!("{}, {}", date.to_string(), time.to_string())
+    format!("{date}, {time}")
 }

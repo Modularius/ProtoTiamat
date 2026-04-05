@@ -10,11 +10,15 @@ use abilitee::{
 };
 use leptos::{Params, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
-use libertee::{LiberteeError, SessionUuid, UserUuid};
+use libertee::{SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 
-#[cfg(feature = "ssr")]
-use abilitee::ServerSideData;
+cfg_if::cfg_if! {
+    if #[cfg(feature = "ssr")] {
+        use libertee::LiberteeError;
+        use abilitee::ServerSideData;
+    }
+}
 
 #[derive(Clone, Params, PartialEq)]
 struct UserParams {

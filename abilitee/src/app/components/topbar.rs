@@ -1,6 +1,6 @@
 use leptos::prelude::*;
 use leptos_router::components::A;
-use libertee::{LiberteeError, SessionUuid};
+use libertee::SessionUuid;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
@@ -8,13 +8,14 @@ use crate::{
     app::{
         TopLevelContext,
         generic_components::{ButtonControl, ButtonFunction, ControlStack, LabelledControlStack},
-        guards::{IsLoggedIn, NotLoggedIn, PageGuard, ResourceGuard},
+        guards::{IsLoggedIn, NotLoggedIn, ResourceGuard},
     },
     structs::{ContextExt, Expect},
 };
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::ServerSideData;
+    use libertee::LiberteeError;
 } }
 
 #[component]

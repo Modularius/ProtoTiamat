@@ -40,6 +40,7 @@ pub fn ControlStack(children: Children) -> impl IntoView {
 }
 
 #[component]
+#[allow(unused_variables)]
 pub fn ControlStackRow(children: Children) -> impl IntoView {
     view! {
         <div class = "flex flex-grow flex-col

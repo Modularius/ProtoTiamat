@@ -12,8 +12,10 @@ cfg_if! {
         use communitee::SessionStorage;
         use facilitee::{App, shell};
         use libertee::RandomGeneration;
-        use std::net::SocketAddr;
-        use std::sync::{Arc, Mutex};
+        use std::{
+            net::SocketAddr,
+            sync::{Arc, Mutex}
+        };
         use tracing::{debug, debug_span, info_span, Span, warn};
         use tracing_actix_web::TracingLogger;
         use actix_web_opentelemetry::RequestTracing;

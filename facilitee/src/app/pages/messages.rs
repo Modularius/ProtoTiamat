@@ -7,11 +7,15 @@ use abilitee::{
     },
 };
 use leptos::prelude::*;
-use libertee::{LiberteeError, SessionUuid};
+use libertee::SessionUuid;
 use serde::{Deserialize, Serialize};
 
-#[cfg(feature = "ssr")]
-use crate::ServerSideData;
+cfg_if::cfg_if! {
+    if #[cfg(feature = "ssr")] {
+        use crate::ServerSideData;
+        use libertee::LiberteeError;
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct MessageData {

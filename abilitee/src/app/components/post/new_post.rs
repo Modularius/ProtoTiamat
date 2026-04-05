@@ -5,18 +5,18 @@ use crate::{
             ButtonControl, ButtonFunction, ControlStack, LabelledInput, LabelledTextArea,
             SubmitControl,
         },
-    },
-    structs::ContextExt,
+    }
 };
 use leptos::prelude::*;
-use libertee::{GroupUuid, LiberteeError, PostUuid, UserUuid};
+use libertee::{GroupUuid, PostUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString};
 use tracing::instrument;
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use crate::ServerSideData;
+        use crate::{ServerSideData, structs::ContextExt};
+        use libertee::LiberteeError;
     }
 }
 

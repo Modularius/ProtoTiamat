@@ -1,21 +1,21 @@
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use crate::{GroupUuid, RandomGeneration, Timestamp, Uuid};
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct UserUuid(pub Uuid);
 
-impl Into<UserUuid> for String {
-    fn into(self) -> UserUuid {
-        UserUuid(self)
+impl From<String> for UserUuid {
+    fn from(val: String) -> UserUuid {
+        UserUuid(val)
     }
 }
 
-impl ToString for UserUuid {
-    fn to_string(&self) -> String {
-        self.0.clone()
+impl Display for UserUuid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
     }
 }
 

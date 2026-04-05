@@ -10,13 +10,14 @@ use abilitee::{
     },
 };
 use leptos::{either::Either, prelude::*};
-use libertee::{LiberteeError, SessionUuid, UserUuid};
+use libertee::{SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 use tracing::{Span, instrument};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use abilitee::{ServerSideData, format_datetime};
     use chrono::Utc;
+    use libertee::LiberteeError;
 } }
 
 #[derive(Clone, Serialize, Deserialize)]

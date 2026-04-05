@@ -1,7 +1,7 @@
 use cfg_if::cfg_if;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use std::ops::Range;
+use std::{fmt::Display, ops::Range};
 
 use crate::{RandomGeneration, Real, Timestamp, UserUuid, Uuid};
 
@@ -14,9 +14,9 @@ impl Into<PostUuid> for String {
     }
 }
 
-impl ToString for PostUuid {
-    fn to_string(&self) -> String {
-        self.0.clone()
+impl Display for PostUuid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
     }
 }
 

@@ -4,7 +4,7 @@ mod member;
 
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use crate::{LiberteeError, RandomGeneration, Real, UserUuid, Uuid};
 
@@ -21,9 +21,10 @@ impl Into<GroupUuid> for String {
     }
 }
 
-impl ToString for GroupUuid {
-    fn to_string(&self) -> String {
-        self.0.clone()
+
+impl Display for GroupUuid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
     }
 }
 

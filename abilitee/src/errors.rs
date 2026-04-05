@@ -4,9 +4,9 @@ use leptos::{
 };
 use libertee::LiberteeError;
 use serde::{Deserialize, Serialize};
-use thiserror;
+use thiserror::Error;
 
-#[derive(Debug, thiserror::Error, Serialize, Deserialize)]
+#[derive(Debug, Error, Serialize, Deserialize)]
 pub enum AbiliteeError {
     #[error("{0}")]
     Libertee(#[from] LiberteeError),

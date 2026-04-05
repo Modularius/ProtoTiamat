@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use chrono::{TimeDelta, Utc};
 use serde::{Deserialize, Serialize};
@@ -14,9 +14,9 @@ impl Into<SessionUuid> for String {
     }
 }
 
-impl ToString for SessionUuid {
-    fn to_string(&self) -> String {
-        self.0.clone()
+impl Display for SessionUuid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
     }
 }
 

@@ -6,25 +6,25 @@ use abilitee::{
             ButtonControl, ButtonFunction, ControlStack, ErrorBox, LabelledControlStack, RoundedBox,
         },
         guards::{PageGuard, SessionGuard},
-    },
-    format_datetime,
+    }
 };
 use leptos::{either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
-
-use libertee::{Delegate, GroupUuid, LiberteeError, SessionUuid, UserData, UserUuid};
-#[cfg(feature = "ssr")]
-use libertee::{Group, Member};
+use libertee::{GroupUuid, SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
+
+cfg_if::cfg_if! {
+    if #[cfg(feature = "ssr")] {
+        use abilitee::format_datetime;
+        use libertee::{Group, Member, Delegate, LiberteeError, UserData};
+        use crate::{Server, ServerSideData};
+    }
+}
 
 #[derive(Clone, Params, PartialEq)]
 struct GroupParams {
     group_id: Option<String>,
 }
-
-cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
-    use crate::{Server, ServerSideData};
-} }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GroupPageDataContext {

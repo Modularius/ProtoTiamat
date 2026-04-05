@@ -7,11 +7,12 @@ use abilitee::{
     },
 };
 use leptos::prelude::*;
-use libertee::{GroupData, LiberteeError, SessionUuid};
+use libertee::{GroupData, SessionUuid};
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::ServerSideData;
+    use libertee::LiberteeError;
 } }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -97,7 +98,7 @@ pub fn GroupslistPageWithData() -> impl IntoView {
                         each = move ||groupslist_page_data.groups.clone().into_iter().enumerate()
                         key = |(i,_)|*i
                         children = |(_,group)| view!{
-                            <LabelledControlStack label = {group.name} href = {Some(format!("/group/{}", group.id.to_string()))} class = "w-1/2">
+                            <LabelledControlStack label = {group.name} href = {Some(format!("/group/{}", group.id))} class = "w-1/2">
                                 <ButtonControl value = "Unsubscribe" on_click = ButtonFunction::closure(|_|{}) />
                             </LabelledControlStack>
                         }

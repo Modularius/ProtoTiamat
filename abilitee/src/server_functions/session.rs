@@ -1,7 +1,6 @@
 use cfg_if::cfg_if;
 use leptos::prelude::*;
-use libertee::{LiberteeError, LoginAuth, Session, SessionUuid};
-use tracing::debug;
+use libertee::{LoginAuth, Session, SessionUuid};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
@@ -9,6 +8,8 @@ cfg_if! {
         use actix_identity::Identity;
         use actix_web::{HttpMessage, HttpRequest};
         use crate::{ServerSideData, structs::ContextExt};
+        use libertee::LiberteeError;
+        use tracing::debug;
     }
 }
 
