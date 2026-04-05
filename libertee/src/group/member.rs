@@ -1,22 +1,25 @@
 use cfg_if::cfg_if;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::Display,
+};
 
 use crate::{Real, Timestamp, UserUuid, Uuid};
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MemberUuid(pub Uuid);
 
-impl Into<MemberUuid> for String {
-    fn into(self) -> MemberUuid {
-        MemberUuid(self)
+impl From<String> for MemberUuid {
+    fn from(val: String) -> Self {
+        Self(val)
     }
 }
 
-impl ToString for MemberUuid {
-    fn to_string(&self) -> String {
-        self.0.clone()
+impl Display for MemberUuid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
     }
 }
 
@@ -51,6 +54,8 @@ impl Member {
 }
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use std::collections::BTreeMap;
+
         impl Member {
             pub fn delegate_to(&mut self, delegator: &MemberUuid, weight_change: Real) {
                 if !self.delegators.contains(delegator) {

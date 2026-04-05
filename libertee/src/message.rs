@@ -1,17 +1,15 @@
-use std::{fmt::Display, ops::Range};
-
 use cfg_if::cfg_if;
-use chrono::Utc;
 use serde::{Deserialize, Serialize};
+use std::fmt::Display;
 
-use crate::{RandomGeneration, Timestamp, UserUuid, Uuid};
+use crate::Uuid;
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MessageUuid(pub Uuid);
 
-impl Into<MessageUuid> for String {
-    fn into(self) -> MessageUuid {
-        MessageUuid(self)
+impl From<String> for MessageUuid {
+    fn from(val: String) -> Self {
+        Self(val)
     }
 }
 
@@ -24,6 +22,9 @@ impl Display for MessageUuid {
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use rand::seq::IndexedRandom;
+        use std::ops::Range;
+        use chrono::Utc;
+        use crate::{RandomGeneration, Timestamp, UserUuid};
 
         #[derive(Clone, Debug, Serialize, Deserialize)]
         pub struct MessageData {

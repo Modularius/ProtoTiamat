@@ -6,7 +6,7 @@ use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fmt::Display};
 
-use crate::{LiberteeError, RandomGeneration, Real, UserUuid, Uuid};
+use crate::{Real, UserUuid, Uuid};
 
 pub use member::{Delegate, Member, MemberUuid};
 //pub use history::GroupHistory;
@@ -15,9 +15,9 @@ pub use member::{Delegate, Member, MemberUuid};
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct GroupUuid(pub Uuid);
 
-impl Into<GroupUuid> for String {
-    fn into(self) -> GroupUuid {
-        GroupUuid(self)
+impl From<String> for GroupUuid {
+    fn from(val: String) -> Self {
+        Self(val)
     }
 }
 
@@ -39,7 +39,7 @@ pub struct GroupData {
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use crate::{Feed, Store, Post, PostUuid};
+        use crate::{Feed, Store, Post, PostUuid, LiberteeError, RandomGeneration};
         use rand::seq::IndexedRandom;
         use std::ops::Bound::{Excluded, Unbounded};
 

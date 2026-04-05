@@ -1,16 +1,15 @@
 use cfg_if::cfg_if;
-use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use std::{fmt::Display, ops::Range};
+use std::fmt::Display;
 
-use crate::{RandomGeneration, Real, Timestamp, UserUuid, Uuid};
+use crate::{Timestamp, UserUuid, Uuid};
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct PostUuid(pub Uuid);
 
-impl Into<PostUuid> for String {
-    fn into(self) -> PostUuid {
-        PostUuid(self)
+impl From<String> for PostUuid {
+    fn from(val: String) -> Self {
+        Self(val)
     }
 }
 
@@ -32,6 +31,9 @@ pub struct PostData {
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use rand::seq::IndexedRandom;
+        use std::ops::Range;
+        use crate::{RandomGeneration, Real};
+        use chrono::Utc;
 
         fn generate_random_text(num_words: Range<usize>, word_length: Range<usize>) -> String {
             let alphabet = "abcdefghijklmnopqrstuvwxyz".chars().collect::<Vec<_>>();

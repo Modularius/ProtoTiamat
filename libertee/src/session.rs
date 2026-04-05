@@ -8,9 +8,9 @@ use crate::{Timestamp, UserUuid, Uuid};
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SessionUuid(pub Uuid);
 
-impl Into<SessionUuid> for String {
-    fn into(self) -> SessionUuid {
-        SessionUuid(self)
+impl From<String> for SessionUuid {
+    fn from(val: String) -> Self {
+        Self(val)
     }
 }
 

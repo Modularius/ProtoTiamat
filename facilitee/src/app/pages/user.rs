@@ -115,6 +115,8 @@ async fn get_user_page_data(
         friends,
     })
 }
+
+/*
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct UserPageParamsContext {
     user_id: UserUuid,
@@ -124,6 +126,7 @@ impl Expect for UserPageParamsContext {
     const EXPECT: &'static str =
         "UserPageParamsContext should be provided, this should never fail.";
 }
+*/
 
 #[component]
 pub fn UserPage() -> impl IntoView {

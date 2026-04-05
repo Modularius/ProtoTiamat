@@ -2,14 +2,14 @@ use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fmt::Display};
 
-use crate::{GroupUuid, RandomGeneration, Timestamp, Uuid};
+use crate::{GroupUuid, Timestamp, Uuid};
 
 #[derive(Default, Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct UserUuid(pub Uuid);
 
 impl From<String> for UserUuid {
-    fn from(val: String) -> UserUuid {
-        UserUuid(val)
+    fn from(val: String) -> Self {
+        Self(val)
     }
 }
 
@@ -38,7 +38,7 @@ pub struct Friendship {
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use rand::prelude::IndexedRandom;
-        use crate::{Store, MessageStore};
+        use crate::{Store, MessageStore, RandomGeneration};
 
         #[derive(Clone, Debug)]
         pub struct User {
