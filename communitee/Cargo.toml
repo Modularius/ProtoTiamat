@@ -50,6 +50,7 @@ hydrate = [
   "leptos/hydrate",
   "leptos/tracing",
   "leptos/trace-component-props",
+  "facilitee/hydrate",
   "libertee/hydrate"
 ]
 ssr = [
@@ -58,6 +59,7 @@ ssr = [
   "leptos/trace-component-props",
   "leptos_meta/ssr",
   "leptos-use/ssr",
+  "facilitee/ssr",
   "libertee/ssr",
   "miette/fancy",
   "tokio/rt-multi-thread",
