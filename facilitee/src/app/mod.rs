@@ -1,12 +1,8 @@
 mod app_entry;
-mod components;
-mod generic_components;
-mod guards;
 mod pages;
 
-use crate::structs::{ClientSideData, ContextExt};
-pub use app_entry::{App, TopLevelContext};
-pub use components::SubmitPost;
+use abilitee::{ClientSideData, ContextExt};
+pub use app_entry::App;
 use leptos::prelude::*;
 use leptos_meta::{HashedStylesheet, Meta, MetaTags, Title, provide_meta_context};
 use tracing::{Span, instrument};

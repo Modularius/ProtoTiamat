@@ -9,7 +9,8 @@ use serde::{Deserialize, Serialize};
 use crate::app::generic_components::{ButtonControl, ButtonFunction, CloseButton, ControlStack};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
-    use crate::{server_functions::format_datetime, structs::{Post, User}};
+    use crate::server_functions::format_datetime;
+    use libertee::{Post, User};
 } }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "abilitee",
     "communitee",
     "facilitee",
     "libertee"
@@ -18,6 +19,7 @@ lto = true
 opt-level = 'z'
 
 [workspace.dependencies]
+abilitee = { path = "./abilitee" }
 actix-files = "0.6"
 actix-identity = { version = "0.9.0" }
 actix-web = { version = "4", features = ["macros"] }

@@ -2,7 +2,6 @@ use cfg_if::cfg_if;
 use leptos::prelude::*;
 use libertee::{LiberteeError, LoginAuth, Session, SessionUuid};
 use tracing::debug;
-//use crate::{ServerSideData, structs::ContextExt};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {

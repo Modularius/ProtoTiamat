@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-use crate::{
-    app::{
+use abilitee::{
         TopLevelContext,
-        components::{AdColumns, FootBar, MainColumn, TopBar},
-        generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox},
-        guards::{IsLoggedIn, PageGuard, ResourceGuard, SessionGuard},
-    },
-    structs::{ContextExt, Expect},
+        app::{
+            components::{AdColumns, FootBar, MainColumn, TopBar},
+            generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox},
+            guards::{IsLoggedIn, PageGuard, ResourceGuard, SessionGuard}
+        },
+    ContextExt, Expect,
 };
 use leptos::{Params, either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
@@ -15,7 +15,7 @@ use libertee::{LiberteeError, SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
-    use crate::{ServerSideData, server_functions::format_datetime};
+    use abilitee::{ServerSideData, format_datetime};
 } }
 
 #[derive(Clone, Params, PartialEq)]

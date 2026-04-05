@@ -1,10 +1,10 @@
-use crate::{
+use abilitee::{
     app::{
         components::{AdColumns, FootBar, MainColumn, TopBar},
         generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox},
         guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard},
     },
-    structs::{ContextExt, Expect},
+    ContextExt, Expect,
 };
 use leptos::prelude::*;
 use libertee::{GroupData, LiberteeError, SessionUuid};

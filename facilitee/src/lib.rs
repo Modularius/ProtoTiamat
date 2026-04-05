@@ -1,16 +1,13 @@
 mod app;
 mod errors;
-mod server_functions;
-mod structs;
-use cfg_if::cfg_if;
 
-pub use app::{App, SubmitPost, TopLevelContext, shell};
+pub use app::{App, shell};
 pub use errors::FaciliteeError;
-pub use structs::{ClientSideData, DefaultData, PublicUrl};
+pub use abilitee::{ClientSideData, DefaultData, PublicUrl, SubmitPost, TopLevelContext};
 
-cfg_if! {
+cfg_if::cfg_if! {
     if #[cfg(feature = "ssr")] {
-        pub use structs::{ServerSideData, InitialUserData, Server};
+        pub use abilitee::{ServerSideData, InitialUserData, Server};
         pub use libertee::{TracerEngine, TracerOptions};
     }
 }

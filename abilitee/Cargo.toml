@@ -1,11 +1,10 @@
 [package]
-name = "facilitee"
+name = "abilitee"
 version.workspace = true
 license.workspace = true
 edition.workspace = true
 
 [dependencies]
-abilitee.workspace = true
 actix-identity = { workspace = true, optional = true }
 actix-web = { workspace = true, optional = true }
 anyhow = { workspace = true, optional = true }
@@ -47,11 +46,9 @@ hydrate = [
   "leptos/hydrate",
   "leptos/tracing",
   "leptos/trace-component-props",
-  "libertee/hydrate",
-  "abilitee/hydrate"
+  "libertee/hydrate"
 ]
 ssr = [
-  "abilitee/ssr",
   "leptos/ssr",
   "leptos/tracing",
   "leptos/trace-component-props",

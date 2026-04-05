@@ -3,6 +3,44 @@
 version = 4
 
 [[package]]
+name = "abilitee"
+version = "0.1.0"
+dependencies = [
+ "actix-identity",
+ "actix-web",
+ "anyhow",
+ "cfg-if",
+ "chrono",
+ "clap",
+ "console_error_panic_hook",
+ "leptos",
+ "leptos-use",
+ "leptos_actix",
+ "leptos_meta",
+ "leptos_reactive",
+ "leptos_router",
+ "libertee",
+ "miette",
+ "opentelemetry 0.22.0",
+ "opentelemetry-otlp",
+ "opentelemetry_sdk",
+ "rand 0.9.2",
+ "reqwest",
+ "serde",
+ "strum",
+ "thiserror 2.0.17",
+ "tokio",
+ "tracing",
+ "tracing-actix-web",
+ "tracing-opentelemetry",
+ "tracing-subscriber",
+ "url",
+ "uuid",
+ "wasm-bindgen",
+ "wasm-tracing",
+]
+
+[[package]]
 name = "actix-codec"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1304,6 +1342,7 @@ dependencies = [
 name = "facilitee"
 version = "0.1.0"
 dependencies = [
+ "abilitee",
  "actix-identity",
  "actix-web",
  "anyhow",

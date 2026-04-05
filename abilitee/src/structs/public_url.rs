@@ -1,7 +1,6 @@
-use std::str::FromStr;
-
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 use url::Url;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

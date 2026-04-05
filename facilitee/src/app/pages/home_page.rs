@@ -1,4 +1,4 @@
-use crate::{
+use abilitee::{
     app::{
         TopLevelContext,
         components::{
@@ -7,7 +7,7 @@ use crate::{
         generic_components::RoundedBox,
         guards::ResourceGuard, //{IsLoggedIn, NotLoggedIn, PageGuard, ResourceGuard, SessionGuard},
     },
-    structs::{ContextExt, Expect},
+    ContextExt, Expect,
 };
 use leptos::{either::Either, prelude::*};
 use libertee::{LiberteeError, SessionUuid, UserUuid};
@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use tracing::{Span, instrument};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
-    use crate::{ServerSideData, server_functions::format_datetime};
+    use abilitee::{ServerSideData, format_datetime};
     use chrono::Utc;
 } }
 

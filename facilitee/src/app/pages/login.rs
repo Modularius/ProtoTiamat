@@ -1,4 +1,4 @@
-use crate::app::{
+use abilitee::app::{
     components::{AdColumns, FootBar, LoginBox, LogoutBox, MainColumn, TopBar},
     guards::{IsLoggedIn, NotLoggedIn, SessionGuard},
 };

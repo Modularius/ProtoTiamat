@@ -1,4 +1,4 @@
-use crate::{
+use abilitee::{
     app::{
         components::{AdColumns, FootBar, MainColumn, NewPostBox, PostBox, PostData, TopBar},
         generic_components::{
@@ -6,12 +6,14 @@ use crate::{
         },
         guards::{PageGuard, SessionGuard},
     },
-    server_functions::format_datetime,
-    structs::{ContextExt, Expect},
+    format_datetime,
+    ContextExt, Expect,
 };
 use leptos::{either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
 
+#[cfg(feature = "ssr")]
+use libertee::{Group, Member};
 use libertee::{Delegate, GroupUuid, LiberteeError, SessionUuid, UserData, UserUuid};
 use serde::{Deserialize, Serialize};
 
@@ -21,7 +23,7 @@ struct GroupParams {
 }
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
-    use crate::{Server, ServerSideData, structs::{Group, Member}};
+    use crate::{Server, ServerSideData};
 } }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
