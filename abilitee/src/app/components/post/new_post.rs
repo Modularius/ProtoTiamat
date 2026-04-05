@@ -1,11 +1,8 @@
-use crate::{
-    app::{
-        components::PostData,
-        generic_components::{
-            ButtonControl, ButtonFunction, ControlStack, LabelledInput, LabelledTextArea,
-            SubmitControl,
-        },
-    }
+use crate::app::{
+    components::PostData,
+    generic_components::{
+        ButtonControl, ButtonFunction, ControlStack, LabelledInput, LabelledTextArea, SubmitControl,
+    },
 };
 use leptos::prelude::*;
 use libertee::{GroupUuid, PostUuid, UserUuid};

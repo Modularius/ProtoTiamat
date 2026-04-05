@@ -6,7 +6,7 @@ use abilitee::{
             ButtonControl, ButtonFunction, ControlStack, ErrorBox, LabelledControlStack, RoundedBox,
         },
         guards::{PageGuard, SessionGuard},
-    }
+    },
 };
 use leptos::{either::Either, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
