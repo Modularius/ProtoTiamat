@@ -1,3 +1,5 @@
+use abilitee::AbiliteeError;
+use facilitee::FaciliteeError;
 use leptos::{
     prelude::{FromServerFnError, ServerFnErrorErr},
     server_fn::codec::JsonEncoding,
@@ -8,7 +10,11 @@ use thiserror;
 
 #[derive(Debug, thiserror::Error, Serialize, Deserialize)]
 pub enum CommuniteeError {
-    #[error("{0}")]
+    #[error("Abilitee: {0}")]
+    Abilitee(#[from] AbiliteeError),
+    #[error("Facilitee: {0}")]
+    Facilitee(#[from] FaciliteeError),
+    #[error("Libertee: {0}")]
     Libertee(#[from] LiberteeError),
     #[error("Server Function Error: {0}")]
     ServerFn(#[from] ServerFnErrorErr),

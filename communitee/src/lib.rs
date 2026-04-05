@@ -1,21 +1,13 @@
-#![allow(unused_crate_dependencies)]
-#![recursion_limit = "256"]
-
 mod errors;
 
 use cfg_if::cfg_if;
 
 pub use errors::CommuniteeError;
-pub use facilitee::{
-    App, ClientSideData, DefaultData, FaciliteeError, PublicUrl, SubmitPost, shell,
-};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         mod session;
 
-        pub use facilitee::{ServerSideData, InitialUserData, Server};
-        pub use libertee::{TracerEngine, TracerOptions};
         pub use session::SessionStorage;
     }
 }
@@ -23,7 +15,7 @@ cfg_if! {
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]
 pub fn hydrate() {
-    use facilitee::TopLevelContext;
+    use facilitee::{App, TopLevelContext};
     use leptos::prelude::use_context;
 
     console_error_panic_hook::set_once();

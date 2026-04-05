@@ -1,22 +1,20 @@
 use std::collections::HashMap;
 
 use abilitee::{
-        TopLevelContext,
-        app::{
-            components::{AdColumns, FootBar, MainColumn, TopBar},
-            generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox},
-            guards::{IsLoggedIn, PageGuard, ResourceGuard, SessionGuard}
-        },
-    ContextExt, Expect,
+    ContextExt, Expect, TopLevelContext,
+    app::{
+        components::{AdColumns, FootBar, MainColumn, TopBar},
+        generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox},
+        guards::{IsLoggedIn, ResourceGuard, SessionGuard},
+    },
 };
-use leptos::{Params, either::Either, prelude::*};
+use leptos::{Params, prelude::*};
 use leptos_router::{hooks::use_params, params::Params};
 use libertee::{LiberteeError, SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 
-cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
-    use abilitee::{ServerSideData, format_datetime};
-} }
+#[cfg(feature = "ssr")]
+use abilitee::ServerSideData;
 
 #[derive(Clone, Params, PartialEq)]
 struct UserParams {
@@ -58,7 +56,7 @@ async fn get_user_page_data(
     let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
     tracing::debug!("Got Server");
-    let session = server
+    let _session = server
         .get_session(&session_id)
         .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
@@ -80,7 +78,7 @@ async fn get_user_page_data(
                 let member_id = group.get_member_id_from_user_id(&user.data.id);
                 member_id
                     .and_then(|member_id| group.data.members.get(member_id))
-                    .map(|member| GroupInData {
+                    .map(|_member| GroupInData {
                         name: group.data.name.clone(),
                         link_to_group: format!("/group/{}", group.data.id.to_string()),
                         datetime_joined: chrono::Utc::now().to_rfc3339(), //format_datetime(&member.joined),
@@ -99,7 +97,7 @@ async fn get_user_page_data(
                 .map(|friend| FriendOfData {
                     name: friend.data.name.clone(),
                     link_to_user: format!("/user/{}", friend.data.id.to_string()),
-                    datetime_of_friendship: chrono::Utc::now().to_rfc3339(), // format_datetime(&friendship.datetime_of_friendship),
+                    datetime_of_friendship: chrono::Utc::now().to_rfc3339(),
                 })
         })
         .collect();

@@ -2,10 +2,13 @@ pub mod components;
 pub mod generic_components;
 pub mod guards;
 
+use crate::{
+    server_functions::{PerformLogin, PerformLogout},
+    structs::{ClientSideData, Expect},
+};
 use leptos::prelude::*;
 use libertee::SessionUuid;
 use tracing::Span;
-use crate::{server_functions::{PerformLogin, PerformLogout}, structs::{ClientSideData, Expect}};
 
 pub use components::SubmitPost;
 
@@ -16,7 +19,6 @@ pub use components::SubmitPost;
 pub struct TopLevelContext {
     pub client_side_data: ClientSideData,
     pub session_id_res: Resource<Result<Option<SessionUuid>, ServerFnError>>,
-    //pub session_actions: Box<dyn SessionActions>,
     pub session_id: Signal<Option<SessionUuid>>,
     pub login: ServerAction<PerformLogin>,
     pub logout: ServerAction<PerformLogout>,

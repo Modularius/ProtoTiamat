@@ -1,11 +1,10 @@
-use crate::{
-    app::pages::{
-        FriendlistPage, GroupPage, GroupslistPage, HelpPage, HomePage, LoginPage, MessagesPage,
-        RegisterPage, UserPage,
-    }
+use crate::app::pages::{
+    FriendlistPage, GroupPage, GroupslistPage, HelpPage, HomePage, LoginPage, MessagesPage,
+    RegisterPage, UserPage,
 };
 use abilitee::{
-    ClientSideData, ContextExt, PerformLogin, PerformLogout, TopLevelContext, get_session_from_identity
+    ClientSideData, ContextExt, PerformLogin, PerformLogout, TopLevelContext,
+    get_session_from_identity,
 };
 use leptos::prelude::*;
 use leptos_meta::provide_meta_context;

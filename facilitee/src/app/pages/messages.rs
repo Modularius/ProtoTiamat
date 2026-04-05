@@ -1,18 +1,17 @@
 use abilitee::{
+    ContextExt, Expect,
     app::{
         components::{AdColumns, FootBar, MainColumn, TopBar},
         generic_components::RoundedBox,
         guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard},
     },
-    ContextExt, Expect,
 };
 use leptos::prelude::*;
 use libertee::{LiberteeError, SessionUuid};
 use serde::{Deserialize, Serialize};
 
-cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
-    use crate::ServerSideData;
-} }
+#[cfg(feature = "ssr")]
+use crate::ServerSideData;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct MessageData {

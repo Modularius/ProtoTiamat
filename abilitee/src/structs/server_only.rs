@@ -1,7 +1,7 @@
 use clap::Args;
+pub use libertee::Server;
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
-pub use libertee::Server;
 
 use crate::Expect;
 
@@ -25,5 +25,5 @@ pub struct InitialUserData {
     pub initial_user_username: String,
 
     #[clap(long)]
-    pub initial_user_password: String
+    pub initial_user_password: String,
 }

@@ -19,9 +19,12 @@ pub trait ContextExt {
     fn expect_context(self) -> Self::Inner;
 }
 
-impl<T> ContextExt for Option<T> where T: Expect, {
+impl<T> ContextExt for Option<T>
+where
+    T: Expect,
+{
     type Inner = T;
-    
+
     #[inline]
     #[track_caller]
     fn expect_context(self) -> Self::Inner {

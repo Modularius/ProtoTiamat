@@ -1,16 +1,18 @@
+use abilitee::AbiliteeError;
 use leptos::{
     prelude::{FromServerFnError, ServerFnErrorErr},
     server_fn::codec::JsonEncoding,
 };
+use libertee::LiberteeError;
 use serde::{Deserialize, Serialize};
 use thiserror;
 
-use libertee::LiberteeError; //{GroupUuid, LiberteeError, LoginAuth, PostUuid, SessionUuid, UserUuid};
-
 #[derive(Debug, thiserror::Error, Serialize, Deserialize)]
 pub enum FaciliteeError {
-    #[error("{0}")]
+    #[error("Libertee: {0}")]
     Libertee(#[from] LiberteeError),
+    #[error("Abilitee: {0}")]
+    Abilitee(#[from] AbiliteeError),
     #[error("Server Function Error: {0}")]
     ServerFn(#[from] ServerFnErrorErr),
 }

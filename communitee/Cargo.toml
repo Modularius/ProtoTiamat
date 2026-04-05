@@ -8,6 +8,7 @@ edition.workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+abilitee.workspace = true
 actix-files = { workspace = true, optional = true }
 actix-identity = { workspace = true, optional = true }
 actix-session = { workspace = true, optional = true }
@@ -50,10 +51,12 @@ hydrate = [
   "leptos/hydrate",
   "leptos/tracing",
   "leptos/trace-component-props",
+  "abilitee/hydrate",
   "facilitee/hydrate",
   "libertee/hydrate"
 ]
 ssr = [
+  "abilitee/ssr",
   "leptos/ssr",
   "leptos/tracing",
   "leptos/trace-component-props",

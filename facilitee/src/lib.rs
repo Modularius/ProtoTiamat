@@ -1,9 +1,9 @@
 mod app;
 mod errors;
 
+pub use abilitee::{ClientSideData, DefaultData, PublicUrl, SubmitPost, TopLevelContext};
 pub use app::{App, shell};
 pub use errors::FaciliteeError;
-pub use abilitee::{ClientSideData, DefaultData, PublicUrl, SubmitPost, TopLevelContext};
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "ssr")] {
