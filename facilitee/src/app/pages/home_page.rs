@@ -5,7 +5,7 @@ use crate::{
             AdColumns, FootBar, LoginBox, MainColumn, NewPostBox, PostBox, PostData, TopBar,
         },
         generic_components::RoundedBox,
-        guards::{IsLoggedIn, NotLoggedIn, PageGuard, ResourceGuard, SessionGuard},
+        guards::ResourceGuard, //{IsLoggedIn, NotLoggedIn, PageGuard, ResourceGuard, SessionGuard},
     },
     structs::{ContextExt, Expect},
 };

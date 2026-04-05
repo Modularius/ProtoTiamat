@@ -1,31 +1,10 @@
 mod public_url;
 
 use cfg_if::cfg_if;
-use libertee::LoginAuth;
 use serde::{Deserialize, Serialize};
 
 //pub use libertee::{GroupData, GroupUuid, LoginAuth, Session, SessionUuid, UserData, UserUuid, PostUuid, RandomGeneration};
 pub use public_url::PublicUrl;
-
-use leptos::{
-    prelude::Signal,
-    server_fn::{ServerFn, ServerFnError},
-};
-
-trait GetSessionIdSignalTrait: Fn() -> Signal<Option<SessionUuid>> {}
-
-pub struct SessionFunctions {
-    pub get_session_id_signal: Box<dyn GetSessionIdSignalTrait>,
-    pub perform_login:
-        Box<dyn Fn(LoginAuth, Option<String>) -> Result<SessionUuid, ServerFnError> + 'static>,
-    pub perform_logout: Box<dyn Fn(Option<String>) -> Result<bool, ServerFnError> + 'static>,
-    //async fn perform_login(auth: LoginAuth, redirect_to: Option<String>) -> Result<SessionUuid, ServerFnError>;
-    //async fn perform_logout(redirect_to: Option<String>) -> Result<bool, ServerFnError>;
-}
-
-impl Expect for SessionFunctions {
-    const EXPECT: &'static str = "FIXME";
-}
 
 pub trait Expect: Sized {
     const EXPECT: &'static str;
@@ -53,7 +32,7 @@ cfg_if! {
     if #[cfg(feature = "ssr")] {
         use clap::{Args};
         use std::sync::{Arc, Mutex};
-        pub use libertee::{User, Server, Post, Feed, Member, Group, SessionUuid};
+        pub use libertee::{User, Server, Post, Member, Group};
 
         /// Encapsulates all run-time settings which are only available to the server.
         #[derive(Default, Clone)]

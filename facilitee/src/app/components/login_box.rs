@@ -5,7 +5,7 @@ use crate::{
             ControlStack, ErrorBox, LabelledInput, LabelledSelect, SubmitControl,
         },
     },
-    server_functions::{PerformLogin, PerformLogout, Register},
+    server_functions::Register,
     structs::ContextExt,
 };
 use leptos::prelude::*;

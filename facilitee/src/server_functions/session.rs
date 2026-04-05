@@ -1,13 +1,17 @@
-use actix_identity::Identity;
-use actix_web::{HttpMessage, HttpRequest};
 use cfg_if::cfg_if;
-use chrono::SubsecRound;
 use leptos::prelude::*;
-use leptos_actix::extract;
-use libertee::{LiberteeError, LoginAuth, Session, SessionUuid, Timestamp};
+use libertee::{LiberteeError, LoginAuth, Session, SessionUuid};
 use tracing::debug;
+//use crate::{ServerSideData, structs::ContextExt};
 
-use crate::{ServerSideData, structs::ContextExt};
+cfg_if! {
+    if #[cfg(feature = "ssr")] {
+        use leptos_actix::extract;
+        use actix_identity::Identity;
+        use actix_web::{HttpMessage, HttpRequest};
+        use crate::{ServerSideData, structs::ContextExt};
+    }
+}
 
 #[server]
 #[tracing::instrument(level = "debug", err(level = "warn"))]
@@ -106,7 +110,7 @@ pub async fn perform_logout(redirect_to: Option<String>) -> Result<bool, ServerF
 }
 
 #[server]
-pub async fn register(auth: LoginAuth, new_path: String) -> Result<Session, ServerFnError> {
+pub async fn register(auth: LoginAuth, _new_path: String) -> Result<Session, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>().expect_context();
 
     let mut server = server_side_data.server.lock()?;

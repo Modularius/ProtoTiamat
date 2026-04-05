@@ -78,11 +78,14 @@ wasm-tracing = "2.1.0"
 [[workspace.metadata.leptos]]
 name = "tiamat"
 bin-package = "communitee"
+bin-features = ["ssr"]
 lib-package = "communitee"
+lib-features = ["hydrate"]
 assets-dir = "communitee/assets"
-style-file = "communitee/css/main.scss"
+#style-file = "communitee/style/output.scss"
+tailwind-input-file = "communitee/style/output.scss"
 site-root = "target/site/communitee"
-server-fn-prefix = "/custom/prefix"
+#server-fn-prefix = "/custom/prefix"
 disable-server-fn-hash = true
 server-fn-mod-path = true
 

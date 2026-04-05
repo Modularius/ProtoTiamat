@@ -2,7 +2,6 @@
 #![recursion_limit = "256"]
 
 mod errors;
-mod session;
 
 use cfg_if::cfg_if;
 
@@ -13,6 +12,8 @@ pub use facilitee::{
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        mod session;
+
         pub use facilitee::{ServerSideData, InitialUserData, Server};
         pub use libertee::{TracerEngine, TracerOptions};
         pub use session::SessionStorage;

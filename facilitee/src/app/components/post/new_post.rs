@@ -3,7 +3,6 @@ use libertee::{GroupUuid, LiberteeError, PostUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString};
 use tracing::instrument;
-
 use crate::{
     app::{
         components::PostData,
@@ -15,9 +14,11 @@ use crate::{
     structs::ContextExt,
 };
 
-cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
-    use crate::ServerSideData;
-} }
+cfg_if::cfg_if! {
+    if #[cfg(feature = "ssr")] {
+        use crate::ServerSideData;
+    }
+}
 
 #[server]
 #[instrument]

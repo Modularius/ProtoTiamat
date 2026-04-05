@@ -5,7 +5,7 @@ use leptos::{
 use serde::{Deserialize, Serialize};
 use thiserror;
 
-use libertee::{GroupUuid, LiberteeError, LoginAuth, PostUuid, SessionUuid, UserUuid};
+use libertee::LiberteeError; //{GroupUuid, LiberteeError, LoginAuth, PostUuid, SessionUuid, UserUuid};
 
 #[derive(Debug, thiserror::Error, Serialize, Deserialize)]
 pub enum FaciliteeError {
