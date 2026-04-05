@@ -4,6 +4,8 @@
 
  - Libertee: library containing server and user types.
  - Communitee: leptos implementation of the site, implementing `libertee` library.
+ - Facilitee: leptos implementation of the site, implementing `libertee` library.
+ - Abilitee: leptos implementation of the site, implementing `libertee` library.
  - Virtualitee: simulation of a server from the `libertee` library, and of several users.
 
 ## Structures in Libertee
