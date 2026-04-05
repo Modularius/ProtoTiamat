@@ -6,8 +6,11 @@ use tracing::instrument;
 
 use crate::{
     app::{
-        TopLevelContext, generic_components::{ButtonControl, ButtonFunction, ControlStack, LabelledControlStack}, guards::{IsLoggedIn, NotLoggedIn, PageGuard, ResourceGuard}
-    }, server_functions::{GetSessionFromIdentity, get_session_from_identity}, structs::{ContextExt, Expect}
+        TopLevelContext,
+        generic_components::{ButtonControl, ButtonFunction, ControlStack, LabelledControlStack},
+        guards::{IsLoggedIn, NotLoggedIn, PageGuard, ResourceGuard},
+    },
+    structs::{ContextExt, Expect},
 };
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
@@ -136,7 +139,10 @@ async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext
 fn UserBar() -> impl IntoView {
     let source = || {
         let top_level_context = use_context::<TopLevelContext>().expect_context();
-        (top_level_context.login.version().get(),top_level_context.logout.version().get())
+        (
+            top_level_context.login.version().get(),
+            top_level_context.logout.version().get(),
+        )
     };
     let fetch = async |_| {
         let session_id = use_context::<TopLevelContext>().expect_context().session_id;

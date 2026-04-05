@@ -17,16 +17,18 @@ pub fn IsLoggedIn<C>(children: TypedChildrenFn<C>) -> impl IntoView
 where
     C: IntoView + 'static,
 {
-    let session = use_context::<TopLevelContext>()
-        .expect_context()
-        .session_id;
+    let session = use_context::<TopLevelContext>().expect_context().session_id;
 
     let current_span = tracing::Span::current();
-    move || current_span.in_scope(||Show(ShowProps {
-        children: children.clone(),
-        when: move || session.get_untracked().is_some(),
-        fallback: Default::default(),
-    }))
+    move || {
+        current_span.in_scope(|| {
+            Show(ShowProps {
+                children: children.clone(),
+                when: move || session.get_untracked().is_some(),
+                fallback: Default::default(),
+            })
+        })
+    }
 }
 
 #[component]
@@ -37,9 +39,11 @@ where
 {
     let session = use_context::<TopLevelContext>().expect_context().session_id;
     let current_span = tracing::Span::current();
-    current_span.in_scope(||Show(ShowProps {
-        children: children.clone(),
-        when: move || session.get().is_none(),
-        fallback: Default::default(),
-    }))
+    current_span.in_scope(|| {
+        Show(ShowProps {
+            children: children.clone(),
+            when: move || session.get().is_none(),
+            fallback: Default::default(),
+        })
+    })
 }

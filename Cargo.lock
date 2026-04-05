@@ -1304,6 +1304,8 @@ dependencies = [
 name = "facilitee"
 version = "0.1.0"
 dependencies = [
+ "actix-identity",
+ "actix-web",
  "anyhow",
  "cfg-if",
  "chrono",
@@ -1311,6 +1313,7 @@ dependencies = [
  "console_error_panic_hook",
  "leptos",
  "leptos-use",
+ "leptos_actix",
  "leptos_meta",
  "leptos_reactive",
  "leptos_router",

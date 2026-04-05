@@ -8,15 +8,14 @@ use cfg_if::cfg_if;
 
 pub use errors::CommuniteeError;
 pub use facilitee::{
-    App, SubmitPost, shell,
-    FaciliteeError,
-    ClientSideData, DefaultData, PublicUrl,
+    App, ClientSideData, DefaultData, FaciliteeError, PublicUrl, SubmitPost, shell,
 };
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        pub use facilitee::{ServerSideData, InitialUserData, Server, SessionStorage};
+        pub use facilitee::{ServerSideData, InitialUserData, Server};
         pub use libertee::{TracerEngine, TracerOptions};
+        pub use session::SessionStorage;
     }
 }
 

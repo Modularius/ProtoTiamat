@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use crate::{
     app::{
-        TopLevelContext, components::{AdColumns, FootBar, MainColumn, TopBar}, generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox}, guards::{IsLoggedIn, PageGuard, ResourceGuard, SessionGuard}
+        TopLevelContext,
+        components::{AdColumns, FootBar, MainColumn, TopBar},
+        generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox},
+        guards::{IsLoggedIn, PageGuard, ResourceGuard, SessionGuard},
     },
     structs::{ContextExt, Expect},
 };
@@ -54,19 +57,19 @@ async fn get_user_page_data(
 ) -> Result<UserPageDataContext, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
-tracing::debug!("Got Server");
+    tracing::debug!("Got Server");
     let session = server
         .get_session(&session_id)
         .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
-tracing::debug!("Got Session");
+    tracing::debug!("Got Session");
     let user = server
         .get_user(&user_id)
         .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
 
-tracing::debug!("Got User");
+    tracing::debug!("Got User");
     let properties = user.data.properties.clone();
-tracing::debug!("Got Props");
+    tracing::debug!("Got Props");
     let groups_in = user
         .data
         .groups
@@ -96,7 +99,7 @@ tracing::debug!("Got Props");
                 .map(|friend| FriendOfData {
                     name: friend.data.name.clone(),
                     link_to_user: format!("/user/{}", friend.data.id.to_string()),
-                    datetime_of_friendship: chrono::Utc::now().to_rfc3339()// format_datetime(&friendship.datetime_of_friendship),
+                    datetime_of_friendship: chrono::Utc::now().to_rfc3339(), // format_datetime(&friendship.datetime_of_friendship),
                 })
         })
         .collect();
@@ -104,7 +107,7 @@ tracing::debug!("Got Props");
     Ok(UserPageDataContext {
         user_name: user.data.name.clone(),
         name: user.data.name.clone(),
-        datetime_joined: chrono::Utc::now().to_rfc3339(),//format_datetime(&user.data.datetime_joined),
+        datetime_joined: chrono::Utc::now().to_rfc3339(), //format_datetime(&user.data.datetime_joined),
         properties: properties.unwrap_or_default(),
         groups_in,
         friends,
@@ -125,10 +128,16 @@ pub fn UserPage() -> impl IntoView {
     let params = use_params::<UserParams>();
     let source = move || {
         let tlc = use_context::<TopLevelContext>().expect_context();
-        (tlc.login.version().get(),tlc.logout.version().get(),params.get())
+        (
+            tlc.login.version().get(),
+            tlc.logout.version().get(),
+            params.get(),
+        )
     };
-    let fetch = async |(_, _, params): (_,_,Result<UserParams, _>)| {
-        let session_id: SessionUuid = use_context::<TopLevelContext>().expect_context().login_expect();
+    let fetch = async |(_, _, params): (_, _, Result<UserParams, _>)| {
+        let session_id: SessionUuid = use_context::<TopLevelContext>()
+            .expect_context()
+            .login_expect();
         match params {
             Ok(up) => match up.user_id {
                 Some(id) => Some(get_user_page_data(session_id, UserUuid(id)).await),
@@ -139,23 +148,23 @@ pub fn UserPage() -> impl IntoView {
     };
     let resource = Resource::new(source, fetch);
     view! {
-        <SessionGuard>
-            <TopBar/>
-                <IsLoggedIn>
-                        <ResourceGuard resource>
-                            <UserPageWithData />
-                        </ResourceGuard>
-                        /*<PageGuard with_parameters = |session_id| GetUserPageData{
-                                session_id,
-                                user_id: { use_context::<UserPageParamsContext>().expect_context().user_id }
-                            }>
-                            <UserPageWithData />
-                        </PageGuard>*/
-                </IsLoggedIn>
-            <FootBar/>
-        </SessionGuard>
-                }
-                /*
+    <SessionGuard>
+        <TopBar/>
+            <IsLoggedIn>
+                    <ResourceGuard resource>
+                        <UserPageWithData />
+                    </ResourceGuard>
+                    /*<PageGuard with_parameters = |session_id| GetUserPageData{
+                            session_id,
+                            user_id: { use_context::<UserPageParamsContext>().expect_context().user_id }
+                        }>
+                        <UserPageWithData />
+                    </PageGuard>*/
+            </IsLoggedIn>
+        <FootBar/>
+    </SessionGuard>
+            }
+    /*
     || {
         let params = use_params::<UserParams>();
         let user_id = params

@@ -4,7 +4,7 @@ mod server_functions;
 mod structs;
 use cfg_if::cfg_if;
 
-pub use app::{App, SubmitPost, shell, TopLevelContext};
+pub use app::{App, SubmitPost, TopLevelContext, shell};
 pub use errors::FaciliteeError;
 pub use structs::{ClientSideData, DefaultData, PublicUrl};
 

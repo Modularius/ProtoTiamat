@@ -1,6 +1,11 @@
 use crate::{
     app::{
-        TopLevelContext, components::{AdColumns, FootBar, LoginBox, MainColumn, NewPostBox, PostBox, PostData, TopBar}, generic_components::RoundedBox, guards::{IsLoggedIn, NotLoggedIn, PageGuard, ResourceGuard, SessionGuard}
+        TopLevelContext,
+        components::{
+            AdColumns, FootBar, LoginBox, MainColumn, NewPostBox, PostBox, PostData, TopBar,
+        },
+        generic_components::RoundedBox,
+        guards::{IsLoggedIn, NotLoggedIn, PageGuard, ResourceGuard, SessionGuard},
     },
     structs::{ContextExt, Expect},
 };
@@ -66,14 +71,10 @@ pub async fn get_home_page_data(
 #[instrument(parent = use_context::<TopLevelContext>().map(|c|c.span).unwrap_or(Span::current()))]
 pub fn HomePage() -> impl IntoView {
     let source = || {
-        let top_level_context = use_context::<TopLevelContext>()
-            .expect_context();
-        (top_level_context.login
-                .version()
-                .get(),
-            top_level_context.logout
-                .version()
-                .get()
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
+        (
+            top_level_context.login.version().get(),
+            top_level_context.logout.version().get(),
         )
     };
     let fetch = async |_| {

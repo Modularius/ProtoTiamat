@@ -4,7 +4,7 @@ mod generic_components;
 mod guards;
 mod pages;
 
-use crate::structs::{ClientSideData, ContextExt, SessionActions};
+use crate::structs::{ClientSideData, ContextExt};
 pub use app_entry::{App, TopLevelContext};
 pub use components::SubmitPost;
 use leptos::prelude::*;
@@ -12,7 +12,7 @@ use leptos_meta::{HashedStylesheet, Meta, MetaTags, Title, provide_meta_context}
 use tracing::{Span, instrument};
 
 #[instrument(parent=&use_context::<Span>().and_then(|span|Some(span)).unwrap())]
-pub fn shell<A: SessionActions>(leptos_options: LeptosOptions) -> impl IntoView {
+pub fn shell(leptos_options: LeptosOptions) -> impl IntoView {
     //provide_context(Span::current());
     let public_url: String = use_context::<ClientSideData>()
         .expect_context()
@@ -38,7 +38,7 @@ pub fn shell<A: SessionActions>(leptos_options: LeptosOptions) -> impl IntoView 
                 <Meta name="viewport" content="width=device-width, initial-scale=1.0" />
             </head>
             <body>
-                <App _a = A::default() />
+                <App/>
             </body>
         </html>
     }

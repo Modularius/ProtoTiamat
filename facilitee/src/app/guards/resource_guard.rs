@@ -7,44 +7,48 @@ use crate::{
 };
 use libertee::SessionUuid;
 
-
 #[component]
 #[instrument(skip_all)]
-pub fn ResourceGuard<T, C>(resource: Resource<Option<Result<T, ServerFnError>>>, children: TypedChildrenFn<C>) -> impl IntoView
+pub fn ResourceGuard<T, C>(
+    resource: Resource<Option<Result<T, ServerFnError>>>,
+    children: TypedChildrenFn<C>,
+) -> impl IntoView
 where
     T: Clone + Send + Sync + 'static,
     C: IntoView + 'static,
 {
     info!("Running Resource Guard.");
     /*let session_id = use_context::<TopLevelContext>()
-        .expect_context()
-        .session_id_expect();*/
-    move || Span::current().in_scope(||{
-        let children = children.clone();
-        view!{
-            <Transition>
-            {
-                move || Span::current().in_scope(||{
-                    let children = children.clone();
-                    resource.get()
-                        .flatten()
-                        .map(|value| {
-                            view! {
-                                <ErrorBoundary fallback = error_box>
-                                {
-                                    value.map(|value| {
-                                        provide_context(value);
-                                        Span::current().in_scope(||children.into_inner()())
-                                    })
+    .expect_context()
+    .session_id_expect();*/
+    move || {
+        Span::current().in_scope(|| {
+            let children = children.clone();
+            view! {
+                <Transition>
+                {
+                    move || Span::current().in_scope(||{
+                        let children = children.clone();
+                        resource.get()
+                            .flatten()
+                            .map(|value| {
+                                view! {
+                                    <ErrorBoundary fallback = error_box>
+                                    {
+                                        value.map(|value| {
+                                            provide_context(value);
+                                            Span::current().in_scope(||children.into_inner()())
+                                        })
+                                    }
+                                    </ErrorBoundary>
                                 }
-                                </ErrorBoundary>
-                            }
-                        })
-                })
+                            })
+                    })
+                }
+                </Transition>
             }
-            </Transition>
-        }
-    })
+        })
+    }
     /*
     let children = children.clone();
     let future = async move |parent_span| {
@@ -70,7 +74,6 @@ where
     Suspend::new(future(span.clone()))
     */
 }
-
 
 #[component]
 #[instrument(skip_all)]

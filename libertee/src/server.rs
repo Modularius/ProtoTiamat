@@ -7,7 +7,8 @@ use itertools::Itertools;
 use tracing::instrument;
 
 use crate::{
-    Group, GroupData, GroupUuid, LiberteeError, LoginAuth, Post, PostUuid, RandomGeneration, Session, SessionUuid, Timestamp, User, UserData, UserUuid, Uuid, Uuidlike, user::Friendship
+    Group, GroupData, GroupUuid, LiberteeError, LoginAuth, Post, PostUuid, RandomGeneration,
+    Session, SessionUuid, Timestamp, User, UserData, UserUuid, Uuid, Uuidlike, user::Friendship,
 };
 
 #[derive(Default, Clone, Debug)]
@@ -80,12 +81,16 @@ impl Server {
     pub fn create_new_session(&mut self, auth: &LoginAuth) -> Result<&Session, LiberteeError> {
         // Fixme: should guard against clashes with existing Uuids
         let session_id = SessionUuid(Uuid::generate_random(16));
-        let user_id = self.credentials
+        let user_id = self
+            .credentials
             .get(auth)
             .ok_or_else(|| LiberteeError::NoCredentialsFound(auth.clone()))?;
 
-        if ! self.users.contains_key(&user_id) {
-            return Err(LiberteeError::CredentialsButNoUserFound { auth: auth.clone(), user_id: user_id.clone() });
+        if !self.users.contains_key(&user_id) {
+            return Err(LiberteeError::CredentialsButNoUserFound {
+                auth: auth.clone(),
+                user_id: user_id.clone(),
+            });
         }
 
         self.sessions.insert(

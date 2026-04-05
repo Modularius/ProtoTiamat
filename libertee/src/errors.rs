@@ -16,5 +16,5 @@ pub enum LiberteeError {
     #[error("No credentials found with authorisation {0:?}")]
     NoCredentialsFound(LoginAuth),
     #[error("Credentials found with authorisation{auth:?}, but no user found with id {}.", user_id.to_string())]
-    CredentialsButNoUserFound{auth: LoginAuth, user_id: UserUuid}
+    CredentialsButNoUserFound { auth: LoginAuth, user_id: UserUuid },
 }
