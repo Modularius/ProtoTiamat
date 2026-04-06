@@ -51,11 +51,13 @@ cfg_if! {
             use leptos_actix::{generate_route_list, LeptosRoutes};
             use miette::IntoDiagnostic;
 
-            // set up logging
+            // Set up logging.
             console_error_panic_hook::set_once();
 
+            // Parse command line arguments.
             let args = Cli::parse();
 
+            // Initialise tracer.
             let tracer = TracerEngine::new(TracerOptions::new(args.otel_endpoint.as_deref(), args.otel_namespace), "communitee");
             if tracer.use_otel() {
                 if let Some(e) = tracer.get_otel_setup_error() {
@@ -65,6 +67,7 @@ cfg_if! {
                 }
             }
 
+            // Create server.
             let mut server = Server::new_random(Default::default());
             if let Some(initial_user) = args.initial_user {
                 let auth = LoginAuth {
