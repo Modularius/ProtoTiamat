@@ -12,6 +12,7 @@ where
 {
     let top_level_context = use_context::<TopLevelContext>().expect_context();
     let session_id = top_level_context.session_id_res;
+    let children = StoredValue::new(children);
 
     {
         let _guard = info_span!("SessionGuard").entered();
@@ -19,18 +20,18 @@ where
         //let span = info_span!("SessionGuard Suspense");
         //let _guard = span.enter();
         move || {
-            let children = children.clone();
+            //let children = children.clone();
             view! {
                 <Transition>
                 { move || {
-                    let children = children.clone();
+                    //let children = children.clone();
                     session_id.get().map(|session_id| view! {
                         //Suspend::new(async move {
                         <ErrorBoundary fallback = error_box>
                         {
-                            session_id.map(|session_id| {
+                            session_id.map(|_session_id| {
                                 //top_level_context.session_id.set(session_id);
-                                children.into_inner()()
+                                children.with_value(|children|children.clone().into_inner()())
                             })
                         }
                         </ErrorBoundary>

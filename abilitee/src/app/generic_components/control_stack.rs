@@ -40,8 +40,7 @@ pub fn ControlStack(children: Children) -> impl IntoView {
 }
 
 #[component]
-#[allow(unused_variables)]
-pub fn ControlStackRow(children: Children) -> impl IntoView {
+pub fn ControlStackRow(_children: Children) -> impl IntoView {  // FIXME for some reason not having _children causes "variable never read" issue.
     view! {
         <div class = "flex flex-grow flex-col
             p-1 md:p-2
@@ -49,7 +48,7 @@ pub fn ControlStackRow(children: Children) -> impl IntoView {
             space-x-0 lg:space-x-2
             space-y-1 lg:space-y-0
             bg-blue-600">
-            {children()}
+            {_children()}
         </div>
     }
 }

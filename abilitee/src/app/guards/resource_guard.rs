@@ -17,13 +17,14 @@ where
     T: Clone + Send + Sync + 'static,
     C: IntoView + 'static,
 {
+    let children = StoredValue::new(children);
     info!("Running Resource Guard.");
     /*let session_id = use_context::<TopLevelContext>()
     .expect_context()
     .session_id_expect();*/
     move || {
         Span::current().in_scope(|| {
-            let children = children.clone();
+            //let children = children.clone();
             view! {
                 <Transition>
                 {
@@ -37,7 +38,10 @@ where
                                     {
                                         value.map(|value| {
                                             provide_context(value);
-                                            Span::current().in_scope(||children.into_inner()())
+                                            Span::current()
+                                                .in_scope(||children
+                                                    .with_value(|children|children.clone().into_inner()())
+                                                )
                                         })
                                     }
                                     </ErrorBoundary>
