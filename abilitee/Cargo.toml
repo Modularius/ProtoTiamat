@@ -11,38 +11,25 @@ anyhow = { workspace = true, optional = true }
 cfg-if.workspace = true
 chrono = { workspace = true, optional = false }
 clap = { workspace = true, optional = true }
-console_error_panic_hook.workspace = true
-#itertools.workspace = true
 leptos.workspace = true
 leptos_actix = { workspace = true, optional = true }
 leptos_meta.workspace = true
-leptos_reactive.workspace = true
 leptos_router.workspace = true
 leptos-use.workspace = true
 libertee.workspace = true
 miette.workspace = true
-opentelemetry = { workspace = true, optional = true }
-opentelemetry-otlp = { workspace = true, optional = true }
-opentelemetry_sdk = { workspace = true, optional = true }
-rand = { workspace = true, optional = true }
 reqwest = { workspace = true, optional = true }
 serde = { workspace = true, optional = false }
 strum = { workspace = true, optional = false }
 thiserror = { workspace = true, optional = false }
 tokio = { workspace = true, optional = true }
 tracing = { workspace = true, optional = false }
-tracing-actix-web = { workspace = true, optional = true }
-tracing-opentelemetry = { workspace = true, optional = true }
-tracing-subscriber.workspace = true
 url.workspace = true
-uuid = { workspace = true, optional = true }
 wasm-bindgen = { workspace = true, optional = true }
-wasm-tracing = { workspace = true, optional = true }
 
 [features]
 hydrate = [
   "dep:wasm-bindgen",
-  "dep:wasm-tracing",
   "leptos/hydrate",
   "leptos/tracing",
   "leptos/trace-component-props",
@@ -63,13 +50,6 @@ ssr = [
   "dep:actix-identity",
   "dep:actix-web",
   "dep:leptos_actix",
-  "dep:opentelemetry",
-  "dep:opentelemetry-otlp",
-  "dep:opentelemetry_sdk",
-  "dep:rand",
   "dep:reqwest",
-  "dep:tokio",
-  "dep:tracing-actix-web",
-  "dep:tracing-opentelemetry",
-  "dep:uuid",
+  "dep:tokio"
 ]

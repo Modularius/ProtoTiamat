@@ -4,6 +4,7 @@ use leptos::prelude::*;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use abilitee::{ClientSideData, DefaultData, InitialUserData, PublicUrl, ServerSideData, Server, TracerEngine, TracerOptions};
+        use actix_files::Files;
         use actix_identity::IdentityMiddleware;
         use actix_session::SessionMiddleware;
         use actix_web::cookie::Key;
@@ -11,11 +12,10 @@ cfg_if! {
         use clap::Parser;
         use communitee::SessionStorage;
         use facilitee::{App, shell};
+        use leptos_actix::{generate_route_list, LeptosRoutes};
         use libertee::{LoginAuth, RandomGeneration};
-        use std::{
-            net::SocketAddr,
-            sync::{Arc, Mutex}
-        };
+        use miette::IntoDiagnostic;
+        use std::{net::SocketAddr, sync::{Arc, Mutex}};
         use tracing::{debug, debug_span, info_span, Span, warn};
         use tracing_actix_web::TracingLogger;
 
@@ -47,10 +47,6 @@ cfg_if! {
 
         #[actix_web::main]
         async fn main() -> miette::Result<()> {
-            use actix_files::Files;
-            use leptos_actix::{generate_route_list, LeptosRoutes};
-            use miette::IntoDiagnostic;
-
             // Set up logging.
             console_error_panic_hook::set_once();
 
