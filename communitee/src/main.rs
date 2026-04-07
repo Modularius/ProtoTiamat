@@ -7,7 +7,7 @@ cfg_if! {
         use actix_files::Files;
         use actix_identity::IdentityMiddleware;
         use actix_session::SessionMiddleware;
-        use actix_web::cookie::Key;
+        use actix_web::{cookie, web};
         use actix_web_opentelemetry::RequestTracing;
         use clap::Parser;
         use communitee::SessionStorage;
@@ -78,7 +78,7 @@ cfg_if! {
             };
 
             let session_storage = SessionStorage::default();
-            let secret_key = Key::generate();
+            let secret_key = cookie::Key::generate();
 
             let client_side_data = ClientSideData {
                 default_data: args.default_data,
@@ -135,8 +135,8 @@ cfg_if! {
                                     shell(leptos_options.clone())
                                 }
                             })
-                            .app_data(actix_web::web::Data::new(leptos_options.to_owned()))
-                            .app_data(actix_web::web::Data::new(span))
+                            .app_data(web::Data::new(leptos_options.to_owned()))
+                            .app_data(web::Data::new(span))
                             .wrap(IdentityMiddleware::default())
                             .wrap(SessionMiddleware::new(
                                 session_storage.clone(),
@@ -150,16 +150,16 @@ cfg_if! {
             .await
             .into_diagnostic()
         }
+    } else {
+        use communitee as _;
+        use console_error_panic_hook as _;
+        fn main() {
+            mount_to_body(|| {
+                view! {
+                    "Please run using SSR"
+                }
+            });
+        }
     }
 }
 
-#[cfg(not(feature = "ssr"))]
-fn main() {
-    use communitee as _;
-    use console_error_panic_hook as _;
-    mount_to_body(|| {
-        view! {
-            "Please run using SSR"
-        }
-    });
-}
