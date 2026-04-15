@@ -37,7 +37,7 @@ pub fn App() -> impl IntoView {
             move || (login.version().get(), logout.version().get()),
             |_| get_session_from_identity(),
         );
-    let session_id = Signal::derive(move || {
+    /*let session_id = Signal::derive(move || {
         session_id_res
             .get()
             .and_then(|session_id_res| match session_id_res {
@@ -47,11 +47,11 @@ pub fn App() -> impl IntoView {
                     None
                 }
             })
-    });
+    });*/
     provide_context(TopLevelContext {
         client_side_data,
         session_id_res,
-        session_id,
+        //session_id,
         login,
         logout,
         span: Span::current(),

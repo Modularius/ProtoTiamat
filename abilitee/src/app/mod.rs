@@ -19,7 +19,7 @@ pub use components::SubmitPost;
 pub struct TopLevelContext {
     pub client_side_data: ClientSideData,
     pub session_id_res: Resource<Result<Option<SessionUuid>, ServerFnError>>,
-    pub session_id: Signal<Option<SessionUuid>>,
+    //pub session_id: Signal<Option<SessionUuid>>,
     pub login: ServerAction<PerformLogin>,
     pub logout: ServerAction<PerformLogout>,
     pub span: Span,

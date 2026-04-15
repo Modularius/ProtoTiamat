@@ -73,6 +73,7 @@ fn ToolBar(children: Children) -> impl IntoView {
 pub fn TopBar() -> impl IntoView {
     {
         view! {
+            <Suspense>
             <BigBar>
                 <SanctimoneousMissionStatement/>
                 <CommuniteeTitle/>
@@ -101,6 +102,7 @@ pub fn TopBar() -> impl IntoView {
                     <ButtonControl value = "What is Communitee" on_click = ButtonFunction::Link("/help") />
                 </NotLoggedIn>
             </ToolBar>
+            </Suspense>
         }
     }
 }
@@ -146,14 +148,25 @@ fn UserBar() -> impl IntoView {
         )
     };
     let fetch = async |_| {
-        let session_id = use_context::<TopLevelContext>().expect_context().session_id;
-        if let Some(session_id) = session_id.get() {
+        let session_id = use_context::<TopLevelContext>()
+            .expect_context()
+            .session_id_res
+            .get()
+            .and_then(|session_id_res| match session_id_res {
+                Ok(session_id_res) => session_id_res,
+                Err(e) => {
+                    tracing::error!("{e}");
+                    None
+                }
+            });
+        if let Some(session_id) = session_id {
             Some(get_user_bar_data(session_id).await)
         } else {
             None
         }
     };
     view! {
+        <Suspense>
         <ResourceGuard resource = Resource::new(source, fetch)>
         //<PageGuard with_parameters = |session_id|GetUserBarData{ session_id }>
         {
@@ -169,6 +182,7 @@ fn UserBar() -> impl IntoView {
         }
         //</PageGuard>
         </ResourceGuard>
+        </Suspense>
     }
     /*
     move ||Suspend::new(async move {

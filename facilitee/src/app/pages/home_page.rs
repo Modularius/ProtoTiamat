@@ -88,8 +88,19 @@ pub fn HomePage() -> impl IntoView {
         //<SessionGuard>
             <TopBar/>
             <MainColumn>
+            <Suspense>
                 {move ||
-                    if use_context::<TopLevelContext>().expect_context().session_id.get().is_some() {
+                    if use_context::<TopLevelContext>().expect_context()
+                    .session_id_res
+                    .get()
+                    .and_then(|session_id_res| match session_id_res {
+                        Ok(session_id_res) => session_id_res,
+                        Err(e) => {
+                            tracing::error!("{e}");
+                            None
+                        }
+                    })
+                    .is_some() {
                         Either::Left(view!{
                             <ResourceGuard resource = Resource::new(source, fetch)>
                                 <HomePageWithData />
@@ -116,6 +127,7 @@ pub fn HomePage() -> impl IntoView {
                     <LoginBox />
                 </NotLoggedIn>
                  */
+            </Suspense>
             </MainColumn>
             <FootBar />
         //</SessionGuard>

@@ -17,14 +17,24 @@ pub fn IsLoggedIn<C>(children: TypedChildrenFn<C>) -> impl IntoView
 where
     C: IntoView + 'static,
 {
-    let session = use_context::<TopLevelContext>().expect_context().session_id;
-
     let current_span = tracing::Span::current();
     move || {
+        let session = use_context::<TopLevelContext>()
+            .expect_context()
+            .session_id_res
+            .get()
+            .and_then(|session_id_res| match session_id_res {
+                Ok(session_id_res) => session_id_res,
+                Err(e) => {
+                    tracing::error!("{e}");
+                    None
+                }
+            });
+
         current_span.in_scope(|| {
             Show(ShowProps {
                 children: children.clone(),
-                when: move || session.get_untracked().is_some(),
+                when: move || session.clone().is_some(),
                 fallback: Default::default(),
             })
         })
@@ -37,12 +47,21 @@ pub fn NotLoggedIn<C>(children: TypedChildrenFn<C>) -> impl IntoView
 where
     C: IntoView + 'static,
 {
-    let session = use_context::<TopLevelContext>().expect_context().session_id;
     let current_span = tracing::Span::current();
     current_span.in_scope(|| {
         Show(ShowProps {
             children: children.clone(),
-            when: move || session.get().is_none(),
+            when: move || use_context::<TopLevelContext>()
+                .expect_context()
+                .session_id_res
+                .get()
+                .and_then(|session_id_res| match session_id_res {
+                    Ok(session_id_res) => session_id_res,
+                    Err(e) => {
+                        tracing::error!("{e}");
+                        None
+                    }
+                }).is_none(),
             fallback: Default::default(),
         })
     })
