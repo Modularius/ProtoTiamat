@@ -1,14 +1,14 @@
 use abilitee::{
-    ContextExt, Expect,
-    app::{
-        components::{AdColumns, FootBar, MainColumn, TopBar},
+    ContextExt, Expect, TopLevelContext, app::{
+        components::{AdColumns, LoginBox},
         generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, SharpBox},
-        guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard},
-    },
+        guards::GuardedPage,
+    }
 };
 use leptos::prelude::*;
 use libertee::{SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
+use tracing::instrument;
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::ServerSideData;
@@ -76,30 +76,34 @@ async fn get_friendslist_page_data(
     Ok(data)
 }
 
-#[component]
-pub fn FriendlistPage() -> impl IntoView {
-    view! {
-        <SessionGuard>
-            <TopBar/>
-                <IsLoggedIn>
-                    <PageGuard with_parameters = |session_id|GetFriendslistPageData{ session_id, max_friends: 10 }>
-                        <FriendlistPageWithData />
-                    </PageGuard>
-                </IsLoggedIn>
+pub struct FriendlistPage;
 
-                <NotLoggedIn>
-                    "Not Logged In"
-                </NotLoggedIn>
-            <FootBar/>
-        </SessionGuard>
+impl GuardedPage for FriendlistPage {
+    type DataContext = GetFriendslistPageDataContext;
+    type Source = (usize, usize);
+
+    #[instrument]
+    fn source() -> Self::Source {
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
+        (
+            top_level_context.login.version().get(),
+            top_level_context.logout.version().get(),
+        )
     }
-}
 
-#[component]
-pub fn FriendlistPageWithData() -> impl IntoView {
-    let friendslist_page_data = use_context::<GetFriendslistPageDataContext>().expect_context();
-    view! {
-        <MainColumn>
+    #[instrument]
+    async fn fetch(_: Self::Source) -> Option<Result<GetFriendslistPageDataContext, ServerFnError>> {
+        let top_level_context = use_context::<TopLevelContext>()
+            .expect_context();
+        let session_id = top_level_context.session_id.get_untracked()
+            .unwrap().unwrap().unwrap();
+        Some(get_friendslist_page_data(session_id, 10).await)
+    }
+
+    #[instrument]
+    fn with_data() -> impl IntoView {
+        let friendslist_page_data = use_context::<GetFriendslistPageDataContext>().expect_context();
+        view! {
             <h1 class = "text-3xl m-6"> "Hi there " {friendslist_page_data.user_name} "!" </h1>
             //<AccessBar user_data = user_data.clone()/>
             <AdColumns>
@@ -118,6 +122,14 @@ pub fn FriendlistPageWithData() -> impl IntoView {
                     />
                 </SharpBox>
             </AdColumns>
-        </MainColumn>
+        }
+    }
+
+    #[instrument]
+    fn without_session() -> impl IntoView {
+        view! {
+            "Not Logged In"
+            <LoginBox />
+        }
     }
 }

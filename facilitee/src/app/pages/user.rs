@@ -3,15 +3,16 @@ use std::collections::HashMap;
 use abilitee::{
     ContextExt, Expect, TopLevelContext,
     app::{
-        components::{AdColumns, FootBar, MainColumn, TopBar},
+        components::{AdColumns, LoginBox},
         generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox},
-        guards::{IsLoggedIn, ResourceGuard, SessionGuard},
+        guards::GuardedPage,
     },
 };
 use leptos::{Params, prelude::*};
-use leptos_router::{hooks::use_params, params::Params};
+use leptos_router::{hooks::use_params, params::{Params, ParamsError}};
 use libertee::{SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
+use tracing::instrument;
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "ssr")] {
@@ -19,8 +20,8 @@ cfg_if::cfg_if! {
     }
 }
 
-#[derive(Clone, Params, PartialEq)]
-struct UserParams {
+#[derive(Clone, Debug, Params, PartialEq)]
+pub struct UserParams {
     user_id: Option<String>,
 }
 
@@ -59,24 +60,27 @@ async fn get_user_page_data(
     let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
     tracing::debug!("Got Server");
-    let _session = server
+    let session = server
         .get_session(&session_id)?;
 
+    let viewing_user = server
+        .get_user(&session.user)?;
+
     tracing::debug!("Got Session");
-    let user = server
+    let page_user = server
         .get_user(&user_id)?;
 
     tracing::debug!("Got User");
-    let properties = user.data.properties.clone();
+    let properties = page_user.data.properties.clone();
     tracing::debug!("Got Props");
-    let groups_in = user
+    let groups_in = page_user
         .data
         .groups
         .iter()
         .flatten()
         .flat_map(|group_id| {
             server.get_group(group_id).ok().and_then(|group| {
-                let member_id = group.get_member_id_from_user_id(&user.data.id);
+                let member_id = group.get_member_id_from_user_id(&page_user.data.id);
                 member_id
                     .and_then(|member_id| group.data.members.get(member_id))
                     .map(|_member| GroupInData {
@@ -87,7 +91,7 @@ async fn get_user_page_data(
             })
         })
         .collect();
-    let friends = user
+    let friends = page_user
         .data
         .friends
         .iter()
@@ -104,8 +108,8 @@ async fn get_user_page_data(
         .collect();
 
     Ok(UserPageDataContext {
-        user_name: user.data.name.clone(),
-        name: user.data.name.clone(),
+        user_name: viewing_user.data.name.clone(),
+        name: page_user.data.name.clone(),
         datetime_joined: chrono::Utc::now().to_rfc3339(), //format_datetime(&user.data.datetime_joined),
         properties: properties.unwrap_or_default(),
         groups_in,
@@ -113,33 +117,29 @@ async fn get_user_page_data(
     })
 }
 
-/*
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct UserPageParamsContext {
-    user_id: UserUuid,
-}
+pub struct UserPage;
 
-impl Expect for UserPageParamsContext {
-    const EXPECT: &'static str =
-        "UserPageParamsContext should be provided, this should never fail.";
-}
-*/
-
-#[component]
-pub fn UserPage() -> impl IntoView {
-    let params = use_params::<UserParams>();
-    let source = move || {
-        let tlc = use_context::<TopLevelContext>().expect_context();
+impl GuardedPage for UserPage {
+    type DataContext = UserPageDataContext;
+    type Source = (usize, usize, Result<UserParams, ParamsError>);
+    
+    #[instrument]
+    fn source() -> Self::Source {
+        let params = use_params::<UserParams>();
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
         (
-            tlc.login.version().get(),
-            tlc.logout.version().get(),
+            top_level_context.login.version().get(),
+            top_level_context.logout.version().get(),
             params.get(),
         )
-    };
-    let fetch = async |(_, _, params): (_, _, Result<UserParams, _>)| {
-        let session_id: SessionUuid = use_context::<TopLevelContext>()
-            .expect_context()
-            .login_expect();
+    }
+
+    #[instrument]
+    async fn fetch((_, _, params): Self::Source) -> Option<Result<UserPageDataContext, ServerFnError>> {
+        let top_level_context = use_context::<TopLevelContext>()
+            .expect_context();
+        let session_id = top_level_context.session_id.get_untracked()
+            .unwrap().unwrap().unwrap();
         match params {
             Ok(up) => match up.user_id {
                 Some(id) => Some(get_user_page_data(session_id, UserUuid(id)).await),
@@ -147,55 +147,12 @@ pub fn UserPage() -> impl IntoView {
             },
             Err(_) => None,
         }
-    };
-    let resource = Resource::new(source, fetch);
-    view! {
-    <SessionGuard>
-        <TopBar/>
-            <IsLoggedIn>
-                    <ResourceGuard resource>
-                        <UserPageWithData />
-                    </ResourceGuard>
-                    /*<PageGuard with_parameters = |session_id| GetUserPageData{
-                            session_id,
-                            user_id: { use_context::<UserPageParamsContext>().expect_context().user_id }
-                        }>
-                        <UserPageWithData />
-                    </PageGuard>*/
-            </IsLoggedIn>
-        <FootBar/>
-    </SessionGuard>
-            }
-    /*
-    || {
-        let params = use_params::<UserParams>();
-        let user_id = params
-            .get()
-            .ok()
-            .and_then(|params| params.user_id.map(UserUuid));
-        match user_id {
-            Some(user_id) => Either::Left({
-                provide_context(UserPageParamsContext { user_id });
+    }
 
-            }),
-            None => Either::Right(view! {
-                <SessionGuard>
-                    <TopBar/>
-                        <MainColumn>
-                            <div> "No User Found" </div>
-                        </MainColumn>
-                    <FootBar/>
-                </SessionGuard>
-            }),
-        }
-    } */
-}
-
-#[component]
-pub fn UserPageWithData() -> impl IntoView {
-    let user_page_data = use_context::<UserPageDataContext>().expect_context();
-    view! {
-        <MainColumn>
+    #[instrument]
+    fn with_data() -> impl IntoView {
+        let user_page_data = use_context::<UserPageDataContext>().expect_context();
+        view! {
             <h1> "Hi there " {user_page_data.user_name} "!" </h1>
             //<AccessBar user_data = user_data.clone()/>
             <AdColumns>
@@ -228,6 +185,28 @@ pub fn UserPageWithData() -> impl IntoView {
                     />
                 </RoundedBox>
             </AdColumns>
-        </MainColumn>
+        }
+    }
+
+    #[instrument]
+    fn without_session() -> impl IntoView {
+        view! {
+            <h1 class = "text-3xl m-6"> "Hi there, welcome to Communitee." </h1>
+            <h2 class = "text-xl m-2"> "The social media platform exclusively controlled by its users." </h2>
+            <RoundedBox>
+                <h3 class = "text-lg m-2"> "Using Communitee guarantees:" </h3>
+                <ul class = "text-sm m-2">
+                    <li> "Your content and data is *never* used to personalised your feed or the adverts you are shown." </li>
+                    <li> "Your experience is curated by yourself and fellow users, and never by an opaque algorithm controlled by tech companies." </li>
+                    <li> "You and your fellow users can anonymously vote for the content you like, and this vote exclusively determines which content is shown. There are no paid posts." </li>
+                    <li> "All adverts are clearly marked as adverts, and are chosen by the users." </li>
+                    <li> "Admins are democratically elected by the users they serve." </li>
+                    <li> "Content is moderated by fellow users who are empowered by the democratic wishes of the users they serve." </li>
+                    <li> "All users are verified in a safe and anonymous process, which guarantees identity without risking their private data." </li>
+                    <li> "Data is distributed among many cooperating nodes, with multiple levels of encryption to ensure privacy." </li>
+                </ul>
+            </RoundedBox>
+            <LoginBox />
+        }
     }
 }

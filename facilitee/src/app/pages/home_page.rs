@@ -3,15 +3,15 @@ use abilitee::{
     app::{
         TopLevelContext,
         components::{
-            AdColumns, FootBar, LoginBox, MainColumn, NewPostBox, PostBox, PostData
+            AdColumns, LoginBox, NewPostBox, PostBox, PostData
         },
-        generic_components::{RoundedBox, error_box},
+        generic_components::RoundedBox, guards::GuardedPage,
     },
 };
-use leptos::{either::Either, prelude::*};
+use leptos::prelude::*;
 use libertee::{SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
-use tracing::{Span, instrument};
+use tracing::instrument;
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use abilitee::{ServerSideData, format_datetime};
@@ -28,36 +28,6 @@ pub struct HomePageDataContext {
 
 impl Expect for HomePageDataContext {
     const EXPECT: &'static str = "HomePageDataContext should be provided, this should never fail.";
-}
-
-trait GuardedPageContext : Clone + Serialize + for<'a>Deserialize<'a> + Expect + 'static + Send + Sync {
-    type ServerFunction;
-    type Component;
-    type Source: PartialEq + Clone + Send + Sync;
-
-    fn source() -> Self::Source;
-    fn fetch(_: Self::Source) -> impl Future<Output = Option<Result<Self, ServerFnError>>> + Send;
-    fn with_data() -> impl IntoView;
-    fn without_session() -> impl IntoView;
-    
-    fn with_session() -> impl IntoView {
-        let resource = Resource::new(Self::source, Self::fetch);
-        view! {
-            <Transition>
-                {move || resource.get()
-                    .flatten()
-                    .map(|value| view! {
-                        <ErrorBoundary fallback = error_box>
-                            {value.map(|value| {
-                                provide_context(value);
-                                Self::with_data
-                            })}
-                        </ErrorBoundary>
-                    })
-                }
-            </Transition>
-        }
-    }
 }
 
 #[server]
@@ -92,38 +62,10 @@ pub async fn get_home_page_data(
     Ok(data)
 }
 
-#[component]
-#[instrument(parent = use_context::<TopLevelContext>().map(|c|c.span).unwrap_or(Span::current()))]
-pub fn HomePage() -> impl IntoView {
-    view! {
-        <MainColumn>
-            <Suspense>
-                {move || {
-                    let top_level_context = use_context::<TopLevelContext>()
-                        .expect_context();
-                    let session_id = top_level_context
-                        .session_id
-                        .get()
-                        .and_then(|session_id|session_id
-                            .inspect_err(|e|tracing::error!("{e}"))
-                            .ok()
-                        ).flatten();
-                    if session_id.is_some() {
-                        Either::Left(HomePageDataContext::with_session)
-                    } else {
-                        Either::Right(HomePageDataContext::without_session)
-                    }
+pub struct HomePage;
 
-                }}
-            </Suspense>
-        </MainColumn>
-        <FootBar />
-    }
-}
-
-impl GuardedPageContext for HomePageDataContext {
-    type ServerFunction = GetHomePageData;
-    type Component = HomePageProps;
+impl GuardedPage for HomePage {
+    type DataContext = HomePageDataContext;
     type Source = (usize, usize);
     
     #[instrument]

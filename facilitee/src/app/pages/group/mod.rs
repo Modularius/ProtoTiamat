@@ -1,17 +1,17 @@
 use abilitee::{
-    ContextExt, Expect,
-    app::{
-        components::{AdColumns, FootBar, MainColumn, NewPostBox, PostBox, PostData, TopBar},
+    ContextExt, Expect, TopLevelContext, app::{
+        components::{AdColumns, LoginBox, NewPostBox, PostBox, PostData},
         generic_components::{
             ButtonControl, ButtonFunction, ControlStack, ErrorBox, LabelledControlStack, RoundedBox,
         },
-        guards::{PageGuard, SessionGuard},
-    },
+        guards::GuardedPage,
+    }
 };
 use leptos::{either::Either, prelude::*};
-use leptos_router::{hooks::use_params, params::Params};
+use leptos_router::{hooks::use_params, params::{Params, ParamsError}};
 use libertee::{GroupUuid, SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
+use tracing::instrument;
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "ssr")] {
@@ -21,8 +21,8 @@ cfg_if::cfg_if! {
     }
 }
 
-#[derive(Clone, Params, PartialEq)]
-struct GroupParams {
+#[derive(Clone, Debug, Params, PartialEq)]
+pub struct GroupParams {
     group_id: Option<String>,
 }
 
@@ -139,47 +139,43 @@ pub async fn get_group_page_data(
     Ok(data)
 }
 
-#[component]
-pub fn GroupPage() -> impl IntoView {
-    let params = use_params::<GroupParams>();
-    let group_id = params
-        .get()
-        .ok()
-        .and_then(|params| params.group_id.map(GroupUuid));
-    match group_id {
-        Some(group_id) => Either::Left({
-            provide_context(GroupPageParamsContext { group_id });
-            view! {
-                <SessionGuard>
-                    <TopBar/>
-                        <PageGuard with_parameters = |session_id| GetGroupPageData{
-                                session_id,
-                                group_id: { use_context::<GroupPageParamsContext>().expect_context().group_id }
-                            }>
-                            <GroupPageWithData />
-                        </PageGuard>
-                    <FootBar/>
-                </SessionGuard>
-            }
-        }),
-        None => Either::Right(view! {
-            <SessionGuard>
-                <TopBar/>
-                    <MainColumn>
-                        <div> "No User Found" </div>
-                    </MainColumn>
-                <FootBar/>
-            </SessionGuard>
-        }),
-    }
-}
+pub struct GroupPage;
 
-#[component]
-fn GroupPageWithData() -> impl IntoView {
-    let group_page_data = use_context::<GroupPageDataContext>().expect_context();
-    let member = group_page_data.member;
-    view! {
-        <MainColumn>
+impl GuardedPage for GroupPage {
+    type DataContext = GroupPageDataContext;
+    type Source = (usize, usize, Result<GroupParams, ParamsError>);
+    
+    #[instrument]
+    fn source() -> Self::Source {
+        let params = use_params::<GroupParams>();
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
+        (
+            top_level_context.login.version().get(),
+            top_level_context.logout.version().get(),
+            params.get(),
+        )
+    }
+
+    #[instrument]
+    async fn fetch((_, _, params): Self::Source) -> Option<Result<GroupPageDataContext, ServerFnError>> {
+        let top_level_context = use_context::<TopLevelContext>()
+            .expect_context();
+        let session_id = top_level_context.session_id.get_untracked()
+            .unwrap().unwrap().unwrap();
+        match params {
+            Ok(up) => match up.group_id {
+                Some(id) => Some(get_group_page_data(session_id, GroupUuid(id)).await),
+                None => None,
+            },
+            Err(_) => None,
+        }
+    }
+
+    #[instrument]
+    fn with_data() -> impl IntoView {
+        let group_page_data = use_context::<GroupPageDataContext>().expect_context();
+        let member = group_page_data.member;
+        view! {
             <h1 class = "text-4xl m-2"> "Hi there " {group_page_data.user_name} "!" </h1>
             <AdColumns>
                 <h2 class = "text-2xl m-2"> "Group Name: " {group_page_data.group_name} </h2>
@@ -206,7 +202,29 @@ fn GroupPageWithData() -> impl IntoView {
                     }
                 }
             </AdColumns>
-        </MainColumn>
+        }
+    }
+
+    #[instrument]
+    fn without_session() -> impl IntoView {
+        view! {
+            <h1 class = "text-3xl m-6"> "Hi there, welcome to Communitee." </h1>
+            <h2 class = "text-xl m-2"> "The social media platform exclusively controlled by its users." </h2>
+            <RoundedBox>
+                <h3 class = "text-lg m-2"> "Using Communitee guarantees:" </h3>
+                <ul class = "text-sm m-2">
+                    <li> "Your content and data is *never* used to personalised your feed or the adverts you are shown." </li>
+                    <li> "Your experience is curated by yourself and fellow users, and never by an opaque algorithm controlled by tech companies." </li>
+                    <li> "You and your fellow users can anonymously vote for the content you like, and this vote exclusively determines which content is shown. There are no paid posts." </li>
+                    <li> "All adverts are clearly marked as adverts, and are chosen by the users." </li>
+                    <li> "Admins are democratically elected by the users they serve." </li>
+                    <li> "Content is moderated by fellow users who are empowered by the democratic wishes of the users they serve." </li>
+                    <li> "All users are verified in a safe and anonymous process, which guarantees identity without risking their private data." </li>
+                    <li> "Data is distributed among many cooperating nodes, with multiple levels of encryption to ensure privacy." </li>
+                </ul>
+            </RoundedBox>
+            <LoginBox />
+        }
     }
 }
 

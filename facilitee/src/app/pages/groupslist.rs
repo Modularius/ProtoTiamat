@@ -1,14 +1,14 @@
 use abilitee::{
-    ContextExt, Expect,
-    app::{
-        components::{AdColumns, FootBar, MainColumn, TopBar},
+    ContextExt, Expect, TopLevelContext, app::{
+        components::{AdColumns, LoginBox},
         generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox},
-        guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard},
-    },
+        guards::GuardedPage,
+    }
 };
 use leptos::prelude::*;
 use libertee::{GroupData, SessionUuid};
 use serde::{Deserialize, Serialize};
+use tracing::instrument;
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::ServerSideData;
@@ -62,29 +62,35 @@ pub async fn get_groupslist_page_data(
     Ok(data)
 }
 
-#[component]
-pub fn GroupslistPage() -> impl IntoView {
-    view! {
-        <SessionGuard>
-            <TopBar/>
-                <IsLoggedIn>
-                    <PageGuard with_parameters = |session_id|GetGroupslistPageData{ session_id, max_groups: 10 }>
-                        <GroupslistPageWithData />
-                    </PageGuard>
-                </IsLoggedIn>
-                <NotLoggedIn>
-                    "Not Logged In"
-                </NotLoggedIn>
-            <FootBar/>
-        </SessionGuard>
-    }
-}
 
-#[component]
-pub fn GroupslistPageWithData() -> impl IntoView {
-    let groupslist_page_data = use_context::<GroupslistPageDataContext>().expect_context();
-    view! {
-        <MainColumn>
+pub struct GroupslistPage;
+
+impl GuardedPage for GroupslistPage {
+    type DataContext = GroupslistPageDataContext;
+    type Source = (usize, usize);
+
+    #[instrument]
+    fn source() -> Self::Source {
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
+        (
+            top_level_context.login.version().get(),
+            top_level_context.logout.version().get(),
+        )
+    }
+
+    #[instrument]
+    async fn fetch(_: Self::Source) -> Option<Result<GroupslistPageDataContext, ServerFnError>> {
+        let top_level_context = use_context::<TopLevelContext>()
+            .expect_context();
+        let session_id = top_level_context.session_id.get_untracked()
+            .unwrap().unwrap().unwrap();
+        Some(get_groupslist_page_data(session_id, 10).await)
+    }
+
+    #[instrument]
+    fn with_data() -> impl IntoView {
+        let groupslist_page_data = use_context::<GroupslistPageDataContext>().expect_context();
+        view! {
             <h1> "Hi there " {groupslist_page_data.user_name} "!" </h1>
             //<AccessBar user_data = user_data.clone()/>
             <AdColumns>
@@ -102,6 +108,14 @@ pub fn GroupslistPageWithData() -> impl IntoView {
                     />
                 </RoundedBox>
             </AdColumns>
-        </MainColumn>
+        }
+    }
+
+    #[instrument]
+    fn without_session() -> impl IntoView {
+        view! {
+            "Not Logged In"
+            <LoginBox />
+        }
     }
 }

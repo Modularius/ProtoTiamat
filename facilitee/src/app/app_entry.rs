@@ -3,8 +3,7 @@ use crate::app::pages::{
     RegisterPage, UserPage,
 };
 use abilitee::{
-    ClientSideData, ContextExt, PerformLogin, PerformLogout, TopLevelContext,
-    get_session_from_identity,
+    ClientSideData, ContextExt, PerformLogin, PerformLogout, TopLevelContext, app::guards::GuardedPage, get_session_from_identity
 };
 use leptos::prelude::*;
 use leptos_meta::provide_meta_context;
@@ -48,17 +47,17 @@ pub fn App() -> impl IntoView {
     view! {
         <Router> // base = public_path>
             <Routes fallback = NotFound>
-                <Route path = path!("/") view = HomePage ssr = SsrMode::Async />
+                <Route path = path!("/") view = HomePage::component ssr = SsrMode::Async />
                 <Route path = path!("/register") view = RegisterPage ssr = SsrMode::Async />
                 <Route path = path!("/login") view = LoginPage ssr = SsrMode::Async />
-                <Route path = path!("/friends") view = FriendlistPage ssr = SsrMode::Async />
-                <Route path = path!("/groups") view = GroupslistPage ssr = SsrMode::Async />
+                <Route path = path!("/friends") view = FriendlistPage::component ssr = SsrMode::Async />
+                <Route path = path!("/groups") view = GroupslistPage::component ssr = SsrMode::Async />
                 <Route path = path!("/messages") view = MessagesPage ssr = SsrMode::Async />
                 <ParentRoute path = path!("/user") view = ||view!{<Outlet />}>
-                    <Route path = path!(":user_id") view = UserPage ssr = SsrMode::Async />
+                    <Route path = path!(":user_id") view = UserPage::component ssr = SsrMode::Async />
                 </ParentRoute>
                 <ParentRoute path = path!("/group") view = ||view!{<Outlet />}>
-                    <Route path = path!(":group_id") view = GroupPage ssr = SsrMode::Async />
+                    <Route path = path!(":group_id") view = GroupPage::component ssr = SsrMode::Async />
                 </ParentRoute>
                 <Route path = path!("/help") view = HelpPage ssr = SsrMode::Async />
         </Routes>
