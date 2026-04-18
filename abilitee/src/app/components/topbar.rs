@@ -15,7 +15,6 @@ use crate::{
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::ServerSideData;
-    use libertee::LiberteeError;
 } }
 
 #[component]
@@ -124,12 +123,10 @@ async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext
     let server = server_side_data.server.lock()?;
 
     let session = server
-        .get_session(&session_id)
-        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+        .get_session(&session_id)?;
 
     let user = server
-        .get_user(&session.user)
-        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+        .get_user(&session.user)?;
 
     Ok(UserBarDataContext {
         user_name: user.data.name.clone(),
@@ -150,7 +147,7 @@ fn UserBar() -> impl IntoView {
     let fetch = async |_| {
         let session_id = use_context::<TopLevelContext>()
             .expect_context()
-            .session_id_res
+            .session_id
             .get()
             .and_then(|session_id_res| match session_id_res {
                 Ok(session_id_res) => session_id_res,

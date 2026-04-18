@@ -13,7 +13,6 @@ use tracing::instrument;
 cfg_if::cfg_if! {
     if #[cfg(feature = "ssr")] {
         use crate::{ServerSideData, structs::ContextExt};
-        use libertee::LiberteeError;
     }
 }
 
@@ -29,17 +28,13 @@ pub async fn submit_post(data: SubmitPostData) -> Result<Option<PostData>, Serve
             SubmitPostType::Reply(_post_uuid) => None,
             SubmitPostType::Group(group_uuid) => {
                 let post_id = server
-                    .add_post_to_group(&group_uuid, &data.user_id, data.subject, data.contents)
-                    .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+                    .add_post_to_group(&group_uuid, &data.user_id, data.subject, data.contents)?;
                 let group = server
-                    .get_group(&group_uuid)
-                    .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+                    .get_group(&group_uuid)?;
                 let user = server
-                    .get_user(&data.user_id)
-                    .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+                    .get_user(&data.user_id)?;
                 let post = group
-                    .get_post(&post_id)
-                    .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+                    .get_post(&post_id)?;
                 Some(PostData::new(post, user))
             }
         }

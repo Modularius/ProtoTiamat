@@ -11,7 +11,7 @@ where
     C: IntoView + 'static,
 {
     let top_level_context = use_context::<TopLevelContext>().expect_context();
-    let session_id = top_level_context.session_id_res;
+    let session_id = top_level_context.session_id;
     let children = StoredValue::new(children);
 
     {

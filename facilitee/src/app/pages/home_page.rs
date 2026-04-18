@@ -3,10 +3,9 @@ use abilitee::{
     app::{
         TopLevelContext,
         components::{
-            AdColumns, FootBar, LoginBox, MainColumn, NewPostBox, PostBox, PostData, TopBar,
+            AdColumns, FootBar, LoginBox, MainColumn, NewPostBox, PostBox, PostData
         },
-        generic_components::RoundedBox,
-        guards::ResourceGuard, //{IsLoggedIn, NotLoggedIn, PageGuard, ResourceGuard, SessionGuard},
+        generic_components::{RoundedBox, error_box},
     },
 };
 use leptos::{either::Either, prelude::*};
@@ -17,7 +16,6 @@ use tracing::{Span, instrument};
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use abilitee::{ServerSideData, format_datetime};
     use chrono::Utc;
-    use libertee::LiberteeError;
 } }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -32,6 +30,36 @@ impl Expect for HomePageDataContext {
     const EXPECT: &'static str = "HomePageDataContext should be provided, this should never fail.";
 }
 
+trait GuardedPageContext : Clone + Serialize + for<'a>Deserialize<'a> + Expect + 'static + Send + Sync {
+    type ServerFunction;
+    type Component;
+    type Source: PartialEq + Clone + Send + Sync;
+
+    fn source() -> Self::Source;
+    fn fetch(_: Self::Source) -> impl Future<Output = Option<Result<Self, ServerFnError>>> + Send;
+    fn with_data() -> impl IntoView;
+    fn without_session() -> impl IntoView;
+    
+    fn with_session() -> impl IntoView {
+        let resource = Resource::new(Self::source, Self::fetch);
+        view! {
+            <Transition>
+                {move || resource.get()
+                    .flatten()
+                    .map(|value| view! {
+                        <ErrorBoundary fallback = error_box>
+                            {value.map(|value| {
+                                provide_context(value);
+                                Self::with_data
+                            })}
+                        </ErrorBoundary>
+                    })
+                }
+            </Transition>
+        }
+    }
+}
+
 #[server]
 #[instrument]
 pub async fn get_home_page_data(
@@ -41,13 +69,9 @@ pub async fn get_home_page_data(
     let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
 
-    let session = server
-        .get_session(&session_id)
-        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+    let session = server.get_session(&session_id)?;
 
-    let user = server
-        .get_user(&session.user)
-        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+    let user = server.get_user(&session.user)?;
 
     let data = HomePageDataContext {
         user_id: user.data.id.clone(),
@@ -71,117 +95,101 @@ pub async fn get_home_page_data(
 #[component]
 #[instrument(parent = use_context::<TopLevelContext>().map(|c|c.span).unwrap_or(Span::current()))]
 pub fn HomePage() -> impl IntoView {
-    let source = || {
+    view! {
+        <MainColumn>
+            <Suspense>
+                {move || {
+                    let top_level_context = use_context::<TopLevelContext>()
+                        .expect_context();
+                    let session_id = top_level_context
+                        .session_id
+                        .get()
+                        .and_then(|session_id|session_id
+                            .inspect_err(|e|tracing::error!("{e}"))
+                            .ok()
+                        ).flatten();
+                    if session_id.is_some() {
+                        Either::Left(HomePageDataContext::with_session)
+                    } else {
+                        Either::Right(HomePageDataContext::without_session)
+                    }
+
+                }}
+            </Suspense>
+        </MainColumn>
+        <FootBar />
+    }
+}
+
+impl GuardedPageContext for HomePageDataContext {
+    type ServerFunction = GetHomePageData;
+    type Component = HomePageProps;
+    type Source = (usize, usize);
+    
+    #[instrument]
+    fn source() -> Self::Source {
         let top_level_context = use_context::<TopLevelContext>().expect_context();
         (
             top_level_context.login.version().get(),
             top_level_context.logout.version().get(),
         )
-    };
-    let fetch = async |_| {
-        let session_id: SessionUuid = use_context::<TopLevelContext>()
-            .expect_context()
-            .session_id_expect();
+    }
+
+    #[instrument]
+    async fn fetch(_: Self::Source) -> Option<Result<HomePageDataContext, ServerFnError>> {
+        let top_level_context = use_context::<TopLevelContext>()
+            .expect_context();
+        let session_id = top_level_context.session_id.get_untracked()
+            .unwrap().unwrap().unwrap();
         Some(get_home_page_data(session_id, 10).await)
-    };
-    view! {
-        //<SessionGuard>
-            <TopBar/>
-            <MainColumn>
-            <Suspense>
-                {move ||
-                    if use_context::<TopLevelContext>().expect_context()
-                    .session_id_res
-                    .get()
-                    .and_then(|session_id_res| match session_id_res {
-                        Ok(session_id_res) => session_id_res,
-                        Err(e) => {
-                            tracing::error!("{e}");
-                            None
+    }
+
+    #[instrument]
+    fn with_data() -> impl IntoView {
+        let home_page_data = use_context::<HomePageDataContext>().expect_context();
+        view! {
+            <h1 class = "text-3xl m-6"> "Hi there " {home_page_data.user_name.clone()} "!" </h1>
+            <AdColumns>
+                <RoundedBox>
+                    <h2 class = "text-xl m-2"> "Submit a post:" </h2>
+                    <NewPostBox
+                        user_id = {home_page_data.user_id.clone()}
+                        group_id = None
+                    />
+                </RoundedBox>
+                <RoundedBox>
+                    <h2 class = "text-lg m-2"> "Current feed (as of " {home_page_data.datetime_feed_generated.clone()} "): "</h2>
+                    <For
+                        each = move ||home_page_data.posts.clone().into_iter().enumerate()
+                        key = |(i,_)|*i
+                        children = |(_,post)| view!{
+                            <PostBox post = post/>
                         }
-                    })
-                    .is_some() {
-                        Either::Left(view!{
-                            <ResourceGuard resource = Resource::new(source, fetch)>
-                                <HomePageWithData />
-                            </ResourceGuard>
-                        })
-                    } else {
-                        Either::Right(view!{
-                            <LandingPage />
-                            <LoginBox />
-                        })
-                    }
-
-                }
-                /*
-                <IsLoggedIn>
-                    //<PageGuard with_parameters = |session_id|GetHomePageData{ session_id, max_posts: 10 }>
-                    <ResourceGuard resource = Resource::new(source, fetch)>
-                        <HomePageWithData />
-                    </ResourceGuard>
-                    //</PageGuard>
-                </IsLoggedIn>
-                <NotLoggedIn>
-                    <LandingPage />
-                    <LoginBox />
-                </NotLoggedIn>
-                 */
-            </Suspense>
-            </MainColumn>
-            <FootBar />
-        //</SessionGuard>
+                    />
+                </RoundedBox>
+            </AdColumns>
+        }
     }
-}
 
-#[component]
-#[instrument]
-fn HomePageWithData() -> impl IntoView {
-    provide_context(tracing::Span::current());
-    let home_page_data = use_context::<HomePageDataContext>().expect_context();
-    view! {
-        <h1 class = "text-3xl m-6"> "Hi there " {home_page_data.user_name.clone()} "!" </h1>
-        <AdColumns>
+    #[instrument]
+    fn without_session() -> impl IntoView {
+        view! {
+            <h1 class = "text-3xl m-6"> "Hi there, welcome to Communitee." </h1>
+            <h2 class = "text-xl m-2"> "The social media platform exclusively controlled by its users." </h2>
             <RoundedBox>
-                <h2 class = "text-xl m-2"> "Submit a post:" </h2>
-                <NewPostBox
-                    user_id = {home_page_data.user_id.clone()}
-                    group_id = None
-                />
+                <h3 class = "text-lg m-2"> "Using Communitee guarantees:" </h3>
+                <ul class = "text-sm m-2">
+                    <li> "Your content and data is *never* used to personalised your feed or the adverts you are shown." </li>
+                    <li> "Your experience is curated by yourself and fellow users, and never by an opaque algorithm controlled by tech companies." </li>
+                    <li> "You and your fellow users can anonymously vote for the content you like, and this vote exclusively determines which content is shown. There are no paid posts." </li>
+                    <li> "All adverts are clearly marked as adverts, and are chosen by the users." </li>
+                    <li> "Admins are democratically elected by the users they serve." </li>
+                    <li> "Content is moderated by fellow users who are empowered by the democratic wishes of the users they serve." </li>
+                    <li> "All users are verified in a safe and anonymous process, which guarantees identity without risking their private data." </li>
+                    <li> "Data is distributed among many cooperating nodes, with multiple levels of encryption to ensure privacy." </li>
+                </ul>
             </RoundedBox>
-            <RoundedBox>
-                <h2 class = "text-lg m-2"> "Current feed (as of " {home_page_data.datetime_feed_generated.clone()} "): "</h2>
-                <For
-                    each = move ||home_page_data.posts.clone().into_iter().enumerate()
-                    key = |(i,_)|*i
-                    children = |(_,post)| view!{
-                        <PostBox post = post/>
-                    }
-                />
-            </RoundedBox>
-        </AdColumns>
-    }
-}
-
-#[component]
-#[instrument]
-fn LandingPage() -> impl IntoView {
-    provide_context(tracing::Span::current());
-    view! {
-        <h1 class = "text-3xl m-6"> "Hi there, welcome to Communitee." </h1>
-        <h2 class = "text-xl m-2"> "The social media platform exclusively controlled by its users." </h2>
-        <RoundedBox>
-            <h3 class = "text-lg m-2"> "Using Communitee guarantees:" </h3>
-            <ul class = "text-sm m-2">
-                <li> "Your content and data is *never* used to personalised your feed or the adverts you are shown." </li>
-                <li> "Your experience is curated by yourself and fellow users, and never by an opaque algorithm controlled by tech companies." </li>
-                <li> "You and your fellow users can anonymously vote for the content you like, and this vote exclusively determines which content is shown. There are no paid posts." </li>
-                <li> "All adverts are clearly marked as adverts, and are chosen by the users." </li>
-                <li> "Admins are democratically elected by the users they serve." </li>
-                <li> "Content is moderated by fellow users who are empowered by the democratic wishes of the users they serve." </li>
-                <li> "All users are verified in a safe and anonymous process, which guarantees identity without risking their private data." </li>
-                <li> "Data is distributed among many cooperating nodes, with multiple levels of encryption to ensure privacy." </li>
-            </ul>
-        </RoundedBox>
+            <LoginBox />
+        }
     }
 }

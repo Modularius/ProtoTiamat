@@ -15,7 +15,6 @@ use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use libertee::LiberteeError;
         use abilitee::ServerSideData;
     }
 }
@@ -61,13 +60,11 @@ async fn get_user_page_data(
     let server = server_side_data.server.lock()?;
     tracing::debug!("Got Server");
     let _session = server
-        .get_session(&session_id)
-        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+        .get_session(&session_id)?;
 
     tracing::debug!("Got Session");
     let user = server
-        .get_user(&user_id)
-        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+        .get_user(&user_id)?;
 
     tracing::debug!("Got User");
     let properties = user.data.properties.clone();

@@ -21,7 +21,7 @@ where
     move || {
         let session = use_context::<TopLevelContext>()
             .expect_context()
-            .session_id_res
+            .session_id
             .get()
             .and_then(|session_id_res| match session_id_res {
                 Ok(session_id_res) => session_id_res,
@@ -53,7 +53,7 @@ where
             children: children.clone(),
             when: move || use_context::<TopLevelContext>()
                 .expect_context()
-                .session_id_res
+                .session_id
                 .get()
                 .and_then(|session_id_res| match session_id_res {
                     Ok(session_id_res) => session_id_res,

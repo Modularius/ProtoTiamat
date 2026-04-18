@@ -8,7 +8,6 @@ cfg_if! {
         use actix_identity::Identity;
         use actix_web::{HttpMessage, HttpRequest};
         use crate::{ServerSideData, structs::ContextExt};
-        use libertee::LiberteeError;
         use tracing::debug;
     }
 }
@@ -33,8 +32,7 @@ pub async fn get_session_from_identity() -> Result<Option<SessionUuid>, ServerFn
             let server = server_mutex.lock()?;
             Ok(Some(
                 server
-                    .get_session(&SessionUuid(id))
-                    .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?
+                    .get_session(&SessionUuid(id))?
                     .uuid
                     .clone(),
             ))
@@ -53,9 +51,7 @@ pub async fn perform_login(
 
     let mut server = server_side_data.server.lock()?;
 
-    let session = server
-        .create_new_session(&auth)
-        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+    let session = server.create_new_session(&auth)?;
 
     let request = extract::<HttpRequest>()
         .await
@@ -115,7 +111,6 @@ pub async fn register(auth: LoginAuth, _new_path: String) -> Result<Session, Ser
 
     let mut server = server_side_data.server.lock()?;
     let session = server
-        .create_new_session(&auth)
-        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+        .create_new_session(&auth)?;
     Ok(session.clone())
 }

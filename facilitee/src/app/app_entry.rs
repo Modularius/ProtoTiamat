@@ -32,26 +32,14 @@ pub fn App() -> impl IntoView {
     let login = ServerAction::<PerformLogin>::new();
     let logout = ServerAction::<PerformLogout>::new();
 
-    let session_id_res: Resource<Result<Option<SessionUuid>, ServerFnError>> =
+    let session_id: Resource<Result<Option<SessionUuid>, ServerFnError>> =
         Resource::new_blocking(
             move || (login.version().get(), logout.version().get()),
             |_| get_session_from_identity(),
         );
-    /*let session_id = Signal::derive(move || {
-        session_id_res
-            .get()
-            .and_then(|session_id_res| match session_id_res {
-                Ok(session_id_res) => session_id_res,
-                Err(e) => {
-                    tracing::error!("{e}");
-                    None
-                }
-            })
-    });*/
     provide_context(TopLevelContext {
         client_side_data,
-        session_id_res,
-        //session_id,
+        session_id,
         login,
         logout,
         span: Span::current(),

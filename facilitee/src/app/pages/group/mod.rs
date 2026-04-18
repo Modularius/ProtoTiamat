@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 cfg_if::cfg_if! {
     if #[cfg(feature = "ssr")] {
         use abilitee::format_datetime;
-        use libertee::{Group, Member, Delegate, LiberteeError, UserData};
+        use libertee::{Group, Member, Delegate, UserData};
         use crate::{Server, ServerSideData};
     }
 }
@@ -116,16 +116,13 @@ pub async fn get_group_page_data(
     let server = server_side_data.server.lock()?;
 
     let group = server
-        .get_group(&group_id)
-        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+        .get_group(&group_id)?;
 
     let session = server
-        .get_session(&session_id)
-        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+        .get_session(&session_id)?;
 
     let user = server
-        .get_user(&session.user)
-        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+        .get_user(&session.user)?;
 
     let data = GroupPageDataContext {
         user_id: user.data.id.clone(),

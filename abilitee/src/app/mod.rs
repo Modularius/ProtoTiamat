@@ -18,8 +18,7 @@ pub use components::SubmitPost;
 #[derive(Clone)]
 pub struct TopLevelContext {
     pub client_side_data: ClientSideData,
-    pub session_id_res: Resource<Result<Option<SessionUuid>, ServerFnError>>,
-    //pub session_id: Signal<Option<SessionUuid>>,
+    pub session_id: Resource<Result<Option<SessionUuid>, ServerFnError>>,
     pub login: ServerAction<PerformLogin>,
     pub logout: ServerAction<PerformLogout>,
     pub span: Span,
@@ -29,7 +28,7 @@ impl TopLevelContext {
     #[inline]
     #[track_caller]
     pub fn session_id_expect(&self) -> SessionUuid {
-        self.session_id_res
+        self.session_id
             .get()
             .unwrap()
             .expect("session_id_expect should only be called inside <SessionGuard>, this should never fail.")

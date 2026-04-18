@@ -12,7 +12,6 @@ use serde::{Deserialize, Serialize};
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use crate::ServerSideData;
-    use libertee::LiberteeError;
 } }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -44,12 +43,10 @@ pub async fn get_groupslist_page_data(
     let server = server_side_data.server.lock()?;
 
     let session = server
-        .get_session(&session_id)
-        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+        .get_session(&session_id)?;
 
     let user = server
-        .get_user(&session.user)
-        .map_err(ServerFnError::<LiberteeError>::WrappedServerError)?;
+        .get_user(&session.user)?;
 
     let data = GroupslistPageDataContext {
         user_name: user.data.name.clone(),
