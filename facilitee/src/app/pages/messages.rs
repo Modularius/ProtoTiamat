@@ -1,14 +1,14 @@
 use abilitee::{
-    ContextExt, Expect,
-    app::{
-        components::{AdColumns, FootBar, MainColumn, TopBar},
+    ContextExt, Expect, TopLevelContext, app::{
+        components::{AdColumns, LoginBox},
         generic_components::RoundedBox,
-        guards::{IsLoggedIn, NotLoggedIn, PageGuard, SessionGuard},
-    },
+        guards::GuardedPage,
+    }
 };
 use leptos::prelude::*;
 use libertee::SessionUuid;
 use serde::{Deserialize, Serialize};
+use tracing::instrument;
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "ssr")] {
@@ -63,29 +63,33 @@ pub async fn get_messages_page_data(
     Ok(data)
 }
 
-#[component]
-pub fn MessagesPage() -> impl IntoView {
-    view! {
-        <SessionGuard>
-            <TopBar/>
-                <IsLoggedIn>
-                    <PageGuard with_parameters = |session_id|GetMessagesPageData{ session_id, max_messages: 10 }>
-                        <MessagesPageWithData />
-                    </PageGuard>
-                </IsLoggedIn>
-                <NotLoggedIn>
-                    "Not Logged In"
-                </NotLoggedIn>
-            <FootBar/>
-        </SessionGuard>
-    }
-}
+pub struct MessagesPage;
 
-#[component]
-pub fn MessagesPageWithData() -> impl IntoView {
-    let messages_page_data = use_context::<MessagesPageDataContext>().expect_context();
-    view! {
-        <MainColumn>
+impl GuardedPage for MessagesPage {
+    type DataContext = MessagesPageDataContext;
+    type Source = (usize, usize);
+
+    #[instrument]
+    fn source() -> Self::Source {
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
+        (
+            top_level_context.login.version().get(),
+            top_level_context.logout.version().get(),
+        )
+    }
+
+    #[instrument]
+    async fn fetch(_: Self::Source) -> Option<Result<Self::DataContext, ServerFnError>> {
+        let top_level_context = use_context::<TopLevelContext>()
+            .expect_context();
+        let session_id = top_level_context.session_id.get_untracked()
+            .unwrap().unwrap().unwrap();
+        Some(get_messages_page_data(session_id, 10).await)
+    }
+
+    fn with_data() -> impl IntoView {
+        let messages_page_data = use_context::<MessagesPageDataContext>().expect_context();
+        view! {
             <h1> "Hi there " {messages_page_data.user_name} "!" </h1>
             <AdColumns>
                 <h2> "Groups you are currently subscribed to or following: "</h2>
@@ -101,6 +105,12 @@ pub fn MessagesPageWithData() -> impl IntoView {
                     />
                 </RoundedBox>
             </AdColumns>
-        </MainColumn>
+        }
+    }
+
+    fn without_session() -> impl IntoView {
+        view!{
+            <LoginBox />
+        }
     }
 }

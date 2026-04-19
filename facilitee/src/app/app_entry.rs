@@ -52,7 +52,7 @@ pub fn App() -> impl IntoView {
                 <Route path = path!("/login") view = LoginPage ssr = SsrMode::Async />
                 <Route path = path!("/friends") view = FriendlistPage::component ssr = SsrMode::Async />
                 <Route path = path!("/groups") view = GroupslistPage::component ssr = SsrMode::Async />
-                <Route path = path!("/messages") view = MessagesPage ssr = SsrMode::Async />
+                <Route path = path!("/messages") view = MessagesPage::component ssr = SsrMode::Async />
                 <ParentRoute path = path!("/user") view = ||view!{<Outlet />}>
                     <Route path = path!(":user_id") view = UserPage::component ssr = SsrMode::Async />
                 </ParentRoute>

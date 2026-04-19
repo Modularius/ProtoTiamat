@@ -61,8 +61,6 @@ pub async fn get_groupslist_page_data(
     };
     Ok(data)
 }
-
-
 pub struct GroupslistPage;
 
 impl GuardedPage for GroupslistPage {

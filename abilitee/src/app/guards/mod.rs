@@ -9,8 +9,20 @@ pub use session_guard::SessionGuard;
 use leptos::{either::Either, prelude::*};
 use tracing::instrument;
 
-use crate::{Expect, app::{TopLevelContext, components::{FootBar, MainColumn}, generic_components::error_box}, structs::ContextExt};
+use crate::{Expect, app::{TopLevelContext, components::{FootBar, MainColumn, TopBar}, generic_components::error_box}, structs::ContextExt};
 //use libertee::{Session, SessionUuid, UserData};
+
+pub fn has_session_id() -> bool {
+    use_context::<TopLevelContext>()
+        .expect_context()
+        .session_id
+        .get()
+        .and_then(|session_id|session_id
+            .inspect_err(|e|tracing::error!("{e}"))
+            .ok()
+        ).flatten()
+    .is_some()
+}
 
 pub trait GuardedPage: Send + Sync + 'static {
     type DataContext : Clone + Serialize + for<'a>Deserialize<'a> + Expect + Send + Sync + 'static;
@@ -42,6 +54,7 @@ pub trait GuardedPage: Send + Sync + 'static {
 
     fn component() -> impl IntoView {
         view! {
+            <TopBar />
             <MainColumn>
                 <Suspense>
                     {move || {

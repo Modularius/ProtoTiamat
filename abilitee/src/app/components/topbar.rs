@@ -1,4 +1,4 @@
-use leptos::prelude::*;
+use leptos::{either::Either, prelude::*};
 use leptos_router::components::A;
 use libertee::SessionUuid;
 use serde::{Deserialize, Serialize};
@@ -8,7 +8,7 @@ use crate::{
     app::{
         TopLevelContext,
         generic_components::{ButtonControl, ButtonFunction, ControlStack, LabelledControlStack},
-        guards::{IsLoggedIn, NotLoggedIn, ResourceGuard},
+        guards::{GuardedPage, has_session_id},
     },
     structs::{ContextExt, Expect},
 };
@@ -72,42 +72,46 @@ fn ToolBar(children: Children) -> impl IntoView {
 pub fn TopBar() -> impl IntoView {
     {
         view! {
-            <Suspense>
             <BigBar>
                 <SanctimoneousMissionStatement/>
                 <CommuniteeTitle/>
                 <RightBar>
-                    <IsLoggedIn>
-                        {move || { view!{ <UserBar /> } } }
-                    </IsLoggedIn>
-                    <NotLoggedIn>
-                        <LoginBar />
-                    </NotLoggedIn>
+                    <Suspense> {
+                        || if has_session_id() {
+                            Either::Left(UserBar::component)
+                        } else {
+                            Either::Right(UserBar::without_session)
+                        }
+                    }</Suspense>
                 </RightBar>
             </BigBar>
             <ToolBar>
-                <IsLoggedIn>
-                    <ButtonControl value = "Your Feed" on_click = ButtonFunction::Link("/") />
-                    <ButtonControl value = "Your Friends" on_click = ButtonFunction::Link("/friends") />
-                    <ButtonControl value = "Your Groups" on_click = ButtonFunction::Link("/groups") />
-                    <ButtonControl value = "Your Posts" on_click = ButtonFunction::Link("/posts") />
-                    <ButtonControl value = "Favourites" on_click = ButtonFunction::Link("/favourites") />
-                    <ButtonControl value = "Help" on_click = ButtonFunction::Link("/help") />
-                </IsLoggedIn>
-                <NotLoggedIn>
-                    <ButtonControl value = "Home" on_click = ButtonFunction::Link("/") />
-                    <ButtonControl value = "Login" on_click = ButtonFunction::Link("/login") />
-                    <ButtonControl value = "Join Communitee" on_click = ButtonFunction::Link("/register") />
-                    <ButtonControl value = "What is Communitee" on_click = ButtonFunction::Link("/help") />
-                </NotLoggedIn>
+                <Suspense> {
+                    || if has_session_id() {
+                        Either::Left(view!{
+                            <ButtonControl value = "Your Feed" on_click = ButtonFunction::Link("/") />
+                            <ButtonControl value = "Your Friends" on_click = ButtonFunction::Link("/friends") />
+                            <ButtonControl value = "Your Groups" on_click = ButtonFunction::Link("/groups") />
+                            <ButtonControl value = "Your Posts" on_click = ButtonFunction::Link("/posts") />
+                            <ButtonControl value = "Favourites" on_click = ButtonFunction::Link("/favourites") />
+                            <ButtonControl value = "Help" on_click = ButtonFunction::Link("/help") />
+                        })
+                    } else {
+                        Either::Right(view!{
+                            <ButtonControl value = "Home" on_click = ButtonFunction::Link("/") />
+                            <ButtonControl value = "Login" on_click = ButtonFunction::Link("/login") />
+                            <ButtonControl value = "Join Communitee" on_click = ButtonFunction::Link("/register") />
+                            <ButtonControl value = "What is Communitee" on_click = ButtonFunction::Link("/help") />
+                        })
+                    }
+                } </Suspense>
             </ToolBar>
-            </Suspense>
         }
     }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct UserBarDataContext {
+pub struct UserBarDataContext {
     user_name: String,
     user_page_href: String,
 }
@@ -134,84 +138,47 @@ async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext
     })
 }
 
-#[component]
-#[instrument]
-fn UserBar() -> impl IntoView {
-    let source = || {
+pub struct UserBar;
+
+impl GuardedPage for UserBar {
+    type DataContext = UserBarDataContext;
+    type Source = (usize,usize);
+
+    fn source() -> Self::Source {
         let top_level_context = use_context::<TopLevelContext>().expect_context();
         (
             top_level_context.login.version().get(),
             top_level_context.logout.version().get(),
         )
-    };
-    let fetch = async |_| {
-        let session_id = use_context::<TopLevelContext>()
-            .expect_context()
-            .session_id
-            .get()
-            .and_then(|session_id_res| match session_id_res {
-                Ok(session_id_res) => session_id_res,
-                Err(e) => {
-                    tracing::error!("{e}");
-                    None
-                }
-            });
-        if let Some(session_id) = session_id {
-            Some(get_user_bar_data(session_id).await)
-        } else {
-            None
-        }
-    };
-    view! {
-        <Suspense>
-        <ResourceGuard resource = Resource::new(source, fetch)>
-        //<PageGuard with_parameters = |session_id|GetUserBarData{ session_id }>
-        {
-            let user_bar_data = use_context::<UserBarDataContext>().expect_context();
-            let label = user_bar_data.user_name;
-            let href = Some(user_bar_data.user_page_href);
-            view!{
-                <LabelledControlStack label href class = "w-1/3">
-                    <ButtonControl value = "Settings" on_click = ButtonFunction::closure(|_ev|{}) />
-                    <ButtonControl value = "Logout" on_click = ButtonFunction::closure(|_ev|{})/>
-                </LabelledControlStack>
-            }
-        }
-        //</PageGuard>
-        </ResourceGuard>
-        </Suspense>
     }
-    /*
-    move ||Suspend::new(async move {
-        let user_bar_data = user_bar_action.value().get();
-        user_bar_data.map(|user_bar_data|
-            view! {
-                <ErrorBoundary fallback = |_|{}> {
-                    user_bar_data.map(|user_bar_data| {
-                        let label = user_bar_data.user_name;
-                        let href = Some(user_bar_data.user_page_href);
-                        view!{
-                            <LabelledControlStack label href class = "w-1/3">
-                                <ButtonControl value = "Settings" on_click = ButtonFunction::closure(|_ev|{}) />
-                                <ButtonControl value = "Logout" on_click = ButtonFunction::closure(|_ev|{})/>
-                            </LabelledControlStack>
-                        }
-                    })
-                }
-                </ErrorBoundary>
-            }
-        )
-    }) */
-}
 
-#[component]
-#[instrument]
-fn LoginBar() -> impl IntoView {
-    view! {
-        <ControlStack>
-            <ButtonControl value = "Login" on_click = ButtonFunction::Link("/login") />
-            <ButtonControl value = "Register" on_click = ButtonFunction::Link("/register") />
-        </ControlStack>
+    async fn fetch(_: Self::Source) -> Option<Result<Self::DataContext, ServerFnError>> {
+        let top_level_context = use_context::<TopLevelContext>()
+            .expect_context();
+        let session_id = top_level_context.session_id.get_untracked()
+            .unwrap().unwrap().unwrap();
+        Some(get_user_bar_data(session_id).await)
+    }
+
+    fn with_data() -> impl IntoView {
+        let user_bar_data = use_context::<UserBarDataContext>().expect_context();
+        let label = user_bar_data.user_name;
+        let href = Some(user_bar_data.user_page_href);
+        view!{
+            <LabelledControlStack label href class = "w-1/3">
+                <ButtonControl value = "Settings" on_click = ButtonFunction::closure(|_ev|{}) />
+                <ButtonControl value = "Logout" on_click = ButtonFunction::closure(|_ev|{})/>
+            </LabelledControlStack>
+        }
+    }
+
+    fn without_session() -> impl IntoView {
+        view! {
+            <ControlStack>
+                <ButtonControl value = "Login" on_click = ButtonFunction::Link("/login") />
+                <ButtonControl value = "Register" on_click = ButtonFunction::Link("/register") />
+            </ControlStack>
+        }
     }
 }
 
