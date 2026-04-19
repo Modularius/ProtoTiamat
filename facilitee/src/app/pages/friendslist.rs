@@ -2,7 +2,7 @@ use abilitee::{
     ContextExt, Expect, TopLevelContext, app::{
         components::{AdColumns, LoginBox},
         generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, SharpBox},
-        guards::GuardedPage,
+        guards::{GuardedComponentWithResource, GuardedComponentWithoutSession, GuardedPage},
     }
 };
 use leptos::prelude::*;
@@ -40,7 +40,7 @@ pub struct GetFriendslistPageDataContext {
 }
 
 impl Expect for GetFriendslistPageDataContext {
-    const EXPECT: &'static str = "";
+    const EXPECT: &'static str = "GetFriendslistPageDataContext should be provided, this should never fail.";
 }
 
 #[server]
@@ -76,9 +76,9 @@ async fn get_friendslist_page_data(
     Ok(data)
 }
 
-pub struct FriendlistPage;
+pub struct FriendslistPage;
 
-impl GuardedPage for FriendlistPage {
+impl GuardedComponentWithResource for FriendslistPage {
     type DataContext = GetFriendslistPageDataContext;
     type Source = (usize, usize);
 
@@ -101,7 +101,7 @@ impl GuardedPage for FriendlistPage {
     }
 
     #[instrument]
-    fn with_data() -> impl IntoView {
+    fn with_session_and_resource() -> impl IntoView {
         let friendslist_page_data = use_context::<GetFriendslistPageDataContext>().expect_context();
         view! {
             <h1 class = "text-3xl m-6"> "Hi there " {friendslist_page_data.user_name} "!" </h1>
@@ -124,7 +124,9 @@ impl GuardedPage for FriendlistPage {
             </AdColumns>
         }
     }
+}
 
+impl GuardedComponentWithoutSession for FriendslistPage {
     #[instrument]
     fn without_session() -> impl IntoView {
         view! {
@@ -133,3 +135,5 @@ impl GuardedPage for FriendlistPage {
         }
     }
 }
+
+impl GuardedPage for FriendslistPage {}

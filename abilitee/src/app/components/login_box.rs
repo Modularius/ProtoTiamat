@@ -43,13 +43,6 @@ pub fn LoginBox(#[prop(optional)] redirect_to: Option<&'static str>) -> impl Int
 #[instrument(skip_all)]
 pub fn LogoutBox(#[prop(optional)] redirect_to: Option<&'static str>) -> impl IntoView {
     let logout = use_context::<TopLevelContext>().expect_context().logout;
-    /*let logout = ServerAction::<PerformLogout>::new();
-    Effect::new(move || {
-        if let Some(Ok(true)) = logout.value().get() {
-            let top_level_context = use_context::<TopLevelContext>().expect_context();
-            top_level_context.session.refetch();
-        }
-    });*/
     view! {
         <ActionForm action = logout>
             {redirect_to.map(|redirect_to|view!{

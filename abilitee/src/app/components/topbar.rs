@@ -8,7 +8,7 @@ use crate::{
     app::{
         TopLevelContext,
         generic_components::{ButtonControl, ButtonFunction, ControlStack, LabelledControlStack},
-        guards::{GuardedPage, has_session_id},
+        guards::{GuardedComponent, GuardedComponentWithResource, GuardedComponentWithoutSession, GuardedPage, has_session_id},
     },
     structs::{ContextExt, Expect},
 };
@@ -78,7 +78,7 @@ pub fn TopBar() -> impl IntoView {
                 <RightBar>
                     <Suspense> {
                         || if has_session_id() {
-                            Either::Left(UserBar::component)
+                            Either::Left(UserBar::with_session)
                         } else {
                             Either::Right(UserBar::without_session)
                         }
@@ -140,7 +140,7 @@ async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext
 
 pub struct UserBar;
 
-impl GuardedPage for UserBar {
+impl GuardedComponentWithResource for UserBar {
     type DataContext = UserBarDataContext;
     type Source = (usize,usize);
 
@@ -160,7 +160,7 @@ impl GuardedPage for UserBar {
         Some(get_user_bar_data(session_id).await)
     }
 
-    fn with_data() -> impl IntoView {
+    fn with_session_and_resource() -> impl IntoView {
         let user_bar_data = use_context::<UserBarDataContext>().expect_context();
         let label = user_bar_data.user_name;
         let href = Some(user_bar_data.user_page_href);
@@ -171,7 +171,9 @@ impl GuardedPage for UserBar {
             </LabelledControlStack>
         }
     }
+}
 
+impl GuardedComponentWithoutSession for UserBar {
     fn without_session() -> impl IntoView {
         view! {
             <ControlStack>

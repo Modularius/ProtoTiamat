@@ -2,7 +2,7 @@ use abilitee::{
     ContextExt, Expect, TopLevelContext, app::{
         components::{AdColumns, LoginBox},
         generic_components::RoundedBox,
-        guards::GuardedPage,
+        guards::{GuardedComponentWithResource, GuardedComponentWithoutSession, GuardedPage},
     }
 };
 use leptos::prelude::*;
@@ -65,7 +65,7 @@ pub async fn get_messages_page_data(
 
 pub struct MessagesPage;
 
-impl GuardedPage for MessagesPage {
+impl GuardedComponentWithResource for MessagesPage {
     type DataContext = MessagesPageDataContext;
     type Source = (usize, usize);
 
@@ -87,7 +87,7 @@ impl GuardedPage for MessagesPage {
         Some(get_messages_page_data(session_id, 10).await)
     }
 
-    fn with_data() -> impl IntoView {
+    fn with_session_and_resource() -> impl IntoView {
         let messages_page_data = use_context::<MessagesPageDataContext>().expect_context();
         view! {
             <h1> "Hi there " {messages_page_data.user_name} "!" </h1>
@@ -97,7 +97,7 @@ impl GuardedPage for MessagesPage {
                     <For
                         each = move ||messages_page_data.messages.clone().into_iter().enumerate()
                         key = |(i,_)|*i
-                        children = |(_,message)| view!{
+                        children = |(_,_message)| view!{
                             /*<LabelledControlStack label = {message.name} href = {Some(format!("/group/{}", group.id.to_string()))} class = "w-1/2">
                                 <ButtonControl value = "Unsubscribe" on_click = ButtonFunction::closure(|_|{}) />
                             </LabelledControlStack>*/
@@ -107,10 +107,14 @@ impl GuardedPage for MessagesPage {
             </AdColumns>
         }
     }
+}
 
+impl GuardedComponentWithoutSession for MessagesPage {
     fn without_session() -> impl IntoView {
         view!{
             <LoginBox />
         }
     }
 }
+
+impl GuardedPage for MessagesPage {}

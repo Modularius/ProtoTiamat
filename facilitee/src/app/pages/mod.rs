@@ -1,3 +1,4 @@
+mod favourites;
 mod friendslist;
 mod group;
 mod groupslist;
@@ -9,7 +10,8 @@ mod register;
 mod settings;
 mod user;
 
-pub use friendslist::FriendlistPage;
+pub use favourites::FavouritesPage;
+pub use friendslist::FriendslistPage;
 pub use group::GroupPage;
 pub use groupslist::GroupslistPage;
 pub use help::HelpPage;
@@ -17,4 +19,5 @@ pub use home_page::HomePage;
 pub use login::LoginPage;
 pub use messages::MessagesPage;
 pub use register::RegisterPage;
+pub use settings::SettingsPage;
 pub use user::UserPage;

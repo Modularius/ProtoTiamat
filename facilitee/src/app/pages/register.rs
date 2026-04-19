@@ -1,23 +1,34 @@
 use abilitee::app::{
-    components::{FootBar, MainColumn, RegisterBox, TopBar},
-    generic_components::RoundedBox,
-    guards::SessionGuard,
+    components::{AdColumns, FootBar, LogoutBox, MainColumn, RegisterBox, TopBar},
+    generic_components::RoundedBox, guards::{GuardedComponent, GuardedComponentWithoutSession, GuardedPage},
 };
 use leptos::prelude::*;
+use tracing::instrument;
 
-#[component]
-pub fn RegisterPage() -> impl IntoView {
-    view! {
-        <SessionGuard>
-            <TopBar/>
-                <MainColumn>
-                    <h2>"Welcome To Communitee."</h2>
-                    <h3>"Please login to continue, or "<a href = "/register">"register"</a>" an account."</h3>
-                    <RoundedBox>
-                        <RegisterBox />
-                    </RoundedBox>
-                </MainColumn>
-            <FootBar/>
-        </SessionGuard>
+pub struct RegisterPage;
+
+impl GuardedComponent for RegisterPage {
+    #[instrument]
+    fn with_session() -> impl IntoView {
+        view! {
+            <AdColumns>
+                <LogoutBox />
+            </AdColumns>
+        }
     }
 }
+
+impl GuardedComponentWithoutSession for RegisterPage {
+    #[instrument]
+    fn without_session() -> impl IntoView {
+        view! {
+            <h2>"Welcome To Communitee."</h2>
+            <h3>"Please login to continue, or "<a href = "/register">"register"</a>" an account."</h3>
+            <RoundedBox>
+                <RegisterBox />
+            </RoundedBox>
+        }
+    }
+}
+
+impl GuardedPage for RegisterPage {}

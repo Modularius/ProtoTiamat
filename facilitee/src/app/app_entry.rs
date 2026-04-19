@@ -1,6 +1,5 @@
 use crate::app::pages::{
-    FriendlistPage, GroupPage, GroupslistPage, HelpPage, HomePage, LoginPage, MessagesPage,
-    RegisterPage, UserPage,
+    FavouritesPage, FriendslistPage, GroupPage, GroupslistPage, HelpPage, HomePage, LoginPage, MessagesPage, RegisterPage, SettingsPage, UserPage
 };
 use abilitee::{
     ClientSideData, ContextExt, PerformLogin, PerformLogout, TopLevelContext, app::guards::GuardedPage, get_session_from_identity
@@ -47,19 +46,21 @@ pub fn App() -> impl IntoView {
     view! {
         <Router> // base = public_path>
             <Routes fallback = NotFound>
-                <Route path = path!("/") view = HomePage::component ssr = SsrMode::Async />
-                <Route path = path!("/register") view = RegisterPage ssr = SsrMode::Async />
-                <Route path = path!("/login") view = LoginPage ssr = SsrMode::Async />
-                <Route path = path!("/friends") view = FriendlistPage::component ssr = SsrMode::Async />
-                <Route path = path!("/groups") view = GroupslistPage::component ssr = SsrMode::Async />
-                <Route path = path!("/messages") view = MessagesPage::component ssr = SsrMode::Async />
+                <Route path = path!("/") view = HomePage::page ssr = SsrMode::Async />
+                <Route path = path!("/register") view = RegisterPage::page ssr = SsrMode::Async />
+                <Route path = path!("/favourites") view = FavouritesPage::page ssr = SsrMode::Async />
+                <Route path = path!("/login") view = LoginPage::page ssr = SsrMode::Async />
+                <Route path = path!("/friends") view = FriendslistPage::page ssr = SsrMode::Async />
+                <Route path = path!("/groups") view = GroupslistPage::page ssr = SsrMode::Async />
+                <Route path = path!("/settings") view = SettingsPage::page ssr = SsrMode::Async />
+                <Route path = path!("/messages") view = MessagesPage::page ssr = SsrMode::Async />
                 <ParentRoute path = path!("/user") view = ||view!{<Outlet />}>
-                    <Route path = path!(":user_id") view = UserPage::component ssr = SsrMode::Async />
+                    <Route path = path!(":user_id") view = UserPage::page ssr = SsrMode::Async />
                 </ParentRoute>
                 <ParentRoute path = path!("/group") view = ||view!{<Outlet />}>
-                    <Route path = path!(":group_id") view = GroupPage::component ssr = SsrMode::Async />
+                    <Route path = path!(":group_id") view = GroupPage::page ssr = SsrMode::Async />
                 </ParentRoute>
-                <Route path = path!("/help") view = HelpPage ssr = SsrMode::Async />
+                <Route path = path!("/help") view = HelpPage::page ssr = SsrMode::Async />
         </Routes>
         </Router>
     }

@@ -1,10 +1,4 @@
-mod resource_guard;
-mod session_guard;
-//mod user_guard;
-
-pub use resource_guard::{PageGuard, ResourceGuard};
 use serde::{Deserialize, Serialize};
-pub use session_guard::SessionGuard;
 
 use leptos::{either::Either, prelude::*};
 use tracing::instrument;
@@ -24,15 +18,25 @@ pub fn has_session_id() -> bool {
     .is_some()
 }
 
-pub trait GuardedPage: Send + Sync + 'static {
+pub trait GuardedComponentWithResource: Send + Sync + 'static {
     type DataContext : Clone + Serialize + for<'a>Deserialize<'a> + Expect + Send + Sync + 'static;
     type Source: PartialEq + Clone + Send + Sync + 'static;
 
     fn source() -> Self::Source;
     fn fetch(_: Self::Source) -> impl Future<Output = Option<Result<Self::DataContext, ServerFnError>>> + Send;
-    fn with_data() -> impl IntoView;
+
+    fn with_session_and_resource() -> impl IntoView;
+}
+
+pub trait GuardedComponentWithoutSession: Send + Sync + 'static {
     fn without_session() -> impl IntoView;
-    
+}
+ 
+pub trait GuardedComponent: GuardedComponentWithoutSession {
+    fn with_session() -> impl IntoView;
+}
+
+impl<T : GuardedComponentWithResource + GuardedComponentWithoutSession> GuardedComponent for T {
     fn with_session() -> impl IntoView {
         let resource = Resource::new(Self::source, Self::fetch);
         view! {
@@ -43,7 +47,7 @@ pub trait GuardedPage: Send + Sync + 'static {
                         <ErrorBoundary fallback = error_box>
                             {value.map(|value| {
                                 provide_context(value);
-                                Self::with_data
+                                Self::with_session_and_resource
                             })}
                         </ErrorBoundary>
                     })
@@ -51,8 +55,10 @@ pub trait GuardedPage: Send + Sync + 'static {
             </Transition>
         }
     }
+}
 
-    fn component() -> impl IntoView {
+pub trait GuardedPage: GuardedComponent {
+    fn page() -> impl IntoView {
         view! {
             <TopBar />
             <MainColumn>
@@ -80,7 +86,7 @@ pub trait GuardedPage: Send + Sync + 'static {
         }
     }
 }
-
+/*
 #[component]
 #[instrument(skip_all)]
 pub fn IsLoggedIn<C>(children: TypedChildrenFn<C>) -> impl IntoView
@@ -136,3 +142,4 @@ where
         })
     })
 }
+ */

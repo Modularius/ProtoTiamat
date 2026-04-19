@@ -2,7 +2,7 @@ use abilitee::{
     ContextExt, Expect, TopLevelContext, app::{
         components::{AdColumns, LoginBox},
         generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, RoundedBox},
-        guards::GuardedPage,
+        guards::{GuardedComponentWithResource, GuardedComponentWithoutSession, GuardedPage},
     }
 };
 use leptos::prelude::*;
@@ -63,7 +63,7 @@ pub async fn get_groupslist_page_data(
 }
 pub struct GroupslistPage;
 
-impl GuardedPage for GroupslistPage {
+impl GuardedComponentWithResource for GroupslistPage {
     type DataContext = GroupslistPageDataContext;
     type Source = (usize, usize);
 
@@ -86,7 +86,7 @@ impl GuardedPage for GroupslistPage {
     }
 
     #[instrument]
-    fn with_data() -> impl IntoView {
+    fn with_session_and_resource() -> impl IntoView {
         let groupslist_page_data = use_context::<GroupslistPageDataContext>().expect_context();
         view! {
             <h1> "Hi there " {groupslist_page_data.user_name} "!" </h1>
@@ -108,7 +108,9 @@ impl GuardedPage for GroupslistPage {
             </AdColumns>
         }
     }
+}
 
+impl GuardedComponentWithoutSession for GroupslistPage {
     #[instrument]
     fn without_session() -> impl IntoView {
         view! {
@@ -117,3 +119,5 @@ impl GuardedPage for GroupslistPage {
         }
     }
 }
+
+impl GuardedPage for GroupslistPage {}
