@@ -1,0 +1,6 @@
+"scripts": {
+  "docker-dev:up": "docker compose -f ./infra/docker/docker-compose-dev.yml -p project_name up -d",
+  "docker-dev:down": "docker compose -f ./infra/docker/docker-compose-dev.yml -p project_name down",
+  "docker:up": "docker compose -f ./infra/docker/docker-compose.yml -p project_name up -d",
+  "docker:down": "docker compose -f ./infra/docker/docker-compose.yml -p project_name down"
+}
