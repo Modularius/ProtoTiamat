@@ -15,6 +15,7 @@ cfg_if! {
         use leptos_actix::{generate_route_list, LeptosRoutes};
         use libertee::{LoginAuth, RandomGeneration};
         use miette::IntoDiagnostic;
+        use postgres::{Client, NoTls};
         use std::{net::SocketAddr, sync::{Arc, Mutex}};
         use tracing::{debug, debug_span, info_span, Span, warn};
         use tracing_actix_web::TracingLogger;
@@ -62,6 +63,9 @@ cfg_if! {
                     warn!("{e}");
                 }
             }
+
+            let mut postgres_client = Client::connect("host=localhost user=postgres password=password", NoTls)
+                .into_diagnostic()?;
 
             // Create server.
             let mut server = Server::new_random(Default::default());
