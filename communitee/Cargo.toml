@@ -36,6 +36,7 @@ tracing = { workspace = true }
 tracing-actix-web = { workspace = true, optional = true }
 tracing-opentelemetry = { workspace = true, optional = true }
 tracing-subscriber.workspace = true
+turso = { workspace = true, optional = true }
 url.workspace = true
 uuid = { workspace = true, optional = true }
 wasm-bindgen = { workspace = true, optional = true }
@@ -64,17 +65,18 @@ ssr = [
   "miette/fancy",
   "tokio/rt-multi-thread",
   "tokio/signal",
-  "dep:clap",
   "dep:actix-identity",
   "dep:actix-files",
   "dep:actix-session",
   "dep:actix-web",
   "dep:actix-web-opentelemetry",
   "dep:anyhow",
+  "dep:clap",
   "dep:leptos_actix",
   "dep:postgres",
   "dep:rand",
   "dep:tokio",
+  "dep:turso",
   "dep:tracing-actix-web",
   "dep:tracing-opentelemetry",
   "dep:uuid",

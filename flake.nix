@@ -29,6 +29,7 @@
         binaryen
         dart-sass
         tailwindcss_4
+        turso
       ];
 
       env.LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
