@@ -1,7 +1,6 @@
 #![allow(unused_crate_dependencies)]
 use cfg_if::cfg_if;
 use leptos::prelude::*;
-use turso::transaction::TransactionBehavior;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use abilitee::{ClientSideData, DefaultData, InitialUserData, PublicUrl, ServerSideData, Server, TracerEngine, TracerOptions};
@@ -16,11 +15,9 @@ cfg_if! {
         use leptos_actix::{generate_route_list, LeptosRoutes};
         use libertee::{LoginAuth, RandomGeneration};
         use miette::IntoDiagnostic;
-        use postgres as _;//::{Client, NoTls};
         use std::{net::SocketAddr, sync::{Arc, Mutex}};
         use tracing::{debug, debug_span, info_span, Span, warn};
         use tracing_actix_web::TracingLogger;
-        use turso::Builder;
 
         #[derive(Parser)]
         #[clap(author, version, about)]
@@ -61,26 +58,10 @@ cfg_if! {
             if tracer.use_otel() {
                 if let Some(e) = tracer.get_otel_setup_error() {
                     warn!("{e}");
-                } else if let Err(e) = tracer.set_otel_error_handler(|e| warn!("{e}")) {
+                } else if leWWt Err(e) = tracer.set_otel_error_handler(|e| warn!("{e}")) {
                     warn!("{e}");
                 }
             }
-
-            /*let mut postgres_client = Client::connect("host=localhost user=postgres password=password", NoTls)
-                .into_diagnostic()?;*/
-
-            debug!("Hi");
-            let sqlite_db = Builder::new_local("data/data.db").build().await.into_diagnostic()?;
-            debug!("Built New Local");
-            let sqlite_conn = sqlite_db.connect().into_diagnostic()?;
-            debug!("Connected");
-            let mut stmt = sqlite_conn.prepare("SELECT * FROM Communitee.Users WHERE name = ?1").await.into_diagnostic()?;
-            debug!("Prepared Statement");
-            let mut rows = stmt.query(["Geoff"]).await.into_diagnostic()?;
-            debug!("Query");
-            let row = rows.next().await.into_diagnostic()?.unwrap();
-            let value = row.get_value(0).into_diagnostic()?;
-            println!("Row: {:?}", value);
 
             // Create server.
             let mut server = Server::new_random(Default::default());

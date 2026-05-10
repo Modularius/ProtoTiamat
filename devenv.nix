@@ -28,6 +28,7 @@
     nushell
     tailwindcss_4
     shadow
+    diesel-cli
   ];
 
   env.LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
