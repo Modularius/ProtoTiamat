@@ -1,3 +1,4 @@
+mod traits;
 mod errors;
 mod group;
 mod message;
