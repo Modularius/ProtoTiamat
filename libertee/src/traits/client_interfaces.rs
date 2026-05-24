@@ -1,4 +1,4 @@
-use crate::traits::{HasError, HasId, IsGroup, IsGroupDelegate, IsGroupMember, IsId, IsServer, IsUser};
+use crate::{id_of, traits::{HasError, HasId, IsGroup, IsGroupDelegate, IsGroupMember, IsId, IsServer, IsUser}};
 
 /// Implements the top-level api that the client uses to interact with the server.
 /// 
@@ -8,7 +8,7 @@ pub trait IsClientInterface : HasError {
     type Group : IsGroup;
     
     fn get_this_user_data(&self) -> Result<<Self::User as IsUser>::UserData, Self::Error>;
-    fn get_other_user_data(&self, user_id: &<Self::User as HasId>::Id) -> Result<<Self::User as IsUser>::UserData, Self::Error>;
+    fn get_other_user_data(&self, user_id: &id_of!(Self::User)) -> Result<<Self::User as IsUser>::UserData, Self::Error>;
 }
 
 pub trait IsClientGroupInterface : HasError {
@@ -17,10 +17,10 @@ pub trait IsClientGroupInterface : HasError {
     type Group : IsGroup<Member = Self::Member>;
     type Member : IsGroupMember;
 
-    fn join_group(&self, id: &<Self::Group as HasId>::Id) -> Result<(), Self::Error>;
-    fn leave_group(&self, id: &<Self::Group as HasId>::Id) -> Result<(), Self::Error>;
+    fn join_group(&self, id: &id_of!(Self::Group)) -> Result<(), Self::Error>;
+    fn leave_group(&self, id: &id_of!(Self::Group)) -> Result<(), Self::Error>;
     
-    fn get_user_member_id(&self, id: &<Self::User as HasId>::Id) -> Result<Option<<Self::Member as HasId>::Id>, Self::Error>;
+    fn get_user_member_id(&self, id: &<Self::User as HasId>::Id) -> Result<Option<id_of!(Self::Member)>, Self::Error>;
 
     fn get_member_data(&self, id: &<Self::Member as HasId>::Id) -> Result<<Self::Member as IsGroupMember>::MemberData, Self::Error>;
 }
@@ -32,8 +32,8 @@ pub trait IsClientGroupMemberInterface : HasError + IsClientBoardInterface<Board
     type Delegate : IsGroupDelegate;
 
     fn get_delegates(&self) -> Result<&[Self::Delegate], Self::Error>;
-    fn make_member_delegate(&self, id: &<Self::Member as HasId>::Id) -> Result<Self::Delegate, Self::Error>;
-    fn remove_delegate(&self, id: &<Self::Delegate as HasId>::Id) -> Result<(), Self::Error>;
+    fn make_member_delegate(&self, id: &id_of!(Self::Member)) -> Result<Self::Delegate, Self::Error>;
+    fn remove_delegate(&self, id: &id_of!(Self::Delegate)) -> Result<(), Self::Error>;
 }
 
 pub trait IsClientGroupDelegateInterface : HasError {
@@ -45,8 +45,8 @@ pub trait IsClientGroupAdminInterface : HasError {
     type Server: IsServer<Group = Self::Group>;
     type Group : IsGroup;
 
-    fn rename_group(&self, id: &<Self::Group as HasId>::Id) -> Result<(), Self::Error>;
-    fn delete_group(&self, id: &<Self::Group as HasId>::Id) -> Result<(), Self::Error>;
+    fn rename_group(&self, id: &id_of!(Self::Group)) -> Result<(), Self::Error>;
+    fn delete_group(&self, id: &id_of!(Self::Group)) -> Result<(), Self::Error>;
 }
 
 pub trait IsClientBoardInterface : HasError {

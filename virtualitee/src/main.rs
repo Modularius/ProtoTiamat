@@ -1,4 +1,10 @@
+mod interface;
+mod server;
+
 use clap::Parser;
+use std::io::stdin;
+
+use crate::interface::Input;
 
 #[derive(Parser)]
 #[clap(author, version, about)]
@@ -13,5 +19,19 @@ struct Cli {
 }
 
 fn main() {
-    println!("Hello, world!");
+
+    let args = Cli::parse();
+    let mut input_string = String::new();
+    loop {
+        stdin().read_line(&mut input_string).expect("");
+        match Input::try_parse_from(input_string.split_ascii_whitespace()) {
+            Ok(input) => {
+                input.enact();
+            },
+            Err(e) => {
+                println!("Error: {}.\n{e}",input_string.split_ascii_whitespace().map(ToOwned::to_owned).collect::<Vec<String>>().join("."));
+            }
+        }
+        
+    }
 }

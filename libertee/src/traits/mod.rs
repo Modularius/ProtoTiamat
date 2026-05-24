@@ -4,15 +4,33 @@ use std::fmt::Display;
 
 use crate::Timestamp;
 
+#[macro_export]
+macro_rules! cast {
+    ($type:ty as $trait:ty : $sub:ident) => {<$type as $trait>::$sub};
+}
+
+#[macro_export]
+macro_rules! id_of {
+    ($type:ty) => {<$type as HasId>::Id};
+}
+
+#[macro_export]
+macro_rules! err_of {
+    ($type:ident) => {
+        <$type as HasError>::Error
+    }
+}
+
+
 pub trait IsServer : HasError {
     type User: IsUser;
     type Group: IsGroup<Member = Self::GroupMember>;
     type GroupMember: IsGroupMember;
 
-    fn find_user(&self, user_id: &<Self::User as HasId>::Id) -> Result<(), Self::Error>;
-    fn find_group(&self, group_id: &<Self::Group as HasId>::Id) -> Result<(), Self::Error>;
+    fn find_user(&self, user_id: &id_of!(Self::User)) -> Result<(), Self::Error>;
+    fn find_group(&self, group_id: &id_of!(Self::Group)) -> Result<(), Self::Error>;
 
-    fn get_group_member_id_from_user_id(&self, user_id: &<Self::User as HasId>::Id, group_id: &<Self::Group as HasId>::Id) -> Result<Option<<Self::GroupMember as HasId>::Id>, Self::Error>;
+    fn get_group_member_id_from_user_id(&self, user_id: &id_of!(Self::User), group_id: &id_of!(Self::Group)) -> Result<Option<id_of!(Self::GroupMember)>, Self::Error>;
 }
 
 pub trait IsId {
@@ -58,9 +76,9 @@ pub trait IsGroup : HasId + HasError {
 pub trait IsBoard : HasId + HasError {
     type Post: IsPost;
 
-    fn get_post(&self, id: &<Self::Post as HasId>::Id) -> Result<Self::Post, Self::Error>;
+    fn get_post(&self, id: &id_of!(Self::Post)) -> Result<Self::Post, Self::Error>;
 
-    fn new_post(&self, id: &<Self::Post as HasId>::Id) -> Result<Self::Post, Self::Error>;
+    fn new_post(&self, id: &id_of!(Self::Post)) -> Result<Self::Post, Self::Error>;
 }
 
 pub trait IsGroupMember : HasId + HasError {
@@ -80,7 +98,7 @@ pub trait IsPost : HasId + HasError + Sized {
     type User: IsUser;
     type Content: Display;
 
-    fn get_author(&self) -> Result<<Self::User as HasId>::Id, Self::Error>;
+    fn get_author(&self) -> Result<id_of!(Self::User), Self::Error>;
     fn get_title(&self) -> Result<String, Self::Error>;
     fn get_date_of_post(&self) -> Result<Self::Content, Self::Error>;
     fn get_content(&self) -> Result<Self::Content, Self::Error>;
