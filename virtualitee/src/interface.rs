@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-pub(crate) trait Enactable : Subcommand {
+pub(crate) trait Enactable: Subcommand {
     fn enact(self);
 }
 
@@ -23,29 +23,20 @@ pub(crate) type Input = ParserWrapper<Command>;
 pub(crate) enum Command {
     PrintUsers,
     PrintGroups,
-    LoginAsUser {
-        user: String,
-    },
+    LoginAsUser { user: String },
     User(ParserWrapper<UserCommand>),
 }
 
 impl Enactable for Command {
     fn enact(self) {
         match self {
-            Self::PrintUsers => {
-                
-            },
-            Self::PrintGroups => {
-                
-            },
-            Self::LoginAsUser { user } => {
-                
-            },
+            Self::PrintUsers => {}
+            Self::PrintGroups => {}
+            Self::LoginAsUser { user } => {}
             Self::User(user) => user.command.enact(),
         }
     }
 }
-
 
 #[derive(Subcommand)]
 pub(crate) enum UserCommand {
@@ -59,11 +50,11 @@ pub(crate) enum UserCommand {
 impl Enactable for UserCommand {
     fn enact(self) {
         match self {
-            Self::ListFriends => {},
-            Self::ListBlocked => {},
-            Self::ListGroups => {},
-            Self::DisplayNewFeed => {},
-            Self::ExtendFeed => {},
+            Self::ListFriends => {}
+            Self::ListBlocked => {}
+            Self::ListGroups => {}
+            Self::DisplayNewFeed => {}
+            Self::ExtendFeed => {}
         }
     }
 }

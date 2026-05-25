@@ -1,9 +1,9 @@
-pub mod traits;
 mod errors;
 mod group;
 mod message;
 mod post;
 mod session;
+pub mod traits;
 mod user;
 
 use cfg_if::cfg_if;

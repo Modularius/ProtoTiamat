@@ -19,7 +19,6 @@ struct Cli {
 }
 
 fn main() {
-
     let args = Cli::parse();
     let mut input_string = String::new();
     loop {
@@ -27,11 +26,17 @@ fn main() {
         match Input::try_parse_from(input_string.split_ascii_whitespace()) {
             Ok(input) => {
                 input.enact();
-            },
+            }
             Err(e) => {
-                println!("Error: {}.\n{e}",input_string.split_ascii_whitespace().map(ToOwned::to_owned).collect::<Vec<String>>().join("."));
+                println!(
+                    "Error: {}.\n{e}",
+                    input_string
+                        .split_ascii_whitespace()
+                        .map(ToOwned::to_owned)
+                        .collect::<Vec<String>>()
+                        .join(".")
+                );
             }
         }
-        
     }
 }

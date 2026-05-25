@@ -1,36 +1,47 @@
 mod client_interfaces;
 
-use std::fmt::Display;
+use std::{error::Error, fmt::Display};
+
 
 use crate::Timestamp;
 
 #[macro_export]
 macro_rules! cast {
-    ($type:ty as $trait:ty : $sub:ident) => {<$type as $trait>::$sub};
+    ($type:ty as $trait:ty : $sub:ident) => {
+        <$type as $trait>::$sub
+    };
 }
 
 #[macro_export]
 macro_rules! id_of {
-    ($type:ty) => {<$type as HasId>::Id};
+    ($type:ty) => {
+        <$type as HasId>::Id
+    };
 }
 
 #[macro_export]
 macro_rules! err_of {
     ($type:ident) => {
         <$type as HasError>::Error
-    }
+    };
 }
 
-
-pub trait IsServer : HasError {
+pub trait IsServer: HasError {
     type User: IsUser;
     type Group: IsGroup<Member = Self::GroupMember>;
-    type GroupMember: IsGroupMember;
+    type GroupMember: IsGroupMember<UserId = id_of!(Self::User)>;
 
-    fn find_user(&self, user_id: &id_of!(Self::User)) -> Result<(), Self::Error>;
-    fn find_group(&self, group_id: &id_of!(Self::Group)) -> Result<(), Self::Error>;
+    fn find_user(&mut self, user_id: &id_of!(Self::User)) -> Result<&mut Self::User, Self::Error>;
+    fn find_group(
+        &mut self,
+        group_id: &id_of!(Self::Group),
+    ) -> Result<&mut Self::Group, Self::Error>;
 
-    fn get_group_member_id_from_user_id(&self, user_id: &id_of!(Self::User), group_id: &id_of!(Self::Group)) -> Result<Option<id_of!(Self::GroupMember)>, Self::Error>;
+    fn get_group_member_id_from_user_id(
+        &self,
+        user_id: &id_of!(Self::User),
+        group_id: &id_of!(Self::Group),
+    ) -> Result<Option<id_of!(Self::GroupMember)>, Self::Error>;
 }
 
 pub trait IsId {
@@ -44,10 +55,10 @@ pub trait HasId {
 }
 
 pub trait HasError {
-    type Error;
+    type Error : Error;
 }
 
-pub trait IsUser : HasId + HasError {
+pub trait IsUser: HasId + HasError {
     type UserData: IsUserData;
 
     fn get_friend_list(&self) -> Result<Vec<Self::Id>, Self::Error>;
@@ -65,15 +76,24 @@ pub trait IsUserData: HasError {
     fn set_name(&mut self, new_name: &str) -> Result<(), Self::Error>;
 }
 
-pub trait IsGroup : HasId + HasError {
-    type UserData: IsUserData;
-    type Member: IsGroupMember;
+pub trait IsGroup: HasId + HasError {
+    type UserId: IsId;
+    type Member: IsGroupMember<UserId = Self::UserId>;
 
     fn get_members(&self) -> Result<&[Self::Member], Self::Error>;
-    fn get_member_from_user(&self, user_id: &Self::Id) -> Result<Self::Member, Self::Error>;
+
+    fn get_member_id_from_user_id(
+        &self,
+        user_id: &Self::UserId,
+    ) -> Result<Option<id_of!(Self::Member)>, Self::Error>;
+    fn get_member(&self, member_id: &id_of!(Self::Member)) -> Result<&Self::Member, Self::Error>;
+    fn get_member_mut(
+        &mut self,
+        member_id: &id_of!(Self::Member),
+    ) -> Result<&mut Self::Member, Self::Error>;
 }
 
-pub trait IsBoard : HasId + HasError {
+pub trait IsBoard: HasId + HasError {
     type Post: IsPost;
 
     fn get_post(&self, id: &id_of!(Self::Post)) -> Result<Self::Post, Self::Error>;
@@ -81,20 +101,22 @@ pub trait IsBoard : HasId + HasError {
     fn new_post(&self, id: &id_of!(Self::Post)) -> Result<Self::Post, Self::Error>;
 }
 
-pub trait IsGroupMember : HasId + HasError {
+pub trait IsGroupMember: HasId + HasError {
+    type UserId: IsId;
     type MemberData: IsGroupMemberData;
-    type Delegate : IsGroupDelegate;
+    type Delegate: IsGroupDelegate;
+
+    fn get_user_id(&self) -> Result<Self::UserId, Self::Error>;
 }
 
-pub trait IsGroupMemberData : HasError {
+pub trait IsGroupMemberData: HasError {
     fn get_influence(&self) -> Result<f64, Self::Error>;
     fn get_date_of_joining(&self) -> Result<Timestamp, Self::Error>;
 }
 
-pub trait IsGroupDelegate : HasId + HasError {
-}
+pub trait IsGroupDelegate: HasId + HasError {}
 
-pub trait IsPost : HasId + HasError + Sized {
+pub trait IsPost: HasId + HasError + Sized {
     type User: IsUser;
     type Content: Display;
 
