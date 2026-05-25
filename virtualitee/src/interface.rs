@@ -1,7 +1,10 @@
 use clap::{Parser, Subcommand};
 
+use crate::server::{ClientInterface, Server};
+use libertee::traits::{IsAdminInterface, IsServer, IsUser, IsUserData};
+
 pub(crate) trait Enactable: Subcommand {
-    fn enact(self);
+    fn enact(self, client_interace: &mut ClientInterface);
 }
 
 #[derive(Parser)]
@@ -12,8 +15,8 @@ pub(crate) struct ParserWrapper<C: Subcommand> {
 }
 
 impl<C: Enactable> ParserWrapper<C> {
-    pub(crate) fn enact(self) {
-        self.command.enact();
+    pub(crate) fn enact(self, client_interace: &mut ClientInterface) {
+        self.command.enact(client_interace);
     }
 }
 
@@ -28,12 +31,22 @@ pub(crate) enum Command {
 }
 
 impl Enactable for Command {
-    fn enact(self) {
+    fn enact(self, client_interace: &mut ClientInterface) {
         match self {
-            Self::PrintUsers => {}
-            Self::PrintGroups => {}
-            Self::LoginAsUser { user } => {}
-            Self::User(user) => user.command.enact(),
+            Self::PrintUsers => {
+                for user in client_interace.get_server_mut().iter_user().unwrap() {
+                    println!("{}", user.get_data().unwrap().get_name().unwrap())
+                }
+            }
+            Self::PrintGroups => {
+                for user in client_interace.get_server_mut().iter_group().unwrap() {
+                    println!("{}", user.get_data().unwrap().get_name().unwrap())
+                }
+            }
+            Self::LoginAsUser { user } => {
+
+            }
+            Self::User(user) => user.command.enact(client_interace),
         }
     }
 }
@@ -48,7 +61,7 @@ pub(crate) enum UserCommand {
 }
 
 impl Enactable for UserCommand {
-    fn enact(self) {
+    fn enact(self, client_interface: &mut ClientInterface) {
         match self {
             Self::ListFriends => {}
             Self::ListBlocked => {}

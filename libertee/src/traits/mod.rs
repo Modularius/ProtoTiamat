@@ -1,7 +1,10 @@
+mod admin_interface;
 mod client_interfaces;
 
 use std::{error::Error, fmt::Display};
 
+pub use admin_interface::IsAdminInterface;
+pub use client_interfaces::{IsLoginCred, IsClientInterface};
 
 use crate::Timestamp;
 
@@ -30,9 +33,16 @@ pub trait IsServer: HasError {
     type User: IsUser;
     type Group: IsGroup<Member = Self::GroupMember>;
     type GroupMember: IsGroupMember<UserId = id_of!(Self::User)>;
+    type LoginCred;
 
-    fn find_user(&mut self, user_id: &id_of!(Self::User)) -> Result<&mut Self::User, Self::Error>;
+    fn find_user(&self, user_id: &id_of!(Self::User)) -> Result<&Self::User, Self::Error>;
     fn find_group(
+        &self,
+        group_id: &id_of!(Self::Group),
+    ) -> Result<&Self::Group, Self::Error>;
+
+    fn find_user_mut(&mut self, user_id: &id_of!(Self::User)) -> Result<&mut Self::User, Self::Error>;
+    fn find_group_mut(
         &mut self,
         group_id: &id_of!(Self::Group),
     ) -> Result<&mut Self::Group, Self::Error>;
@@ -42,6 +52,8 @@ pub trait IsServer: HasError {
         user_id: &id_of!(Self::User),
         group_id: &id_of!(Self::Group),
     ) -> Result<Option<id_of!(Self::GroupMember)>, Self::Error>;
+
+    fn login(&self, login: Self::LoginCred) -> Result<id_of!(Self::User), Self::Error>;
 }
 
 pub trait IsId {
@@ -60,6 +72,9 @@ pub trait HasError {
 
 pub trait IsUser: HasId + HasError {
     type UserData: IsUserData;
+    type EncryptedPassword;
+
+    fn get_data(&self) -> Result<&Self::UserData, Self::Error>;
 
     fn get_friend_list(&self) -> Result<Vec<Self::Id>, Self::Error>;
     fn is_user_friend(&self, user_id: &Self::Id) -> Result<bool, Self::Error>;
@@ -69,9 +84,11 @@ pub trait IsUser: HasId + HasError {
 
     fn get_blocked_list(&self) -> Result<Vec<Self::Id>, Self::Error>;
     fn is_user_blocked(&self, user_id: &Self::Id) -> Result<bool, Self::Error>;
+
+    fn is_password(&self, password: Self::EncryptedPassword) -> Result<bool, Self::Error>;
 }
 
-pub trait IsUserData: HasError {
+pub trait IsUserData: HasError + Clone {
     fn get_name(&self) -> Result<String, Self::Error>;
     fn set_name(&mut self, new_name: &str) -> Result<(), Self::Error>;
 }

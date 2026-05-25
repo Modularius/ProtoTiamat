@@ -9,12 +9,27 @@ pub trait IsClientInterface: HasError {
     type Server: IsServer<User = Self::User, Group = Self::Group>;
     type User: IsUser;
     type Group: IsGroup;
+    type LoginCredentials: IsLoginCred;
+
+    fn is_logged_in(&self) -> Result<bool, Self::Error>;
+    fn login_as(&mut self, cred: &Self::LoginCredentials) -> Result<(), Self::Error>;
+    fn logout(&mut self) -> Result<(), Self::Error>;
 
     fn get_this_user_data(&self) -> Result<<Self::User as IsUser>::UserData, Self::Error>;
     fn get_other_user_data(
         &self,
         user_id: &id_of!(Self::User),
     ) -> Result<<Self::User as IsUser>::UserData, Self::Error>;
+}
+
+pub trait IsLoginCred: HasError + Sized {
+    type Password;
+    type EncryptedPassword;
+    
+    fn new(&self, user_name: &str, password: &Self::Password) -> Result<Self, Self::Error>;
+
+    fn get_user_name(&self) -> Result<&str, Self::Error>;
+    fn get_password(&self) -> Result<&Self::EncryptedPassword, Self::Error>;
 }
 
 pub trait IsClientGroupInterface: HasError {

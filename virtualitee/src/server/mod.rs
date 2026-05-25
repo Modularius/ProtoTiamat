@@ -1,8 +1,12 @@
+mod client_interface;
 mod server;
 mod group;
 mod user;
 
 use libertee::traits::IsId;
+
+pub(crate) use server::Server;
+pub(crate) use client_interface::ClientInterface;
 
 #[macro_export]
 macro_rules! impl_id {
@@ -20,6 +24,7 @@ macro_rules! impl_id {
 #[macro_export]
 macro_rules! impl_error {
     ($type:ty, $err_type:ty) => {
+        
         impl HasError for $type {
             type Error = $err_type;
         }
