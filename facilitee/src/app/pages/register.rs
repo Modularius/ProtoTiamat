@@ -1,6 +1,7 @@
 use abilitee::app::{
     components::{AdColumns, FootBar, LogoutBox, MainColumn, RegisterBox, TopBar},
-    generic_components::RoundedBox, guards::{GuardedComponent, GuardedComponentWithoutSession, GuardedPage},
+    generic_components::RoundedBox,
+    guards::{GuardedComponent, GuardedComponentWithoutSession, GuardedPage},
 };
 use leptos::prelude::*;
 use tracing::instrument;

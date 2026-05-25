@@ -2,10 +2,9 @@ use abilitee::{
     ContextExt, Expect,
     app::{
         TopLevelContext,
-        components::{
-            AdColumns, HelpBox, LoginBox, NewPostBox, PostBox, PostData
-        },
-        generic_components::RoundedBox, guards::{GuardedComponentWithResource, GuardedComponentWithoutSession, GuardedPage},
+        components::{AdColumns, HelpBox, LoginBox, NewPostBox, PostBox, PostData},
+        generic_components::RoundedBox,
+        guards::{GuardedComponentWithResource, GuardedComponentWithoutSession, GuardedPage},
     },
 };
 use leptos::prelude::*;
@@ -67,7 +66,7 @@ pub struct HomePage;
 impl GuardedComponentWithResource for HomePage {
     type DataContext = HomePageDataContext;
     type Source = (usize, usize);
-    
+
     #[instrument]
     fn source() -> Self::Source {
         let top_level_context = use_context::<TopLevelContext>().expect_context();
@@ -79,10 +78,13 @@ impl GuardedComponentWithResource for HomePage {
 
     #[instrument]
     async fn fetch(_: Self::Source) -> Option<Result<HomePageDataContext, ServerFnError>> {
-        let top_level_context = use_context::<TopLevelContext>()
-            .expect_context();
-        let session_id = top_level_context.session_id.get_untracked()
-            .unwrap().unwrap().unwrap();
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
+        let session_id = top_level_context
+            .session_id
+            .get_untracked()
+            .unwrap()
+            .unwrap()
+            .unwrap();
         Some(get_home_page_data(session_id, 10).await)
     }
 

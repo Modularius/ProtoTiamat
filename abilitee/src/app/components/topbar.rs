@@ -8,7 +8,10 @@ use crate::{
     app::{
         TopLevelContext,
         generic_components::{ButtonControl, ButtonFunction, ControlStack, LabelledControlStack},
-        guards::{GuardedComponent, GuardedComponentWithResource, GuardedComponentWithoutSession, GuardedPage, has_session_id},
+        guards::{
+            GuardedComponent, GuardedComponentWithResource, GuardedComponentWithoutSession,
+            GuardedPage, has_session_id,
+        },
     },
     structs::{ContextExt, Expect},
 };
@@ -126,11 +129,9 @@ async fn get_user_bar_data(session_id: SessionUuid) -> Result<UserBarDataContext
     let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
 
-    let session = server
-        .get_session(&session_id)?;
+    let session = server.get_session(&session_id)?;
 
-    let user = server
-        .get_user(&session.user)?;
+    let user = server.get_user(&session.user)?;
 
     Ok(UserBarDataContext {
         user_name: user.data.name.clone(),
@@ -142,7 +143,7 @@ pub struct UserBar;
 
 impl GuardedComponentWithResource for UserBar {
     type DataContext = UserBarDataContext;
-    type Source = (usize,usize);
+    type Source = (usize, usize);
 
     fn source() -> Self::Source {
         let top_level_context = use_context::<TopLevelContext>().expect_context();
@@ -153,10 +154,13 @@ impl GuardedComponentWithResource for UserBar {
     }
 
     async fn fetch(_: Self::Source) -> Option<Result<Self::DataContext, ServerFnError>> {
-        let top_level_context = use_context::<TopLevelContext>()
-            .expect_context();
-        let session_id = top_level_context.session_id.get_untracked()
-            .unwrap().unwrap().unwrap();
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
+        let session_id = top_level_context
+            .session_id
+            .get_untracked()
+            .unwrap()
+            .unwrap()
+            .unwrap();
         Some(get_user_bar_data(session_id).await)
     }
 
@@ -164,7 +168,7 @@ impl GuardedComponentWithResource for UserBar {
         let user_bar_data = use_context::<UserBarDataContext>().expect_context();
         let label = user_bar_data.user_name;
         let href = Some(user_bar_data.user_page_href);
-        view!{
+        view! {
             <LabelledControlStack label href class = "w-1/3">
                 <ButtonControl value = "Settings" on_click = ButtonFunction::closure(|_ev|{}) />
                 <ButtonControl value = "Logout" on_click = ButtonFunction::closure(|_ev|{})/>

@@ -3,7 +3,15 @@ use serde::{Deserialize, Serialize};
 use leptos::{either::Either, prelude::*};
 use tracing::instrument;
 
-use crate::{Expect, app::{TopLevelContext, components::{FootBar, MainColumn, TopBar}, generic_components::error_box}, structs::ContextExt};
+use crate::{
+    Expect,
+    app::{
+        TopLevelContext,
+        components::{FootBar, MainColumn, TopBar},
+        generic_components::error_box,
+    },
+    structs::ContextExt,
+};
 //use libertee::{Session, SessionUuid, UserData};
 
 pub fn has_session_id() -> bool {
@@ -11,19 +19,19 @@ pub fn has_session_id() -> bool {
         .expect_context()
         .session_id
         .get()
-        .and_then(|session_id|session_id
-            .inspect_err(|e|tracing::error!("{e}"))
-            .ok()
-        ).flatten()
-    .is_some()
+        .and_then(|session_id| session_id.inspect_err(|e| tracing::error!("{e}")).ok())
+        .flatten()
+        .is_some()
 }
 
 pub trait GuardedComponentWithResource: Send + Sync + 'static {
-    type DataContext : Clone + Serialize + for<'a>Deserialize<'a> + Expect + Send + Sync + 'static;
+    type DataContext: Clone + Serialize + for<'a> Deserialize<'a> + Expect + Send + Sync + 'static;
     type Source: PartialEq + Clone + Send + Sync + 'static;
 
     fn source() -> Self::Source;
-    fn fetch(_: Self::Source) -> impl Future<Output = Option<Result<Self::DataContext, ServerFnError>>> + Send;
+    fn fetch(
+        _: Self::Source,
+    ) -> impl Future<Output = Option<Result<Self::DataContext, ServerFnError>>> + Send;
 
     fn with_session_and_resource() -> impl IntoView;
 }
@@ -31,12 +39,12 @@ pub trait GuardedComponentWithResource: Send + Sync + 'static {
 pub trait GuardedComponentWithoutSession: Send + Sync + 'static {
     fn without_session() -> impl IntoView;
 }
- 
+
 pub trait GuardedComponent: GuardedComponentWithoutSession {
     fn with_session() -> impl IntoView;
 }
 
-impl<T : GuardedComponentWithResource + GuardedComponentWithoutSession> GuardedComponent for T {
+impl<T: GuardedComponentWithResource + GuardedComponentWithoutSession> GuardedComponent for T {
     fn with_session() -> impl IntoView {
         let resource = Resource::new(Self::source, Self::fetch);
         view! {

@@ -1,6 +1,11 @@
-use abilitee::{ContextExt, Expect, TopLevelContext, app::{
-    components::{AdColumns, LoginBox}, generic_components::RoundedBox, guards::{GuardedComponentWithResource, GuardedComponentWithoutSession, GuardedPage}
-}};
+use abilitee::{
+    ContextExt, Expect, TopLevelContext,
+    app::{
+        components::{AdColumns, LoginBox},
+        generic_components::RoundedBox,
+        guards::{GuardedComponentWithResource, GuardedComponentWithoutSession, GuardedPage},
+    },
+};
 use leptos::prelude::*;
 use libertee::SessionUuid;
 use serde::{Deserialize, Serialize};
@@ -21,15 +26,15 @@ impl Expect for SettingsPageDataContext {
 }
 
 #[server]
-pub async fn get_settings_page_data(session_id: SessionUuid) -> Result<SettingsPageDataContext, ServerFnError> {
+pub async fn get_settings_page_data(
+    session_id: SessionUuid,
+) -> Result<SettingsPageDataContext, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
 
-    let session = server
-        .get_session(&session_id)?;
+    let session = server.get_session(&session_id)?;
 
-    let user = server
-        .get_user(&session.user)?;
+    let user = server.get_user(&session.user)?;
 
     let data = SettingsPageDataContext {
         user_name: user.data.name.clone(),
@@ -54,10 +59,13 @@ impl GuardedComponentWithResource for SettingsPage {
 
     #[instrument]
     async fn fetch(_: Self::Source) -> Option<Result<Self::DataContext, ServerFnError>> {
-        let top_level_context = use_context::<TopLevelContext>()
-            .expect_context();
-        let session_id = top_level_context.session_id.get_untracked()
-            .unwrap().unwrap().unwrap();
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
+        let session_id = top_level_context
+            .session_id
+            .get_untracked()
+            .unwrap()
+            .unwrap()
+            .unwrap();
         Some(get_settings_page_data(session_id).await)
     }
 
@@ -73,12 +81,11 @@ impl GuardedComponentWithResource for SettingsPage {
             </AdColumns>
         }
     }
-
 }
 
 impl GuardedComponentWithoutSession for SettingsPage {
     fn without_session() -> impl IntoView {
-        view!{
+        view! {
             <LoginBox />
         }
     }

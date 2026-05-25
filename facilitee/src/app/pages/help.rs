@@ -1,15 +1,15 @@
-use tracing::instrument;
 use abilitee::{
-    ContextExt, Expect, app::{
+    ContextExt, Expect,
+    app::{
         TopLevelContext,
-        components::{
-            AdColumns, HelpBox, LoginBox
-        }, guards::{GuardedComponentWithoutSession, GuardedComponentWithResource, GuardedPage},
-    }
+        components::{AdColumns, HelpBox, LoginBox},
+        guards::{GuardedComponentWithResource, GuardedComponentWithoutSession, GuardedPage},
+    },
 };
 use leptos::prelude::*;
 use libertee::{SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
+use tracing::instrument;
 
 cfg_if::cfg_if! { if #[cfg(feature = "ssr")] {
     use abilitee::ServerSideData;
@@ -50,7 +50,7 @@ pub struct HelpPage;
 impl GuardedComponentWithResource for HelpPage {
     type DataContext = HelpPageDataContext;
     type Source = (usize, usize);
-    
+
     #[instrument]
     fn source() -> Self::Source {
         let top_level_context = use_context::<TopLevelContext>().expect_context();
@@ -62,10 +62,13 @@ impl GuardedComponentWithResource for HelpPage {
 
     #[instrument]
     async fn fetch(_: Self::Source) -> Option<Result<HelpPageDataContext, ServerFnError>> {
-        let top_level_context = use_context::<TopLevelContext>()
-            .expect_context();
-        let session_id = top_level_context.session_id.get_untracked()
-            .unwrap().unwrap().unwrap();
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
+        let session_id = top_level_context
+            .session_id
+            .get_untracked()
+            .unwrap()
+            .unwrap()
+            .unwrap();
         Some(get_help_page_data(session_id, 10).await)
     }
 
@@ -79,7 +82,6 @@ impl GuardedComponentWithResource for HelpPage {
             </AdColumns>
         }
     }
-
 }
 
 impl GuardedComponentWithoutSession for HelpPage {

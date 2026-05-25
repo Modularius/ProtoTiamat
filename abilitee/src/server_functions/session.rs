@@ -30,12 +30,7 @@ pub async fn get_session_from_identity() -> Result<Option<SessionUuid>, ServerFn
         Ok(id) => {
             let server_mutex = use_context::<ServerSideData>().expect_context().server;
             let server = server_mutex.lock()?;
-            Ok(Some(
-                server
-                    .get_session(&SessionUuid(id))?
-                    .uuid
-                    .clone(),
-            ))
+            Ok(Some(server.get_session(&SessionUuid(id))?.uuid.clone()))
         }
         Err(_e) => Ok(None),
     }
@@ -110,7 +105,6 @@ pub async fn register(auth: LoginAuth, _new_path: String) -> Result<Session, Ser
     let server_side_data = use_context::<ServerSideData>().expect_context();
 
     let mut server = server_side_data.server.lock()?;
-    let session = server
-        .create_new_session(&auth)?;
+    let session = server.create_new_session(&auth)?;
     Ok(session.clone())
 }

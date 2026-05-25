@@ -9,7 +9,10 @@ use abilitee::{
     },
 };
 use leptos::{Params, prelude::*};
-use leptos_router::{hooks::use_params, params::{Params, ParamsError}};
+use leptos_router::{
+    hooks::use_params,
+    params::{Params, ParamsError},
+};
 use libertee::{SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
@@ -59,18 +62,15 @@ async fn get_user_page_data(
 ) -> Result<UserPageDataContext, ServerFnError> {
     let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
-    
-    let session = server
-        .get_session(&session_id)?;
 
-    let current_user = server
-        .get_user(&session.user)?;
+    let session = server.get_session(&session_id)?;
 
-    let this_page_user = server
-        .get_user(&user_id)?;
+    let current_user = server.get_user(&session.user)?;
+
+    let this_page_user = server.get_user(&user_id)?;
 
     let properties = this_page_user.data.properties.clone();
-    
+
     let groups_in = this_page_user
         .data
         .groups
@@ -120,7 +120,7 @@ pub struct UserPage;
 impl GuardedComponentWithResource for UserPage {
     type DataContext = UserPageDataContext;
     type Source = (usize, usize, Result<UserParams, ParamsError>);
-    
+
     #[instrument]
     fn source() -> Self::Source {
         let params = use_params::<UserParams>();
@@ -133,11 +133,16 @@ impl GuardedComponentWithResource for UserPage {
     }
 
     #[instrument]
-    async fn fetch((_, _, params): Self::Source) -> Option<Result<UserPageDataContext, ServerFnError>> {
-        let top_level_context = use_context::<TopLevelContext>()
-            .expect_context();
-        let session_id = top_level_context.session_id.get_untracked()
-            .unwrap().unwrap().unwrap();
+    async fn fetch(
+        (_, _, params): Self::Source,
+    ) -> Option<Result<UserPageDataContext, ServerFnError>> {
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
+        let session_id = top_level_context
+            .session_id
+            .get_untracked()
+            .unwrap()
+            .unwrap()
+            .unwrap();
         match params {
             Ok(up) => match up.user_id {
                 Some(id) => Some(get_user_page_data(session_id, UserUuid(id)).await),

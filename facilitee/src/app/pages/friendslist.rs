@@ -1,9 +1,10 @@
 use abilitee::{
-    ContextExt, Expect, TopLevelContext, app::{
+    ContextExt, Expect, TopLevelContext,
+    app::{
         components::{AdColumns, LoginBox},
         generic_components::{ButtonControl, ButtonFunction, LabelledControlStack, SharpBox},
         guards::{GuardedComponentWithResource, GuardedComponentWithoutSession, GuardedPage},
-    }
+    },
 };
 use leptos::prelude::*;
 use libertee::{SessionUuid, UserUuid};
@@ -40,7 +41,8 @@ pub struct GetFriendslistPageDataContext {
 }
 
 impl Expect for GetFriendslistPageDataContext {
-    const EXPECT: &'static str = "GetFriendslistPageDataContext should be provided, this should never fail.";
+    const EXPECT: &'static str =
+        "GetFriendslistPageDataContext should be provided, this should never fail.";
 }
 
 #[server]
@@ -51,11 +53,9 @@ async fn get_friendslist_page_data(
     let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
 
-    let session = server
-        .get_session(&session_id)?;
+    let session = server.get_session(&session_id)?;
 
-    let user = server
-        .get_user(&session.user)?;
+    let user = server.get_user(&session.user)?;
 
     let data = GetFriendslistPageDataContext {
         user_name: user.data.name.clone(),
@@ -92,11 +92,16 @@ impl GuardedComponentWithResource for FriendslistPage {
     }
 
     #[instrument]
-    async fn fetch(_: Self::Source) -> Option<Result<GetFriendslistPageDataContext, ServerFnError>> {
-        let top_level_context = use_context::<TopLevelContext>()
-            .expect_context();
-        let session_id = top_level_context.session_id.get_untracked()
-            .unwrap().unwrap().unwrap();
+    async fn fetch(
+        _: Self::Source,
+    ) -> Option<Result<GetFriendslistPageDataContext, ServerFnError>> {
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
+        let session_id = top_level_context
+            .session_id
+            .get_untracked()
+            .unwrap()
+            .unwrap()
+            .unwrap();
         Some(get_friendslist_page_data(session_id, 10).await)
     }
 

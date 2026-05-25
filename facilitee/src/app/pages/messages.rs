@@ -1,9 +1,10 @@
 use abilitee::{
-    ContextExt, Expect, TopLevelContext, app::{
+    ContextExt, Expect, TopLevelContext,
+    app::{
         components::{AdColumns, LoginBox},
         generic_components::RoundedBox,
         guards::{GuardedComponentWithResource, GuardedComponentWithoutSession, GuardedPage},
-    }
+    },
 };
 use leptos::prelude::*;
 use libertee::SessionUuid;
@@ -43,11 +44,9 @@ pub async fn get_messages_page_data(
     let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
 
-    let session = server
-        .get_session(&session_id)?;
+    let session = server.get_session(&session_id)?;
 
-    let user = server
-        .get_user(&session.user)?;
+    let user = server.get_user(&session.user)?;
 
     let data = MessagesPageDataContext {
         user_name: user.data.name.clone(),
@@ -80,10 +79,13 @@ impl GuardedComponentWithResource for MessagesPage {
 
     #[instrument]
     async fn fetch(_: Self::Source) -> Option<Result<Self::DataContext, ServerFnError>> {
-        let top_level_context = use_context::<TopLevelContext>()
-            .expect_context();
-        let session_id = top_level_context.session_id.get_untracked()
-            .unwrap().unwrap().unwrap();
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
+        let session_id = top_level_context
+            .session_id
+            .get_untracked()
+            .unwrap()
+            .unwrap()
+            .unwrap();
         Some(get_messages_page_data(session_id, 10).await)
     }
 
@@ -111,7 +113,7 @@ impl GuardedComponentWithResource for MessagesPage {
 
 impl GuardedComponentWithoutSession for MessagesPage {
     fn without_session() -> impl IntoView {
-        view!{
+        view! {
             <LoginBox />
         }
     }

@@ -1,14 +1,18 @@
 use abilitee::{
-    ContextExt, Expect, TopLevelContext, app::{
+    ContextExt, Expect, TopLevelContext,
+    app::{
         components::{AdColumns, HelpBox, LoginBox, NewPostBox, PostBox, PostData},
         generic_components::{
             ButtonControl, ButtonFunction, ControlStack, ErrorBox, LabelledControlStack, RoundedBox,
         },
         guards::{GuardedComponentWithResource, GuardedComponentWithoutSession, GuardedPage},
-    }
+    },
 };
 use leptos::{either::Either, prelude::*};
-use leptos_router::{hooks::use_params, params::{Params, ParamsError}};
+use leptos_router::{
+    hooks::use_params,
+    params::{Params, ParamsError},
+};
 use libertee::{GroupUuid, SessionUuid, UserUuid};
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
@@ -115,14 +119,11 @@ pub async fn get_group_page_data(
     let server_side_data = use_context::<ServerSideData>().expect_context();
     let server = server_side_data.server.lock()?;
 
-    let group = server
-        .get_group(&group_id)?;
+    let group = server.get_group(&group_id)?;
 
-    let session = server
-        .get_session(&session_id)?;
+    let session = server.get_session(&session_id)?;
 
-    let user = server
-        .get_user(&session.user)?;
+    let user = server.get_user(&session.user)?;
 
     let data = GroupPageDataContext {
         user_id: user.data.id.clone(),
@@ -144,7 +145,7 @@ pub struct GroupPage;
 impl GuardedComponentWithResource for GroupPage {
     type DataContext = GroupPageDataContext;
     type Source = (usize, usize, Result<GroupParams, ParamsError>);
-    
+
     #[instrument]
     fn source() -> Self::Source {
         let params = use_params::<GroupParams>();
@@ -157,11 +158,16 @@ impl GuardedComponentWithResource for GroupPage {
     }
 
     #[instrument]
-    async fn fetch((_, _, params): Self::Source) -> Option<Result<GroupPageDataContext, ServerFnError>> {
-        let top_level_context = use_context::<TopLevelContext>()
-            .expect_context();
-        let session_id = top_level_context.session_id.get_untracked()
-            .unwrap().unwrap().unwrap();
+    async fn fetch(
+        (_, _, params): Self::Source,
+    ) -> Option<Result<GroupPageDataContext, ServerFnError>> {
+        let top_level_context = use_context::<TopLevelContext>().expect_context();
+        let session_id = top_level_context
+            .session_id
+            .get_untracked()
+            .unwrap()
+            .unwrap()
+            .unwrap();
         match params {
             Ok(up) => match up.group_id {
                 Some(id) => Some(get_group_page_data(session_id, GroupUuid(id)).await),

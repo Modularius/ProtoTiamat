@@ -5,7 +5,7 @@ use tracing::instrument;
 #[component]
 #[instrument(skip_all)]
 pub fn HelpBox() -> impl IntoView {
-    view!{
+    view! {
         <h2 class = "text-xl m-2"> "The social media platform exclusively controlled by its users." </h2>
         <RoundedBox>
             <h3 class = "text-lg m-2"> "Using Communitee guarantees:" </h3>

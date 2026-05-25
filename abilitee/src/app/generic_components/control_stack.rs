@@ -40,7 +40,8 @@ pub fn ControlStack(children: Children) -> impl IntoView {
 }
 
 #[component]
-pub fn ControlStackRow(_children: Children) -> impl IntoView {  // FIXME for some reason not having _children causes "variable never read" issue.
+pub fn ControlStackRow(_children: Children) -> impl IntoView {
+    // FIXME for some reason not having _children causes "variable never read" issue.
     view! {
         <div class = "flex flex-grow flex-col
             p-1 md:p-2

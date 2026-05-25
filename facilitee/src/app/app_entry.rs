@@ -1,8 +1,10 @@
 use crate::app::pages::{
-    FavouritesPage, FriendslistPage, GroupPage, GroupslistPage, HelpPage, HomePage, LoginPage, MessagesPage, RegisterPage, SettingsPage, UserPage
+    FavouritesPage, FriendslistPage, GroupPage, GroupslistPage, HelpPage, HomePage, LoginPage,
+    MessagesPage, RegisterPage, SettingsPage, UserPage,
 };
 use abilitee::{
-    ClientSideData, ContextExt, PerformLogin, PerformLogout, TopLevelContext, app::guards::GuardedPage, get_session_from_identity
+    ClientSideData, ContextExt, PerformLogin, PerformLogout, TopLevelContext,
+    app::guards::GuardedPage, get_session_from_identity,
 };
 use leptos::prelude::*;
 use leptos_meta::provide_meta_context;
@@ -30,11 +32,10 @@ pub fn App() -> impl IntoView {
     let login = ServerAction::<PerformLogin>::new();
     let logout = ServerAction::<PerformLogout>::new();
 
-    let session_id: Resource<Result<Option<SessionUuid>, ServerFnError>> =
-        Resource::new_blocking(
-            move || (login.version().get(), logout.version().get()),
-            |_| get_session_from_identity(),
-        );
+    let session_id: Resource<Result<Option<SessionUuid>, ServerFnError>> = Resource::new_blocking(
+        move || (login.version().get(), logout.version().get()),
+        |_| get_session_from_identity(),
+    );
     provide_context(TopLevelContext {
         client_side_data,
         session_id,
