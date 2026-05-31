@@ -75,6 +75,9 @@ pub trait IsUser: HasId + HasError {
     type EncryptedPassword;
 
     fn get_data(&self) -> Result<&Self::UserData, Self::Error>;
+    
+    fn get_groups_list(&self) -> Result<Vec<id_of!(Self::Group)>, Self::Error>;
+    fn is_in_group(&self, group_id: &Self::Id) -> Result<bool, Self::Error>;
 
     fn get_friend_list(&self) -> Result<Vec<Self::Id>, Self::Error>;
     fn is_user_friend(&self, user_id: &Self::Id) -> Result<bool, Self::Error>;
@@ -91,6 +94,7 @@ pub trait IsUser: HasId + HasError {
 pub trait IsUserData: HasError + Clone {
     fn get_name(&self) -> Result<String, Self::Error>;
     fn set_name(&mut self, new_name: &str) -> Result<(), Self::Error>;
+    fn get_friends(&self, new_name: &str) -> Result<(), Self::Error>;
 }
 
 pub trait IsGroup: HasId + HasError {

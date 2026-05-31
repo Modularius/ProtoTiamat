@@ -2,7 +2,7 @@ mod interface;
 mod server;
 
 use clap::Parser;
-use std::{io::stdin, rc::Rc, sync::Mutex};
+use std::io::stdin;
 
 use crate::{interface::Input, server::{ClientInterface, Server}};
 
@@ -21,8 +21,8 @@ struct Cli {
 fn main() {
     let args = Cli::parse();
     let mut client_interace = ClientInterface::new(Server::default());
-
     let mut input_string = String::new();
+
     loop {
         stdin().read_line(&mut input_string).expect("");
         match Input::try_parse_from(input_string.split_ascii_whitespace()) {

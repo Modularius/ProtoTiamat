@@ -60,6 +60,10 @@ impl IsUserData for UserData {
         self.name = new_name.to_string();
         Ok(())
     }
+    
+    fn get_friends(&self, new_name: &str) -> Result<(), Self::Error> {
+        todo!()
+    }
 }
 
 impl IsUser for User {
@@ -84,6 +88,10 @@ impl IsUser for User {
 
     fn get_blocked_list(&self) -> Result<Vec<Self::Id>, Self::Error> {
         Ok(self.blocked_list.clone())
+    }
+    
+    fn get_groups_list(&self) -> Result<Vec<id_of!(Self::Group)>, Self::Error> {
+        Ok(self.group_list.clone())
     }
 
     fn is_user_blocked(&self, user_id: &Self::Id) -> Result<bool, Self::Error> {

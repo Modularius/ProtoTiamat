@@ -4,7 +4,6 @@ mod group;
 mod user;
 
 use libertee::traits::IsId;
-
 pub(crate) use server::Server;
 pub(crate) use client_interface::ClientInterface;
 

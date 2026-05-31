@@ -20,6 +20,10 @@ pub trait IsClientInterface: HasError {
         &self,
         user_id: &id_of!(Self::User),
     ) -> Result<<Self::User as IsUser>::UserData, Self::Error>;
+    fn get_friend_list(&self) -> Result<Vec<id_of!(Self::User)>, Self::Error>;
+    fn get_follow_list(&self) -> Result<Vec<id_of!(Self::User)>, Self::Error>;
+    fn get_blocked_list(&self) -> Result<Vec<id_of!(Self::User)>, Self::Error>;
+    fn get_groups_list(&self) -> Result<Vec<id_of!(Self::Group)>, Self::Error>;
 }
 
 pub trait IsLoginCred: HasError + Sized {

@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand};
 
 use crate::server::{ClientInterface, Server};
-use libertee::traits::{IsAdminInterface, IsServer, IsUser, IsUserData};
+use libertee::traits::{IsAdminInterface, IsClientInterface, IsServer, IsUser, IsUserData};
 
 pub(crate) trait Enactable: Subcommand {
     fn enact(self, client_interace: &mut ClientInterface);
@@ -63,9 +63,24 @@ pub(crate) enum UserCommand {
 impl Enactable for UserCommand {
     fn enact(self, client_interface: &mut ClientInterface) {
         match self {
-            Self::ListFriends => {}
-            Self::ListBlocked => {}
-            Self::ListGroups => {}
+            Self::ListFriends => {
+                for user_id in client_interface.get_friend_list().unwrap() {
+                    let user_data = client_interface.get_other_user_data(&user_id).unwrap();
+                    println!("{}", user_data.get_name().unwrap());
+                }
+            }
+            Self::ListBlocked => {
+                for user_id in client_interface.get_friend_list().unwrap() {
+                    let user_data = client_interface.get_other_user_data(&user_id).unwrap();
+                    println!("{}", user_data.get_name().unwrap());
+                }
+            }
+            Self::ListGroups => {
+                for group_id in client_interface.get_groups_list().unwrap() {
+                    let user_data = client_interface.get_server_mut().find_group(&group_id) (&user_id).unwrap();
+                    println!("{}", user_data.get_name().unwrap());
+                }
+            }
             Self::DisplayNewFeed => {}
             Self::ExtendFeed => {}
         }

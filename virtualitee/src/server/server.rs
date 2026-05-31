@@ -25,6 +25,12 @@ pub(crate) struct Server {
 }
 impl_error!(Server, ServerError);
 
+impl Server {
+    pub(crate) fn new() -> Self {
+        Default::default()
+    }
+}
+
 impl IsServer for Server {
     type User = User;
     type Group = Group;

@@ -63,6 +63,50 @@ impl IsClientInterface for ClientInterface {
     ) -> Result<UserData, Self::Error> {
         todo!()
     }
+    
+    fn get_friend_list(&self) -> Result<Vec<id_of!(Self::User)>, Self::Error> {
+        if let Some(user_id) = &self.login {
+            Ok(self.server
+                .find_user(&user_id)?
+                .get_friend_list()
+                .map_err(Into::<ServerError>::into)?)
+        } else {
+            Err(ClientInterfaceError::NotLoggedIn)
+        }
+    }
+    
+    fn get_follow_list(&self) -> Result<Vec<id_of!(Self::User)>, Self::Error> {
+        if let Some(user_id) = &self.login {
+            Ok(self.server
+                .find_user(&user_id)?
+                .get_follow_list()
+                .map_err(Into::<ServerError>::into)?)
+        } else {
+            Err(ClientInterfaceError::NotLoggedIn)
+        }
+    }
+    
+    fn get_blocked_list(&self) -> Result<Vec<id_of!(Self::User)>, Self::Error> {
+        if let Some(user_id) = &self.login {
+            Ok(self.server
+                .find_user(&user_id)?
+                .get_blocked_list()
+                .map_err(Into::<ServerError>::into)?)
+        } else {
+            Err(ClientInterfaceError::NotLoggedIn)
+        }
+    }
+    
+    fn get_groups_list(&self) -> Result<Vec<id_of!(Self::Group)>, Self::Error> {
+        if let Some(user_id) = &self.login {
+            Ok(self.server
+                .find_user(&user_id)?
+                .get_groups_list()
+                .map_err(Into::<ServerError>::into)?)
+        } else {
+            Err(ClientInterfaceError::NotLoggedIn)
+        }
+    }
 }
 
 #[derive(Clone)]
